@@ -2,11 +2,17 @@
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" type="text/css" href="style.css">
+  <link rel="stylesheet" href="app.css">
 </head>
 <body>
-  Hello World
+  <div id="simulation"></div>
+
   <script src="vendor/three.min.js"></script>
+  <script src="shaders.js"></script>
   <script src="app.js"></script>
+  <script>
+    var app = new App(document.getElementById('simulation'));
+    window.onresize = app.resize;
+  </script>
 </body>
 </html>
