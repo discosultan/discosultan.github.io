@@ -14,7 +14,8 @@ function App(container) {
         45,
         container.offsetWidth / container.offsetHeight,
         0.1, 1000);
-    camera.position.set(-20, 25, 20);
+    // camera.position.set(-20, 25, 20);
+    camera.position.set(0, 0, 100);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     this.resize = function() {
@@ -30,7 +31,8 @@ function App(container) {
     var material = new THREE.ShaderMaterial({
         uniforms: uniforms,
         vertexShader: SHADERS.vertex,
-        fragmentShader: SHADERS.fragment
+        fragmentShader: SHADERS.fragment,
+        vertexColors: THREE.VertexColors
     });
     // Create mesh and add to scene.
     var mesh = new THREE.Mesh(geometry, material);
@@ -50,7 +52,7 @@ function App(container) {
 
     function createGeometry() {
         // Create an unindexed buffer.
-        var numCubes = 1;
+        var numCubes = 5000;
         var numTrianglesPerCube = 12;
         var numTriangles = numTrianglesPerCube * numCubes;
 
@@ -77,32 +79,46 @@ function App(container) {
         var pb = new THREE.Vector3();
         var pc = new THREE.Vector3();
 
+        var rv = new THREE.Vector3();
+
         for (var i = 0; i < numTriangles; i += numTrianglesPerCube) {
             // Randomize position for each cube.
             var x = 0;
             var y = 0;
             var z = 0;
 
-            addTriangle(i + 0, x, y, z, v1, v2, v4);
-            addTriangle(i + 1, x, y, z, v2, v3, v4);
+            // Create random unit vector (uniform distribution).
+            // Ref: http://www.gamedev.net/topic/499972-generate-a-random-unit-vector/
+            var azimuth = Math.random() * 2 * Math.PI;
+            var cosAzimuth = Math.cos(azimuth);
+            var sinAzimuth = Math.sin(azimuth);
+            var planarZ = 2 * Math.random() - 1; // in range [-1...1]
+            var sqrtInvPlanarZSq = Math.sqrt(1 - planarZ*planarZ);
+            var planarX = cosAzimuth * sqrtInvPlanarZSq;
+            var planarY = sinAzimuth * sqrtInvPlanarZSq;
+            rv.set(planarX, planarY, planarZ);
+            // rv.set(Math.random(), Math.random(), Math.random());
 
-            addTriangle(i + 2, x, y, z, v8, v6, v5);
-            addTriangle(i + 3, x, y, z, v8, v7, v6);
+            addTriangle(i + 0, x, y, z, v1, v2, v4, rv);
+            addTriangle(i + 1, x, y, z, v2, v3, v4, rv);
 
-            addTriangle(i + 4, x, y, z, v5, v2, v1);
-            addTriangle(i + 5, x, y, z, v5, v6, v2);
+            addTriangle(i + 2, x, y, z, v8, v6, v5, rv);
+            addTriangle(i + 3, x, y, z, v8, v7, v6, rv);
 
-            addTriangle(i + 6, x, y, z, v6, v3, v2);
-            addTriangle(i + 7, x, y, z, v6, v7, v3);
+            addTriangle(i + 4, x, y, z, v5, v2, v1, rv);
+            addTriangle(i + 5, x, y, z, v5, v6, v2, rv);
 
-            addTriangle(i + 8, x, y, z, v7, v4, v3);
-            addTriangle(i + 9, x, y, z, v7, v8, v4);
+            addTriangle(i + 6, x, y, z, v6, v3, v2, rv);
+            addTriangle(i + 7, x, y, z, v6, v7, v3, rv);
 
-            addTriangle(i + 10, x, y, z, v1, v4, v5);
-            addTriangle(i + 11, x, y, z, v4, v8, v5);
+            addTriangle(i + 8, x, y, z, v7, v4, v3, rv);
+            addTriangle(i + 9, x, y, z, v7, v8, v4, rv);
+
+            addTriangle(i + 10, x, y, z, v1, v4, v5, rv);
+            addTriangle(i + 11, x, y, z, v4, v8, v5, rv);
         }
 
-        function addTriangle(k, x, y, z, vc, vb, va) {
+        function addTriangle(k, x, y, z, vc, vb, va, rv) {
             // Setup positions.
 
             pa.copy(va);
@@ -161,6 +177,18 @@ function App(container) {
             normals[j + 6] = nx;
             normals[j + 7] = ny;
             normals[j + 8] = nz;
+
+            colors[j + 0] = rv.x;
+            colors[j + 1] = rv.y;
+            colors[j + 2] = rv.z;
+
+            colors[j + 3] = rv.x;
+            colors[j + 4] = rv.y;
+            colors[j + 5] = rv.z;
+
+            colors[j + 6] = rv.x;
+            colors[j + 7] = rv.y;
+            colors[j + 8] = rv.z;
         }
 
         var result = new THREE.BufferGeometry();

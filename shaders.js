@@ -6,9 +6,52 @@ SHADERS.vertex = `
   varying lowp vec3 vDiffuse;
   //varying vec3 vNormal;
 
+  vec3 rotateVectorByQuaternion(vec3 v, vec4 q) {
+    vec3 dest = vec3( 0.0 );
+
+    float x = v.x, y  = v.y, z  = v.z;
+    float qx = q.x, qy = q.y, qz = q.z, qw = q.w;
+
+    // calculate quaternion * vector
+    float ix =  qw * x + qy * z - qz * y,
+    	    iy =  qw * y + qz * x - qx * z,
+    	    iz =  qw * z + qx * y - qy * x,
+    	    iw = -qx * x - qy * y - qz * z;
+
+    // calculate result * inverse quaternion
+    dest.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
+    dest.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
+    dest.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+
+    return dest;
+  }
+
+  vec4 axisAngleToQuaternion(vec3 axis, float angle) {
+      vec4 dest = vec4( 0.0 );
+
+			float halfAngle = angle / 2.0,
+				    s = sin( halfAngle );
+
+			dest.x = axis.x * s;
+			dest.y = axis.y * s;
+			dest.z = axis.z * s;
+			dest.w = cos(halfAngle);
+			return dest;
+  }
+
   void main() {
-    // Translate position.
-    vec3 position = vec3(position.x, position.y + sin(age) * 10.0, position.z);
+    // Rotate.
+    const float rotationSpeed = 4.0;
+    vec4 rotation = axisAngleToQuaternion(color, age * color.z * rotationSpeed);
+    vec3 position = rotateVectorByQuaternion(position, rotation);
+    vec3 normal = rotateVectorByQuaternion(normal, rotation);
+
+    // Translate.
+    const float pi = 3.1415926535897932384626433832795;    
+    position = vec3(
+      position.x + cos(age) * 10.0,
+      position.y - 40.0 + mod(age + color.y * 10.0, 10.0) * 8.0,
+      position.z + sin(age) * 10.0);
 
     // Transform from local to camera space.
   	vec4 mvPosition = viewMatrix * vec4(position, 1.0);
