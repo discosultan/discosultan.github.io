@@ -7,9 +7,9 @@ SHADERS.vertex = `
   //varying vec3 vNormal;
 
   vec3 rotateVectorByQuaternion(vec3 v, vec4 q) {
-    vec3 dest = vec3( 0.0 );
+    vec3 dest = vec3(0.0);
 
-    float x = v.x, y  = v.y, z  = v.z;
+    float x = v.x, y = v.y, z = v.z;
     float qx = q.x, qy = q.y, qz = q.z, qw = q.w;
 
     // calculate quaternion * vector
@@ -27,10 +27,10 @@ SHADERS.vertex = `
   }
 
   vec4 axisAngleToQuaternion(vec3 axis, float angle) {
-      vec4 dest = vec4( 0.0 );
+      vec4 dest = vec4(0.0);
 
 			float halfAngle = angle / 2.0,
-				    s = sin( halfAngle );
+				    s = sin(halfAngle);
 
 			dest.x = axis.x * s;
 			dest.y = axis.y * s;
@@ -47,11 +47,12 @@ SHADERS.vertex = `
     vec3 normal = rotateVectorByQuaternion(normal, rotation);
 
     // Translate.
-    const float pi = 3.1415926535897932384626433832795;    
+    const float pi = 3.1415926535897932384626433832795;
+    // float transitionSeconds = 200.0 * color.y;
     position = vec3(
-      position.x + cos(age) * 10.0,
-      position.y - 40.0 + mod(age + color.y * 10.0, 10.0) * 8.0,
-      position.z + sin(age) * 10.0);
+      position.x + cos(age + color.y * 5.0) * 50.0 * color.x,
+      position.y - 60.0 + mod(age + color.y * 10.0, 10.0) * 12.0,
+      position.z + sin(age + color.x * 5.0) * 50.0 * color.z);
 
     // Transform from local to camera space.
   	vec4 mvPosition = viewMatrix * vec4(position, 1.0);
@@ -68,8 +69,8 @@ SHADERS.vertex = `
     vDiffuse = light1Intensity * max(dot(normal, light1InvDir), 0.0) * light1Color;
 
     // Apply point light.
-    const vec3 light2Color = vec3(0.0, 1.0, 0.0);
-    const vec3 light2Position = vec3(-15.0, 0.0, 10.0);
+    const vec3 light2Color = vec3(0.349, 1.0, 1.0);
+    const vec3 light2Position = vec3(0.0, 0.0, 0.0);
     const float light2Intensity = 1.0;
     const float light2MaxDistance = 100.0;
 

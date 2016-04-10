@@ -97,6 +97,7 @@ function App(container) {
             var planarX = cosAzimuth * sqrtInvPlanarZSq;
             var planarY = sinAzimuth * sqrtInvPlanarZSq;
             rv.set(planarX, planarY, planarZ);
+            // rv.set(0.0, 0.0, -1.0);
             // rv.set(Math.random(), Math.random(), Math.random());
 
             addTriangle(i + 0, x, y, z, v1, v2, v4, rv);
