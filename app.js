@@ -52,11 +52,11 @@ function App(container) {
 
     function createGeometry() {
         // Create an unindexed buffer.
-        var numCubes = 5000;
+        var numCubes = 500;
         var numTrianglesPerCube = 12;
         var numTriangles = numTrianglesPerCube * numCubes;
 
-        var halfSize = 2; // half cube side length.
+        var halfSize = 1; // half cube side length.
 
         var v1 = new THREE.Vector3(-halfSize, -halfSize, -halfSize);
         var v2 = new THREE.Vector3(+halfSize, -halfSize, -halfSize);

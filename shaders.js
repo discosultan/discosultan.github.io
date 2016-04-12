@@ -40,26 +40,52 @@ SHADERS.vertex = `
   }
 
   void main() {
-    // Rotate.
-    const float rotationSpeed = 4.0;
-    vec4 rotation = axisAngleToQuaternion(color, age * color.z * rotationSpeed);
+    // SETUP.
+    const float PI = 3.1415926535897932384626433832795;
+    const float TWO_PI = 6.28318530718;
+    vec3 random = (color + 1.0) * 0.5;
+
+    // ROTATION.
+    const float rotationSpeed = 20.0;
+    // float rotationFactor = random.x+random.y+random.z;
+    float rotationFactor = color.x*color.y*color.z;
+    vec4 rotation = axisAngleToQuaternion(color, age * rotationFactor * rotationSpeed);
     vec3 position = rotateVectorByQuaternion(position, rotation);
     vec3 normal = rotateVectorByQuaternion(normal, rotation);
 
-    // Translate.
-    const float pi = 3.1415926535897932384626433832795;
-    // float transitionSeconds = 200.0 * color.y;
-    position = vec3(
-      position.x + cos(age + color.y * 5.0) * 50.0 * color.x,
-      position.y - 60.0 + mod(age + color.y * 10.0, 10.0) * 12.0,
-      position.z + sin(age + color.x * 5.0) * 50.0 * color.z);
+    // TRANSLATION.
+    // Y-translation.
+    const float yOffset = 60.0;
+    const float yDistance = 120.0;
+    float transitionSecondsY = 16.0;
+    float randomizedAgeY = age + random.x * transitionSecondsY;
+    float positionY = position.y - yOffset + mod(randomizedAgeY, transitionSecondsY) / transitionSecondsY * yDistance;
 
+    // X- & Z-translation.
+    const float xzDistance = 20.0;
+    float transitionSecondsXZ = 8.0;
+    // float cosOrSin = step(color.z, 0.0);
+    // float cosOrSinInv = 1.0 - cosOrSin;
+    float leftOrRight = step(color.z, 0.0) * 2.0 - 1.0;
+    float frontOrBack = step(color.x, 0.0);// * 2.0 - 1.0;
+    // float leftOrRight = 1.0;
+    // float randomizedAgeXZ = age + random.y * transitionSecondsXZ;
+    float positionX = position.x + cos(randomizedAgeY) * leftOrRight * xzDistance;
+    float positionZ = position.z + sin(randomizedAgeY) * leftOrRight * xzDistance;
+
+    position = vec3(
+        positionX,
+        positionY,
+        positionZ);
+
+    // COORDINATE SPACE TRANSFORMATION.
     // Transform from local to camera space.
   	vec4 mvPosition = viewMatrix * vec4(position, 1.0);
 
     // Transform from camera to clip space.
   	gl_Position = projectionMatrix * mvPosition;
 
+    // LIGHTING.
     // Apply directional light.
     // We use Gouraud shading for per vertex lighting.
     const vec3 light1Color = vec3(1.0, 0.0, 0.0);
