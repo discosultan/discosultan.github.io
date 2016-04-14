@@ -1,5 +1,8 @@
 // Assumes global access to three.js and window object.
 function App(container) {
+    // Setup helper variables.
+    var zeroVector = new THREE.Vector3(0,0,0);
+
     // Setup renderer.
     var renderer = new THREE.WebGLRenderer();
     renderer.setClearColor(0xDDDDDD);
@@ -17,12 +20,12 @@ function App(container) {
     // camera.position.set(-20, 25, 20);
 
     var cameraAxisOfRotation = new THREE.Vector3(0.35, 1.0, 0.35);
-    console.log(cameraAxisOfRotation.normalize());
+    cameraAxisOfRotation.normalize();
     camera.up.set(cameraAxisOfRotation.x, cameraAxisOfRotation.y, cameraAxisOfRotation.z);
     // camera.up.set(1,0,0);
-    camera.position.set(0, 0, 100);
-    camera.rotationSpeed = Math.PI;
-    camera.lookAt(new THREE.Vector3(0, 0, 0));
+    camera.position.set(100, 0, 0);
+    camera.rotationSpeed = Math.PI * 0.075;
+    // camera.lookAt(zeroVector);
 
     this.resize = function() {
         renderer.setSize(container.offsetWidth, container.offsetHeight);
@@ -59,7 +62,8 @@ function App(container) {
         camera.position.set(
           camera.position.x*c - camera.position.z*s,
           0,
-          camera.position.x*s - camera.position.z*c);
+          camera.position.x*s + camera.position.z*c);
+        camera.lookAt(zeroVector);
 
         renderer.render(scene, camera);
         requestAnimationFrame(render);
