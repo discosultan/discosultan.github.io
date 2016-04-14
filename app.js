@@ -15,7 +15,7 @@ function App(container) {
         container.offsetWidth / container.offsetHeight,
         0.1, 1000);
     // camera.position.set(-20, 25, 20);
-    camera.position.set(0, 0, 100);
+    camera.position.set(0, 20, 100);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     this.resize = function() {
@@ -52,7 +52,7 @@ function App(container) {
 
     function createGeometry() {
         // Create an unindexed buffer.
-        var numCubes = 500;
+        var numCubes = 1000;
         var numTrianglesPerCube = 12;
         var numTriangles = numTrianglesPerCube * numCubes;
 

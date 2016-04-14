@@ -39,6 +39,10 @@ SHADERS.vertex = `
 			return dest;
   }
 
+  float stepMinusPlusOne(float edge, float x) {
+    return step(edge, x) * 2.0 - 1.0;
+  }
+
   void main() {
     // SETUP.
     const float PI = 3.1415926535897932384626433832795;
@@ -57,21 +61,18 @@ SHADERS.vertex = `
     // Y-translation.
     const float yOffset = 60.0;
     const float yDistance = 120.0;
-    float transitionSecondsY = 16.0;
+    float transitionSecondsY = 20.0;
     float randomizedAgeY = age + random.x * transitionSecondsY;
-    float positionY = position.y - yOffset + mod(randomizedAgeY, transitionSecondsY) / transitionSecondsY * yDistance;
+    float moduloRandomizedAgeY = mod(randomizedAgeY, transitionSecondsY);
+    float positionY = position.y - yOffset + moduloRandomizedAgeY / transitionSecondsY * yDistance;
 
     // X- & Z-translation.
-    const float xzDistance = 20.0;
-    float transitionSecondsXZ = 8.0;
-    // float cosOrSin = step(color.z, 0.0);
-    // float cosOrSinInv = 1.0 - cosOrSin;
-    float leftOrRight = step(color.z, 0.0) * 2.0 - 1.0;
-    float frontOrBack = step(color.x, 0.0);// * 2.0 - 1.0;
-    // float leftOrRight = 1.0;
-    // float randomizedAgeXZ = age + random.y * transitionSecondsXZ;
-    float positionX = position.x + cos(randomizedAgeY) * leftOrRight * xzDistance;
-    float positionZ = position.z + sin(randomizedAgeY) * leftOrRight * xzDistance;
+    const float xzDistance = 30.0;
+    float leftOrRight = stepMinusPlusOne(0.0, color.z);
+    float frontOrBack = stepMinusPlusOne(0.0, color.y);
+    moduloRandomizedAgeY *= 0.5;
+    float positionX = position.x + cos(moduloRandomizedAgeY) * leftOrRight * xzDistance;
+    float positionZ = position.z + sin(frontOrBack * moduloRandomizedAgeY) * leftOrRight * xzDistance;
 
     position = vec3(
         positionX,
