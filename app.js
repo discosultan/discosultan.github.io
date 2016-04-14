@@ -21,6 +21,7 @@ function App(container) {
     camera.up.set(cameraAxisOfRotation.x, cameraAxisOfRotation.y, cameraAxisOfRotation.z);
     // camera.up.set(1,0,0);
     camera.position.set(0, 0, 100);
+    camera.rotationSpeed = Math.PI;
     camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     this.resize = function() {
@@ -50,6 +51,15 @@ function App(container) {
         var deltaSeconds = (timestamp - previousTimestamp) * 0.001;
         previousTimestamp = timestamp;
         uniforms.age.value += deltaSeconds;
+
+        // Rotate camera.
+        var angle = camera.rotationSpeed * deltaSeconds;
+        var s = Math.sin(angle);
+        var c = Math.cos(angle);
+        camera.position.set(
+          camera.position.x*c - camera.position.z*s,
+          0,
+          camera.position.x*s - camera.position.z*c);
 
         renderer.render(scene, camera);
         requestAnimationFrame(render);
