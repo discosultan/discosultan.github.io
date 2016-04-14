@@ -61,18 +61,19 @@ SHADERS.vertex = `
     // Y-translation.
     const float yOffset = 60.0;
     const float yDistance = 120.0;
-    float transitionSecondsY = 20.0;
+    const float transitionSecondsY = 20.0;
     float randomizedAgeY = age + random.x * transitionSecondsY;
     float moduloRandomizedAgeY = mod(randomizedAgeY, transitionSecondsY);
     float positionY = position.y - yOffset + moduloRandomizedAgeY / transitionSecondsY * yDistance;
 
     // X- & Z-translation.
     const float xzDistance = 30.0;
+    const float xzAgeFactor = 0.5;
     float leftOrRight = stepMinusPlusOne(0.0, color.z);
     float frontOrBack = stepMinusPlusOne(0.0, color.y);
-    moduloRandomizedAgeY *= 0.5;
+    moduloRandomizedAgeY *= xzAgeFactor;
     float positionX = position.x + cos(moduloRandomizedAgeY) * leftOrRight * xzDistance;
-    float positionZ = position.z + sin(frontOrBack * moduloRandomizedAgeY) * leftOrRight * xzDistance;
+    float positionZ = position.z + sin(frontOrBack * moduloRandomizedAgeY) * xzDistance;
 
     position = vec3(
         positionX,

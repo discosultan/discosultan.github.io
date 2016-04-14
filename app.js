@@ -15,7 +15,12 @@ function App(container) {
         container.offsetWidth / container.offsetHeight,
         0.1, 1000);
     // camera.position.set(-20, 25, 20);
-    camera.position.set(0, 20, 100);
+
+    var cameraAxisOfRotation = new THREE.Vector3(0.35, 1.0, 0.35);
+    console.log(cameraAxisOfRotation.normalize());
+    camera.up.set(cameraAxisOfRotation.x, cameraAxisOfRotation.y, cameraAxisOfRotation.z);
+    // camera.up.set(1,0,0);
+    camera.position.set(0, 0, 100);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     this.resize = function() {
@@ -27,7 +32,7 @@ function App(container) {
     // Create geometry.
     var geometry = createGeometry();
     // Setup material.
-    var uniforms = { age: { type: 'f', value: 0.0 } };
+    var uniforms = { age: { type: 'f', value: Math.PI } };
     var material = new THREE.ShaderMaterial({
         uniforms: uniforms,
         vertexShader: SHADERS.vertex,
@@ -52,7 +57,7 @@ function App(container) {
 
     function createGeometry() {
         // Create an unindexed buffer.
-        var numCubes = 1000;
+        var numCubes = 5000;
         var numTrianglesPerCube = 12;
         var numTriangles = numTrianglesPerCube * numCubes;
 
