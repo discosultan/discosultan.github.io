@@ -1,0 +1,12 @@
+random components:
+- rotation axis (vec 3 dir normal)
+- rotation speed (float 0..1)
+- age (float 0..1)
+- age speed (float 0..1)
+- left or right (float 0..1) -> 0 or 1
+- front or back (float 0..1) -> 0 or 1
+- x offset (float -1..1)
+- y offset (float -1..1)
+
+
+http://stackoverflow.com/a/3956538/1466456

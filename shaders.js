@@ -3,9 +3,12 @@ SHADERS = {};
 SHADERS.vertex = `
   uniform float age;
 
+  attribute vec3 random;
+
   varying lowp vec3 vDiffuse;
   //varying vec3 vNormal;
 
+  // ref: http://alteredqualia.com/three/examples/webgl_cubes.html
   vec3 rotateVectorByQuaternion(vec3 v, vec4 q) {
     vec3 dest = vec3(0.0);
 
@@ -26,11 +29,12 @@ SHADERS.vertex = `
     return dest;
   }
 
+  // ref: http://alteredqualia.com/three/examples/webgl_cubes.html
   vec4 axisAngleToQuaternion(vec3 axis, float angle) {
       vec4 dest = vec4(0.0);
 
-			float halfAngle = angle / 2.0,
-				    s = sin(halfAngle);
+			float halfAngle = angle / 2.0;
+	    float s = sin(halfAngle);
 
 			dest.x = axis.x * s;
 			dest.y = axis.y * s;
@@ -47,13 +51,10 @@ SHADERS.vertex = `
     // SETUP.
     const float PI = 3.1415926535897932384626433832795;
     const float TWO_PI = 6.28318530718;
-    vec3 random = (color + 1.0) * 0.5;
 
     // ROTATION.
-    const float rotationSpeed = 20.0;
-    // float rotationFactor = random.x+random.y+random.z;
-    float rotationFactor = color.x*color.y*color.z;
-    vec4 rotation = axisAngleToQuaternion(color, age * rotationFactor * rotationSpeed);
+    const float rotationSpeed = 3.0;
+    vec4 rotation = axisAngleToQuaternion(color, age * random.x * rotationSpeed);
     vec3 position = rotateVectorByQuaternion(position, rotation);
     vec3 normal = rotateVectorByQuaternion(normal, rotation);
 
@@ -61,24 +62,26 @@ SHADERS.vertex = `
     // Y-translation.
     const float yOffset = 60.0;
     const float yDistance = 120.0;
-    const float transitionSecondsY = 20.0;
-    float randomizedAgeY = age + random.x * transitionSecondsY;
+    float transitionSecondsY = 30.0;
+    float randomizedAgeY = age * (random.y + random.z) * 0.33 + random.x * transitionSecondsY;
     float moduloRandomizedAgeY = mod(randomizedAgeY, transitionSecondsY);
     float positionY = position.y - yOffset + moduloRandomizedAgeY / transitionSecondsY * yDistance;
 
     // X- & Z-translation.
     const float xzDistance = 30.0;
-    const float xzAgeFactor = 0.5;
-    float leftOrRight = stepMinusPlusOne(0.0, color.z);
-    float frontOrBack = stepMinusPlusOne(0.0, color.y);
+    const float xzAgeFactor = 0.2;
+    float leftOrRight = stepMinusPlusOne(0.5, random.y);
+    float frontOrBack = stepMinusPlusOne(0.5, random.z);
     moduloRandomizedAgeY *= xzAgeFactor;
     float positionX = position.x + cos(moduloRandomizedAgeY) * leftOrRight * xzDistance;
-    float positionZ = position.z + sin(frontOrBack * moduloRandomizedAgeY) * xzDistance;
+    float positionZ = position.z + sin(moduloRandomizedAgeY) * frontOrBack * xzDistance;
+
+    float saurusPower = 5.0;
 
     position = vec3(
-        positionX,
+        positionX + color.y * saurusPower,
         positionY,
-        positionZ);
+        positionZ + color.z * saurusPower);
 
     // COORDINATE SPACE TRANSFORMATION.
     // Transform from local to camera space.

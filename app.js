@@ -24,7 +24,7 @@ function App(container) {
     camera.up.set(cameraAxisOfRotation.x, cameraAxisOfRotation.y, cameraAxisOfRotation.z);
     // camera.up.set(1,0,0);
     camera.position.set(100, 0, 0);
-    camera.rotationSpeed = Math.PI * 0.075;
+    camera.rotationSpeed = Math.PI * 0.025;
     // camera.lookAt(zeroVector);
 
     this.resize = function() {
@@ -71,11 +71,11 @@ function App(container) {
 
     function createGeometry() {
         // Create an unindexed buffer.
-        var numCubes = 5000;
+        var numCubes = 6000;
         var numTrianglesPerCube = 12;
         var numTriangles = numTrianglesPerCube * numCubes;
 
-        var halfSize = 1; // half cube side length.
+        var halfSize = 0.5; // half cube side length.
 
         var v1 = new THREE.Vector3(-halfSize, -halfSize, -halfSize);
         var v2 = new THREE.Vector3(+halfSize, -halfSize, -halfSize);
@@ -90,6 +90,7 @@ function App(container) {
         var positions = new Float32Array(numTriangles * 3 * 3); // 3 components per vertex and 3 vertices per triangle.
         var normals = new Float32Array(numTriangles * 3 * 3);
         var colors = new Float32Array(numTriangles * 3 * 3);
+        var randoms = new Float32Array(numTriangles * 3 * 3);
 
         var cb = new THREE.Vector3();
         var ab = new THREE.Vector3();
@@ -99,13 +100,9 @@ function App(container) {
         var pc = new THREE.Vector3();
 
         var rv = new THREE.Vector3();
+        var rv2 = new THREE.Vector3();
 
         for (var i = 0; i < numTriangles; i += numTrianglesPerCube) {
-            // Randomize position for each cube.
-            var x = 0;
-            var y = 0;
-            var z = 0;
-
             // Create random unit vector (uniform distribution).
             // Ref: http://www.gamedev.net/topic/499972-generate-a-random-unit-vector/
             var azimuth = Math.random() * 2 * Math.PI;
@@ -119,26 +116,28 @@ function App(container) {
             // rv.set(0.0, 0.0, -1.0);
             // rv.set(Math.random(), Math.random(), Math.random());
 
-            addTriangle(i + 0, x, y, z, v1, v2, v4, rv);
-            addTriangle(i + 1, x, y, z, v2, v3, v4, rv);
+            rv2.set(Math.random(), Math.random(), Math.random());
 
-            addTriangle(i + 2, x, y, z, v8, v6, v5, rv);
-            addTriangle(i + 3, x, y, z, v8, v7, v6, rv);
+            addTriangle(i + 0, v1, v2, v4, rv, rv2);
+            addTriangle(i + 1, v2, v3, v4, rv, rv2);
 
-            addTriangle(i + 4, x, y, z, v5, v2, v1, rv);
-            addTriangle(i + 5, x, y, z, v5, v6, v2, rv);
+            addTriangle(i + 2, v8, v6, v5, rv, rv2);
+            addTriangle(i + 3, v8, v7, v6, rv, rv2);
 
-            addTriangle(i + 6, x, y, z, v6, v3, v2, rv);
-            addTriangle(i + 7, x, y, z, v6, v7, v3, rv);
+            addTriangle(i + 4, v5, v2, v1, rv, rv2);
+            addTriangle(i + 5, v5, v6, v2, rv, rv2);
 
-            addTriangle(i + 8, x, y, z, v7, v4, v3, rv);
-            addTriangle(i + 9, x, y, z, v7, v8, v4, rv);
+            addTriangle(i + 6, v6, v3, v2, rv, rv2);
+            addTriangle(i + 7, v6, v7, v3, rv, rv2);
 
-            addTriangle(i + 10, x, y, z, v1, v4, v5, rv);
-            addTriangle(i + 11, x, y, z, v4, v8, v5, rv);
+            addTriangle(i + 8, v7, v4, v3, rv, rv2);
+            addTriangle(i + 9, v7, v8, v4, rv, rv2);
+
+            addTriangle(i + 10, v1, v4, v5, rv, rv2);
+            addTriangle(i + 11, v4, v8, v5, rv, rv2);
         }
 
-        function addTriangle(k, x, y, z, vc, vb, va, rv) {
+        function addTriangle(k, vc, vb, va, rv, rv2) {
             // Setup positions.
 
             pa.copy(va);
@@ -209,12 +208,25 @@ function App(container) {
             colors[j + 6] = rv.x;
             colors[j + 7] = rv.y;
             colors[j + 8] = rv.z;
+
+            randoms[j + 0] = rv2.x;
+            randoms[j + 1] = rv2.y;
+            randoms[j + 2] = rv2.z;
+
+            randoms[j + 3] = rv2.x;
+            randoms[j + 4] = rv2.y;
+            randoms[j + 5] = rv2.z;
+
+            randoms[j + 6] = rv2.x;
+            randoms[j + 7] = rv2.y;
+            randoms[j + 8] = rv2.z;
         }
 
         var result = new THREE.BufferGeometry();
         result.addAttribute('position', new THREE.BufferAttribute(positions, 3));
         result.addAttribute('normal', new THREE.BufferAttribute(normals, 3));
         result.addAttribute('color', new THREE.BufferAttribute(colors, 3));
+        result.addAttribute('random', new THREE.BufferAttribute(randoms, 3));
         result.computeBoundingSphere(); // used for frustum culling by three.js.
         return result;
     }
