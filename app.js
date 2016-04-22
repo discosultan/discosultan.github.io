@@ -5,7 +5,8 @@ function App(container) {
 
     // Setup renderer.
     var renderer = new THREE.WebGLRenderer();
-    renderer.setClearColor(0xDDDDDD);
+    // renderer.setClearColor(0xDDDDDD);
+    renderer.setClearColor(0x070C15);
     renderer.setSize(container.offsetWidth, container.offsetHeight);
     container.appendChild(renderer.domElement);
 
