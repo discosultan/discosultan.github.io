@@ -3,7 +3,8 @@ SHADERS = {};
 SHADERS.vertex = `
   uniform float age;
 
-  attribute vec3 random;
+  attribute vec3 random1;
+  attribute vec4 random2;
 
   varying lowp vec3 vDiffuse;
   //varying vec3 vNormal;
@@ -43,10 +44,6 @@ SHADERS.vertex = `
 			return dest;
   }
 
-  float stepMinusPlusOne(float edge, float x) {
-    return step(edge, x) * 2.0 - 1.0;
-  }
-
   void main() {
     // SETUP.
     const float PI = 3.1415926535897932384626433832795;
@@ -54,7 +51,7 @@ SHADERS.vertex = `
 
     // ROTATION.
     const float rotationSpeed = 3.0;
-    vec4 rotation = axisAngleToQuaternion(color, age * random.x * rotationSpeed);
+    vec4 rotation = axisAngleToQuaternion(color, age * random1.x * rotationSpeed);
     vec3 position = rotateVectorByQuaternion(position, rotation);
     vec3 normal = rotateVectorByQuaternion(normal, rotation);
 
@@ -63,25 +60,25 @@ SHADERS.vertex = `
     const float yOffset = 60.0;
     const float yDistance = 120.0;
     float transitionSecondsY = 30.0;
-    float randomizedAgeY = age * (random.y + random.z) * 0.33 + random.x * transitionSecondsY;
+    float randomizedAgeY = age * (random1.y) + random1.z * transitionSecondsY;
     float moduloRandomizedAgeY = mod(randomizedAgeY, transitionSecondsY);
     float positionY = position.y - yOffset + moduloRandomizedAgeY / transitionSecondsY * yDistance;
 
     // X- & Z-translation.
     const float xzDistance = 30.0;
     const float xzAgeFactor = 0.2;
-    float leftOrRight = stepMinusPlusOne(0.5, random.y);
-    float frontOrBack = stepMinusPlusOne(0.5, random.z);
+    float leftOrRight = random2.x;
+    float frontOrBack = random2.y;
     moduloRandomizedAgeY *= xzAgeFactor;
     float positionX = position.x + cos(moduloRandomizedAgeY) * leftOrRight * xzDistance;
     float positionZ = position.z + sin(moduloRandomizedAgeY) * frontOrBack * xzDistance;
 
-    float saurusPower = 5.0;
+    float offsetAmount = 4.0;
 
     position = vec3(
-        positionX + color.y * saurusPower,
+        positionX + random2.z * offsetAmount,
         positionY,
-        positionZ + color.z * saurusPower);
+        positionZ + random2.w * offsetAmount);
 
     // COORDINATE SPACE TRANSFORMATION.
     // Transform from local to camera space.

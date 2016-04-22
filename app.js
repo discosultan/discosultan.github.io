@@ -1,7 +1,7 @@
 // Assumes global access to three.js and window object.
 function App(container) {
     // Setup helper variables.
-    var zeroVector = new THREE.Vector3(0,0,0);
+    var zeroVector = new THREE.Vector3(0, 0, 0);
 
     // Setup renderer.
     var renderer = new THREE.WebGLRenderer();
@@ -36,7 +36,12 @@ function App(container) {
     // Create geometry.
     var geometry = createGeometry();
     // Setup material.
-    var uniforms = { age: { type: 'f', value: Math.PI } };
+    var uniforms = {
+        age: {
+            type: 'f',
+            value: Math.PI
+        }
+    };
     var material = new THREE.ShaderMaterial({
         uniforms: uniforms,
         vertexShader: SHADERS.vertex,
@@ -60,9 +65,9 @@ function App(container) {
         var s = Math.sin(angle);
         var c = Math.cos(angle);
         camera.position.set(
-          camera.position.x*c - camera.position.z*s,
-          0,
-          camera.position.x*s + camera.position.z*c);
+            camera.position.x * c - camera.position.z * s,
+            0,
+            camera.position.x * s + camera.position.z * c);
         camera.lookAt(zeroVector);
 
         renderer.render(scene, camera);
@@ -90,7 +95,8 @@ function App(container) {
         var positions = new Float32Array(numTriangles * 3 * 3); // 3 components per vertex and 3 vertices per triangle.
         var normals = new Float32Array(numTriangles * 3 * 3);
         var colors = new Float32Array(numTriangles * 3 * 3);
-        var randoms = new Float32Array(numTriangles * 3 * 3);
+        var randoms1 = new Float32Array(numTriangles * 3 * 3);
+        var randoms2 = new Float32Array(numTriangles * 4 * 3); // 4 components per vertex and 3 vertices per triangle.
 
         var cb = new THREE.Vector3();
         var ab = new THREE.Vector3();
@@ -99,8 +105,9 @@ function App(container) {
         var pb = new THREE.Vector3();
         var pc = new THREE.Vector3();
 
-        var rv = new THREE.Vector3();
+        var rv1 = new THREE.Vector3();
         var rv2 = new THREE.Vector3();
+        var rv3 = new THREE.Vector4();
 
         for (var i = 0; i < numTriangles; i += numTrianglesPerCube) {
             // Create random unit vector (uniform distribution).
@@ -108,36 +115,51 @@ function App(container) {
             var azimuth = Math.random() * 2 * Math.PI;
             var cosAzimuth = Math.cos(azimuth);
             var sinAzimuth = Math.sin(azimuth);
-            var planarZ = 2 * Math.random() - 1; // in range [-1...1]
-            var sqrtInvPlanarZSq = Math.sqrt(1 - planarZ*planarZ);
+            var planarZ = Math.random() * 2 - 1; // in range [-1...1]
+            var sqrtInvPlanarZSq = Math.sqrt(1 - planarZ * planarZ);
             var planarX = cosAzimuth * sqrtInvPlanarZSq;
             var planarY = sinAzimuth * sqrtInvPlanarZSq;
-            rv.set(planarX, planarY, planarZ);
+            rv1.set(planarX, planarY, planarZ);
             // rv.set(0.0, 0.0, -1.0);
             // rv.set(Math.random(), Math.random(), Math.random());
 
             rv2.set(Math.random(), Math.random(), Math.random());
+            rv3.set(
+                Math.random() > 0.5 ? 1 : -1,
+                Math.random() > 0.5 ? 1 : -1,
+                normallyDistributedRandom(-1, 1),
+                normallyDistributedRandom(-1, 1)
+            );
 
-            addTriangle(i + 0, v1, v2, v4, rv, rv2);
-            addTriangle(i + 1, v2, v3, v4, rv, rv2);
+            addTriangle(i + 0, v1, v2, v4, rv1, rv2, rv3);
+            addTriangle(i + 1, v2, v3, v4, rv1, rv2, rv3);
 
-            addTriangle(i + 2, v8, v6, v5, rv, rv2);
-            addTriangle(i + 3, v8, v7, v6, rv, rv2);
+            addTriangle(i + 2, v8, v6, v5, rv1, rv2, rv3);
+            addTriangle(i + 3, v8, v7, v6, rv1, rv2, rv3);
 
-            addTriangle(i + 4, v5, v2, v1, rv, rv2);
-            addTriangle(i + 5, v5, v6, v2, rv, rv2);
+            addTriangle(i + 4, v5, v2, v1, rv1, rv2, rv3);
+            addTriangle(i + 5, v5, v6, v2, rv1, rv2, rv3);
 
-            addTriangle(i + 6, v6, v3, v2, rv, rv2);
-            addTriangle(i + 7, v6, v7, v3, rv, rv2);
+            addTriangle(i + 6, v6, v3, v2, rv1, rv2, rv3);
+            addTriangle(i + 7, v6, v7, v3, rv1, rv2, rv3);
 
-            addTriangle(i + 8, v7, v4, v3, rv, rv2);
-            addTriangle(i + 9, v7, v8, v4, rv, rv2);
+            addTriangle(i + 8, v7, v4, v3, rv1, rv2, rv3);
+            addTriangle(i + 9, v7, v8, v4, rv1, rv2, rv3);
 
-            addTriangle(i + 10, v1, v4, v5, rv, rv2);
-            addTriangle(i + 11, v4, v8, v5, rv, rv2);
+            addTriangle(i + 10, v1, v4, v5, rv1, rv2, rv3);
+            addTriangle(i + 11, v4, v8, v5, rv1, rv2, rv3);
         }
 
-        function addTriangle(k, vc, vb, va, rv, rv2) {
+        function normallyDistributedRandom(from, to) {
+            var delta = to - from;
+            var random = 0;
+            for (var i = 0; i < 4; i++) {
+                random += Math.random() * delta - delta * 0.5;
+            }
+            return random;
+        }
+
+        function addTriangle(k, vc, vb, va, rv1, rv2, rv3) {
             // Setup positions.
 
             pa.copy(va);
@@ -157,6 +179,7 @@ function App(container) {
             var cz = pc.z;
 
             var j = k * 9;
+            var l = k * 12;
 
             positions[j + 0] = ax;
             positions[j + 1] = ay;
@@ -197,36 +220,52 @@ function App(container) {
             normals[j + 7] = ny;
             normals[j + 8] = nz;
 
-            colors[j + 0] = rv.x;
-            colors[j + 1] = rv.y;
-            colors[j + 2] = rv.z;
+            colors[j + 0] = rv1.x;
+            colors[j + 1] = rv1.y;
+            colors[j + 2] = rv1.z;
 
-            colors[j + 3] = rv.x;
-            colors[j + 4] = rv.y;
-            colors[j + 5] = rv.z;
+            colors[j + 3] = rv1.x;
+            colors[j + 4] = rv1.y;
+            colors[j + 5] = rv1.z;
 
-            colors[j + 6] = rv.x;
-            colors[j + 7] = rv.y;
-            colors[j + 8] = rv.z;
+            colors[j + 6] = rv1.x;
+            colors[j + 7] = rv1.y;
+            colors[j + 8] = rv1.z;
 
-            randoms[j + 0] = rv2.x;
-            randoms[j + 1] = rv2.y;
-            randoms[j + 2] = rv2.z;
+            randoms1[j + 0] = rv2.x;
+            randoms1[j + 1] = rv2.y;
+            randoms1[j + 2] = rv2.z;
 
-            randoms[j + 3] = rv2.x;
-            randoms[j + 4] = rv2.y;
-            randoms[j + 5] = rv2.z;
+            randoms1[j + 3] = rv2.x;
+            randoms1[j + 4] = rv2.y;
+            randoms1[j + 5] = rv2.z;
 
-            randoms[j + 6] = rv2.x;
-            randoms[j + 7] = rv2.y;
-            randoms[j + 8] = rv2.z;
+            randoms1[j + 6] = rv2.x;
+            randoms1[j + 7] = rv2.y;
+            randoms1[j + 8] = rv2.z;
+
+            randoms2[l + 0] = rv3.x;
+            randoms2[l + 1] = rv3.y;
+            randoms2[l + 2] = rv3.z;
+            randoms2[l + 3] = rv3.w;
+
+            randoms2[l + 4] = rv3.x;
+            randoms2[l + 5] = rv3.y;
+            randoms2[l + 6] = rv3.z;
+            randoms2[l + 7] = rv3.w;
+
+            randoms2[l + 8] = rv3.x;
+            randoms2[l + 9] = rv3.y;
+            randoms2[l + 10] = rv3.z;
+            randoms2[l + 11] = rv3.w;
         }
 
         var result = new THREE.BufferGeometry();
         result.addAttribute('position', new THREE.BufferAttribute(positions, 3));
         result.addAttribute('normal', new THREE.BufferAttribute(normals, 3));
         result.addAttribute('color', new THREE.BufferAttribute(colors, 3));
-        result.addAttribute('random', new THREE.BufferAttribute(randoms, 3));
+        result.addAttribute('random1', new THREE.BufferAttribute(randoms1, 3));
+        result.addAttribute('random2', new THREE.BufferAttribute(randoms2, 4));
         result.computeBoundingSphere(); // used for frustum culling by three.js.
         return result;
     }
