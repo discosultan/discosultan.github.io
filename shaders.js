@@ -1,54 +1,57 @@
-SHADERS = {};
+if (!THREE.VertexShaders) THREE.VertexShaders = {};
+if (!THREE.FragmentShaders) THREE.FragmentShaders = {};
 
-SHADERS.vertex = `
-  uniform float age;
+(function (THREE) {
+  var mixinCommon = `
+    // ref: http://alteredqualia.com/three/examples/webgl_cubes.html
+    vec3 rotateVectorByQuaternion(vec3 v, vec4 q) {
+      vec3 dest = vec3(0.0);
 
-  attribute vec3 random1;
-  attribute vec4 random2;
+      float x = v.x, y = v.y, z = v.z;
+      float qx = q.x, qy = q.y, qz = q.z, qw = q.w;
 
-  varying lowp vec3 vDiffuse;
-  //varying vec3 vNormal;
+      // calculate quaternion * vector
+      float ix =  qw * x + qy * z - qz * y,
+            iy =  qw * y + qz * x - qx * z,
+            iz =  qw * z + qx * y - qy * x,
+            iw = -qx * x - qy * y - qz * z;
 
-  // ref: http://alteredqualia.com/three/examples/webgl_cubes.html
-  vec3 rotateVectorByQuaternion(vec3 v, vec4 q) {
-    vec3 dest = vec3(0.0);
+      // calculate result * inverse quaternion
+      dest.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
+      dest.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
+      dest.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
 
-    float x = v.x, y = v.y, z = v.z;
-    float qx = q.x, qy = q.y, qz = q.z, qw = q.w;
+      return dest;
+    }
 
-    // calculate quaternion * vector
-    float ix =  qw * x + qy * z - qz * y,
-    	    iy =  qw * y + qz * x - qx * z,
-    	    iz =  qw * z + qx * y - qy * x,
-    	    iw = -qx * x - qy * y - qz * z;
+    // ref: http://alteredqualia.com/three/examples/webgl_cubes.html
+    vec4 axisAngleToQuaternion(vec3 axis, float angle) {
+        vec4 dest = vec4(0.0);
 
-    // calculate result * inverse quaternion
-    dest.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
-    dest.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
-    dest.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+        float halfAngle = angle / 2.0;
+        float s = sin(halfAngle);
 
-    return dest;
-  }
+        dest.x = axis.x * s;
+        dest.y = axis.y * s;
+        dest.z = axis.z * s;
+        dest.w = cos(halfAngle);
+        return dest;
+    }
+  `;
 
-  // ref: http://alteredqualia.com/three/examples/webgl_cubes.html
-  vec4 axisAngleToQuaternion(vec3 axis, float angle) {
-      vec4 dest = vec4(0.0);
-
-			float halfAngle = angle / 2.0;
-	    float s = sin(halfAngle);
-
-			dest.x = axis.x * s;
-			dest.y = axis.y * s;
-			dest.z = axis.z * s;
-			dest.w = cos(halfAngle);
-			return dest;
-  }
-
-  void main() {
-    // SETUP.
-    const float PI = 3.1415926535897932384626433832795;
-    const float TWO_PI = 6.28318530718;
-
+  /*
+  random components:
+  - rotation axis (vec 3 dir normal)      - color
+  - rotation speed (float 0..1)           - random1.x
+  - age (float 0..1)                      - random1.y
+  - age speed (float 0..1)                - random1.z
+  - left or right (float 0..1) -> -1 or 1 - random2.x
+  - front or back (float 0..1) -> -1 or 1 - random2.y
+  - x offset (float -1..1)                - random2.z
+  - y offset (float -1..1)                - random2.w
+  http://stackoverflow.com/a/3956538/1466456
+  */
+  var mixinPosition = `
     // ROTATION.
     const float rotationSpeed = 3.0;
     vec4 rotation = axisAngleToQuaternion(color, age * random1.x * rotationSpeed);
@@ -82,11 +85,13 @@ SHADERS.vertex = `
 
     // COORDINATE SPACE TRANSFORMATION.
     // Transform from local to camera space.
-  	vec4 mvPosition = viewMatrix * vec4(position, 1.0);
+    vec4 mvPosition = viewMatrix * vec4(position, 1.0);
 
     // Transform from camera to clip space.
-  	gl_Position = projectionMatrix * mvPosition;
+    gl_Position = projectionMatrix * mvPosition;
+  `;
 
+  var mixinLighting = `
     // LIGHTING.
     // Apply directional light.
     // We use Gouraud shading for per vertex lighting.
@@ -107,17 +112,45 @@ SHADERS.vertex = `
     vec3 light2InvDir = light2InvVector / light2Distance;
     float light2Factor = 1.0 - min(light2Distance / light2MaxDistance, 1.0);
     vDiffuse += light2Intensity * max(dot(normal, light2InvDir), 0.0) * light2Factor * light2Color;
-  }
-`;
+  `;
 
-SHADERS.fragment = `
-  // varying vec3 vNormal;
-  varying lowp vec3 vDiffuse;
+  THREE.VertexShaders.spiralDiffuse = `
+    uniform float age;
 
-  void main() {
-    // Interpolation denormalizes the normal - renormalize it.
-    // vec3 normal = normalize(vNormal);
+    attribute vec3 random1;
+    attribute vec4 random2;
 
-    gl_FragColor = vec4(vDiffuse, 1.0);
-  }
-`;
+    varying lowp vec3 vDiffuse;
+
+    ${mixinCommon}
+    void main() {
+      ${mixinPosition}
+      ${mixinLighting}
+    }
+  `;
+
+  THREE.VertexShaders.spiralDepth = `
+    uniform float age;
+
+    attribute vec3 random1;
+    attribute vec4 random2;
+
+    ${mixinCommon}
+    void main() {
+      ${mixinPosition}
+    }
+  `;
+
+  THREE.FragmentShaders.vertexDiffuse = `
+    varying lowp vec3 vDiffuse;
+    void main() {
+      gl_FragColor = vec4(vDiffuse, 1.0);
+    }
+  `;
+
+  THREE.FragmentShaders.depth = `
+    void main() {
+      gl_FragColor = vec4(vec3(gl_FragCoord.z), 1.0);
+    }
+  `;
+})(THREE);

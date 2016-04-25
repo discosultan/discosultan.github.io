@@ -45,8 +45,8 @@ function App(container) {
     };
     var material = new THREE.ShaderMaterial({
         uniforms: uniforms,
-        vertexShader: SHADERS.vertex,
-        fragmentShader: SHADERS.fragment,
+        vertexShader: THREE.VertexShaders.spiralDiffuse,
+        fragmentShader: THREE.FragmentShaders.vertexDiffuse,
         vertexColors: THREE.VertexColors
     });
     // Create mesh and add to scene.
@@ -121,8 +121,6 @@ function App(container) {
             var planarX = cosAzimuth * sqrtInvPlanarZSq;
             var planarY = sinAzimuth * sqrtInvPlanarZSq;
             rv1.set(planarX, planarY, planarZ);
-            // rv.set(0.0, 0.0, -1.0);
-            // rv.set(Math.random(), Math.random(), Math.random());
 
             rv2.set(Math.random(), Math.random(), Math.random());
             rv3.set(
