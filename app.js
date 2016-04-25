@@ -4,10 +4,16 @@ function App(container) {
     var zeroVector = new THREE.Vector3(0, 0, 0);
 
     // Setup renderer.
-    var renderer = new THREE.WebGLRenderer();
+    var renderer = new THREE.WebGLRenderer({
+        antialias: false,
+        stencil: false,
+        preserveDrawingBuffer: false
+    });
     // renderer.setClearColor(0xDDDDDD);
     renderer.setClearColor(0x070C15);
     renderer.setSize(container.offsetWidth, container.offsetHeight);
+    renderer.autoClear = false;
+    renderer.sortObjects = false;
     container.appendChild(renderer.domElement);
 
     // Setup scene.
@@ -36,22 +42,31 @@ function App(container) {
 
     // Create geometry.
     var geometry = createGeometry();
-    // Setup material.
+    // Setup materials.
     var uniforms = {
         age: {
             type: 'f',
             value: Math.PI
         }
     };
-    var material = new THREE.ShaderMaterial({
+    var diffuseMaterial = new THREE.ShaderMaterial({
         uniforms: uniforms,
         vertexShader: THREE.VertexShaders.spiralDiffuse,
         fragmentShader: THREE.FragmentShaders.vertexDiffuse,
         vertexColors: THREE.VertexColors
     });
+    var depthMaterial = new THREE.ShaderMaterial({
+        uniforms: uniforms,
+        vertexShader: THREE.VertexShaders.spiralDepth,
+        fragmentShader: THREE.FragmentShaders.depth,
+        vertexColors: THREE.VertexColors
+    });
     // Create mesh and add to scene.
-    var mesh = new THREE.Mesh(geometry, material);
+    var mesh = new THREE.Mesh(geometry, diffuseMaterial);
     scene.add(mesh);
+
+    // Create volumetric light scattering (god rays) post process
+    var godrays = createGodRaysPostProcess();
 
     var previousTimestamp = 0;
     requestAnimationFrame(render);
@@ -71,8 +86,28 @@ function App(container) {
             camera.position.x * s + camera.position.z * c);
         camera.lookAt(zeroVector);
 
-        renderer.render(scene, camera);
+        if (godrays.enabled) {
+            godrays.render();
+        } else {
+            renderer.render(scene, camera);
+        }
         requestAnimationFrame(render);
+    }
+
+    function createGodRaysPostProcess() {
+        var rtParams = {
+            minFilter: THREE.LinearFilter,
+            magFilter: THREE.LinearFilter,
+            format: THREE.RGBFormat
+        };
+        var godrays = {
+            enabled: true,
+            scene: new THREE.Scene(),
+            rtDiffuse: new THREE.WebGLRenderTarget(),
+            render: function() {
+
+            }
+        };
     }
 
     function createGeometry() {
