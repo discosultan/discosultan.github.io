@@ -34,10 +34,15 @@ function App(container) {
     camera.rotationSpeed = Math.PI * 0.025;
     // camera.lookAt(zeroVector);
 
+    // Setup render targets.
+    var diffuseRT, depthRT, godraysRT1, godraysRT2;
+    setupRenderTargets();
+
     this.resize = function() {
         renderer.setSize(container.offsetWidth, container.offsetHeight);
         camera.aspect = container.offsetWidth / container.offsetHeight;
         camera.updateProjectionMatrix();
+        setupRenderTargets();
     };
 
     // Create geometry.
@@ -94,20 +99,30 @@ function App(container) {
         requestAnimationFrame(render);
     }
 
-    function createGodRaysPostProcess() {
+    function setupRenderTargets() {
         var rtParams = {
             minFilter: THREE.LinearFilter,
             magFilter: THREE.LinearFilter,
             format: THREE.RGBFormat
         };
+        var w = window.innerWidth,
+            h = window.innerHeight;
+        var reducedSizeFactor = 0.5;
+        diffuseRT = new THREE.WebGLRenderTarget(w, h, rtParams);
+        depthRT = new THREE.WebGLRenderTarget(w, h, rtParams);
+        godraysRT1 = new THREE.WebGLRenderTarget(w * reducedSizeFactor, h * reducedSizeFactor, rtParams);
+        godraysRT2 = new THREE.WebGLRenderTarget(w * reducedSizeFactor, h * reducedSizeFactor, rtParams);
+    }
+
+    function createGodRaysPostProcess() {
         var godrays = {
             enabled: true,
             scene: new THREE.Scene(),
-            rtDiffuse: new THREE.WebGLRenderTarget(),
             render: function() {
-
+                renderer.render(scene, camera);
             }
         };
+        return godrays;
     }
 
     function createGeometry() {
