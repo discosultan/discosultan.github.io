@@ -67,7 +67,7 @@ if (!THREE.Effects) THREE.Effects = {};
     float positionY = position.y - yOffset + moduloRandomizedAgeY / transitionSecondsY * yDistance;
 
     // X- & Z-translation.
-    const float xzDistance = 30.0;
+    const float xzDistance = 25.0;
     const float xzAgeFactor = 0.2;
     float leftOrRight = random2.x;
     float frontOrBack = random2.y;
@@ -92,13 +92,15 @@ if (!THREE.Effects) THREE.Effects = {};
 
     var mixinCubeLighting = `
     // LIGHTING.
+    vDiffuse = vec3(0.0);
+
     // Apply directional light.
     // We use Gouraud shading for per vertex lighting.
     const vec3 light1Color = vec3(1.0, 0.0, 0.0);
     const vec3 light1InvDir = vec3(0.0, 1.0, 0.0);
     const float light1Intensity = 0.75;
 
-    vDiffuse = light1Intensity * max(dot(normal, light1InvDir), 0.0) * light1Color;
+    // vDiffuse += light1Intensity * max(dot(normal, light1InvDir), 0.0) * light1Color;
 
     // Apply point light.
     const vec3 light2Color = vec3(0.349, 1.0, 1.0);

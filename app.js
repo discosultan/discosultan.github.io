@@ -10,7 +10,8 @@ function App(container) {
         preserveDrawingBuffer: true
     });
     // renderer.setClearColor(0xDDDDDD);
-    renderer.setClearColor(0x070C15);
+    renderer.setClearColor(0x07070C);
+    // renderer.setClearColor(0x000000);
     renderer.setSize(container.offsetWidth, container.offsetHeight);
     renderer.autoClear = false;
     renderer.sortObjects = false;
@@ -49,6 +50,9 @@ function App(container) {
     // Setup materials.
     var diffuseMaterial = new THREE.ShaderMaterial(THREE.Effects.cubesDiffuse);
     var depthMaterial = new THREE.ShaderMaterial(THREE.Effects.cubesDepth);
+    // var randomAge = Math.PI + Math.random() * Math.PI * 2;
+    // diffuseMaterial.uniforms.age = randomAge;
+    // depthMaterial.uniforms.age = randomAge;
     // Create mesh and add to scene.
     var mesh = new THREE.Mesh(geometry, diffuseMaterial);
     scene.add(mesh);
@@ -170,11 +174,11 @@ function App(container) {
 
     function createGeometry() {
         // Create an unindexed buffer.
-        var numCubes = 6000;
+        var numCubes = 5000;
         var numTrianglesPerCube = 12;
         var numTriangles = numTrianglesPerCube * numCubes;
 
-        var halfSize = 0.5; // half cube side length.
+        var halfSize = 0.6; // half cube side length.
 
         var v1 = new THREE.Vector3(-halfSize, -halfSize, -halfSize);
         var v2 = new THREE.Vector3(+halfSize, -halfSize, -halfSize);
