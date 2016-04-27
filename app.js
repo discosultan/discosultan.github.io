@@ -7,7 +7,7 @@ function App(container) {
     var renderer = new THREE.WebGLRenderer({
         antialias: false,
         stencil: false,
-        preserveDrawingBuffer: false
+        preserveDrawingBuffer: true
     });
     // renderer.setClearColor(0xDDDDDD);
     renderer.setClearColor(0x070C15);
@@ -34,44 +34,24 @@ function App(container) {
     camera.rotationSpeed = Math.PI * 0.025;
     // camera.lookAt(zeroVector);
 
-    // Setup render targets.
-    var diffuseRT, depthRT, godraysRT1, godraysRT2;
-    setupRenderTargets();
+    // Create volumetric light scattering (god rays) post process
+    var godRays = createGodRaysPostProcess();
 
     this.resize = function() {
         renderer.setSize(container.offsetWidth, container.offsetHeight);
         camera.aspect = container.offsetWidth / container.offsetHeight;
         camera.updateProjectionMatrix();
-        setupRenderTargets();
+        godRays.resize();
     };
 
     // Create geometry.
     var geometry = createGeometry();
     // Setup materials.
-    var uniforms = {
-        age: {
-            type: 'f',
-            value: Math.PI
-        }
-    };
-    var diffuseMaterial = new THREE.ShaderMaterial({
-        uniforms: uniforms,
-        vertexShader: THREE.VertexShaders.spiralDiffuse,
-        fragmentShader: THREE.FragmentShaders.vertexDiffuse,
-        vertexColors: THREE.VertexColors
-    });
-    var depthMaterial = new THREE.ShaderMaterial({
-        uniforms: uniforms,
-        vertexShader: THREE.VertexShaders.spiralDepth,
-        fragmentShader: THREE.FragmentShaders.depth,
-        vertexColors: THREE.VertexColors
-    });
+    var diffuseMaterial = new THREE.ShaderMaterial(THREE.Effects.cubesDiffuse);
+    var depthMaterial = new THREE.ShaderMaterial(THREE.Effects.cubesDepth);
     // Create mesh and add to scene.
     var mesh = new THREE.Mesh(geometry, diffuseMaterial);
     scene.add(mesh);
-
-    // Create volumetric light scattering (god rays) post process
-    var godrays = createGodRaysPostProcess();
 
     var previousTimestamp = 0;
     requestAnimationFrame(render);
@@ -79,7 +59,8 @@ function App(container) {
     function render(timestamp) {
         var deltaSeconds = (timestamp - previousTimestamp) * 0.001;
         previousTimestamp = timestamp;
-        uniforms.age.value += deltaSeconds;
+        diffuseMaterial.uniforms.age.value += deltaSeconds;
+        depthMaterial.uniforms.age.value += deltaSeconds;
 
         // Rotate camera.
         var angle = camera.rotationSpeed * deltaSeconds;
@@ -91,38 +72,100 @@ function App(container) {
             camera.position.x * s + camera.position.z * c);
         camera.lookAt(zeroVector);
 
-        if (godrays.enabled) {
-            godrays.render();
+        if (godRays.enabled) {
+            godRays.render();
         } else {
+            renderer.clear(true, true, false);
             renderer.render(scene, camera);
         }
         requestAnimationFrame(render);
     }
 
-    function setupRenderTargets() {
-        var rtParams = {
-            minFilter: THREE.LinearFilter,
-            magFilter: THREE.LinearFilter,
-            format: THREE.RGBFormat
-        };
-        var w = window.innerWidth,
-            h = window.innerHeight;
-        var reducedSizeFactor = 0.5;
-        diffuseRT = new THREE.WebGLRenderTarget(w, h, rtParams);
-        depthRT = new THREE.WebGLRenderTarget(w, h, rtParams);
-        godraysRT1 = new THREE.WebGLRenderTarget(w * reducedSizeFactor, h * reducedSizeFactor, rtParams);
-        godraysRT2 = new THREE.WebGLRenderTarget(w * reducedSizeFactor, h * reducedSizeFactor, rtParams);
-    }
-
     function createGodRaysPostProcess() {
-        var godrays = {
+        var godRaysGenerateMaterial = new THREE.ShaderMaterial(THREE.Effects.godRaysGenerate);
+        var godRaysCombineMaterial = new THREE.ShaderMaterial(THREE.Effects.godRaysCombine);
+        var quad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2), godRaysGenerateMaterial);
+        var light = new THREE.Mesh(
+            new THREE.IcosahedronGeometry(50, 3),
+            new THREE.MeshBasicMaterial({ color: 0x77bbff })
+        );
+        var godRays = {
             enabled: true,
             scene: new THREE.Scene(),
-            render: function() {
-                renderer.render(scene, camera);
-            }
+            camera: new THREE.OrthographicCamera()
         };
-        return godrays;
+        godRays.scene.add(quad);
+        // godRays.scene.add(light);
+
+        var diffuseRT, depthRT, godRaysRT1, godRaysRT2;
+        setupRenderTargets();
+
+        godRays.render = function() {
+            renderer.clearTarget(diffuseRT, true, true, false);
+            scene.overrideMaterial = null;
+            renderer.render(scene, camera, diffuseRT);
+            scene.overrideMaterial = depthMaterial;
+            renderer.render(scene, camera, depthRT, true);
+
+            // Render light.
+            godRays.scene.overrideMaterial = null;
+            // TODO: render light
+
+            // Length of god days in texture space [0..1].
+            var filterLength = 1.0;
+            // Samples taken by filter.
+            var tapsPerPass = 6;
+
+            // Pass 1 - render into first god rays target.
+            var pass = 1.0;
+            var stepLength = filterLength * Math.pow(tapsPerPass, -pass);
+            godRaysGenerateMaterial.uniforms.stepSize.value = stepLength;
+            godRaysGenerateMaterial.uniforms.depthTexture.value = depthRT;
+            godRays.scene.overrideMaterial = godRaysGenerateMaterial;
+            renderer.render(godRays.scene, godRays.camera, godRaysRT2);
+
+            // Pass 2 - render into second target.
+            pass = 2.0;
+            stepLength = filterLength * Math.pow(tapsPerPass, -pass);
+            godRaysGenerateMaterial.uniforms.stepSize.value = stepLength;
+            godRaysGenerateMaterial.uniforms.depthTexture.value = godRaysRT2;
+            renderer.render(godRays.scene, godRays.camera, godRaysRT1);
+
+            // Pass 3.
+            pass = 3.0;
+            stepLength = filterLength * Math.pow(tapsPerPass, -pass);
+            godRaysGenerateMaterial.uniforms.stepSize.value = stepLength;
+            godRaysGenerateMaterial.uniforms.depthTexture.value = godRaysRT1;
+            renderer.render(godRays.scene, godRays.camera, godRaysRT2);
+
+            // Final pass - combine.
+            godRaysCombineMaterial.uniforms.diffuseTexture.value = diffuseRT;
+	          godRaysCombineMaterial.uniforms.godRaysTexture.value = godRaysRT2;
+            godRays.scene.overrideMaterial = godRaysCombineMaterial;
+            renderer.render(godRays.scene, godRays.camera);
+        };
+
+        godRays.resize = function() {
+            setupRenderTargets();
+        }
+
+        return godRays;
+
+        function setupRenderTargets() {
+            var rtParams = {
+                minFilter: THREE.LinearFilter,
+                magFilter: THREE.LinearFilter,
+                format: THREE.RGBFormat
+            };
+            var w = window.innerWidth,
+                h = window.innerHeight;
+            // var reducedSizeFactor = 0.5;
+            var reducedSizeFactor = 0.25;
+            diffuseRT = new THREE.WebGLRenderTarget(w, h, rtParams);
+            depthRT = new THREE.WebGLRenderTarget(w, h, rtParams);
+            godRaysRT1 = new THREE.WebGLRenderTarget(w * reducedSizeFactor, h * reducedSizeFactor, rtParams);
+            godRaysRT2 = new THREE.WebGLRenderTarget(w * reducedSizeFactor, h * reducedSizeFactor, rtParams);
+        }
     }
 
     function createGeometry() {

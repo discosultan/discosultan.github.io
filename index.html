@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <section id="simulation"></section>
 
-  <script src="vendor/three.min.js"></script>
-  <script src="shaders.js"></script>
-  <script src="app.js"></script>
-  <script>
-    var app = new App(document.getElementById('simulation'));
-    window.onresize = app.resize;
-  </script>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <section id="simulation"></section>
+
+    <script src="vendor/three.min.js"></script>
+    <script src="effects.js"></script>
+    <script src="app.js"></script>
+    <script>
+        var app = new App(document.getElementById('simulation'));
+        window.onresize = app.resize;
+    </script>
 </body>
+
 </html>
