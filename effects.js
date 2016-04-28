@@ -53,7 +53,7 @@ if (!THREE.Effects) THREE.Effects = {};
     var mixinCubePosition = `
     // ROTATION.
     const float rotationSpeed = 3.0;
-    vec4 rotation = axisAngleToQuaternion(color, age * random1.x * rotationSpeed);
+    vec4 rotation = axisAngleToQuaternion(color, fAge * random1.x * rotationSpeed);
     vec3 position = rotateVectorByQuaternion(position, rotation);
     vec3 normal = rotateVectorByQuaternion(normal, rotation);
 
@@ -62,7 +62,7 @@ if (!THREE.Effects) THREE.Effects = {};
     const float yOffset = 60.0;
     const float yDistance = 120.0;
     float transitionSecondsY = 30.0;
-    float randomizedAgeY = age * (random1.y) + random1.z * transitionSecondsY;
+    float randomizedAgeY = fAge * (random1.y) + random1.z * transitionSecondsY;
     float moduloRandomizedAgeY = mod(randomizedAgeY, transitionSecondsY);
     float positionY = position.y - yOffset + moduloRandomizedAgeY / transitionSecondsY * yDistance;
 
@@ -117,14 +117,14 @@ if (!THREE.Effects) THREE.Effects = {};
 
     THREE.Effects.cubesDiffuse = {
         uniforms: {
-            age: {
+            fAge: {
                 type: 'f',
                 value: Math.PI
             }
         },
         vertexColors: THREE.VertexColors,
         vertexShader: `
-        uniform float age;
+        uniform float fAge;
 
         attribute vec3 random1;
         attribute vec4 random2;
@@ -145,16 +145,16 @@ if (!THREE.Effects) THREE.Effects = {};
       `
     };
 
-    THREE.Effects.cubesDepth = {
+    THREE.Effects.cubesBlack = {
         uniforms: {
-            age: {
+            fAge: {
                 type: 'f',
                 value: Math.PI
             }
         },
         vertexColors: THREE.VertexColors,
         vertexShader: `
-        uniform float age;
+        uniform float fAge;
 
         attribute vec3 random1;
         attribute vec4 random2;
@@ -166,7 +166,7 @@ if (!THREE.Effects) THREE.Effects = {};
       `,
         fragmentShader: `
         void main() {
-          gl_FragColor = vec4(vec3(gl_FragCoord.z), 1.0);
+          gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
         }
       `
     };
@@ -175,13 +175,29 @@ if (!THREE.Effects) THREE.Effects = {};
     gl_Position = vec4(position, 1.0);
     `;
 
-    THREE.Effects.godRaysGenerate = {
+    THREE.Effects.godRays = {
         uniforms: {
-            depthTexture: {
-                type: 't'
+            tDiffuse: {
+                type: "t"
             },
-            stepSize: {
-                type: 'f',
+            fExposure: {
+                type: "f",
+                value: 0.6
+            },
+            fDecay: {
+                type: "f",
+                value: 0.93
+            },
+            fDensity: {
+                type: "f",
+                value: 0.96
+            },
+            fWeight: {
+                type: "f",
+                value: 0.4
+            },
+            fClamp: {
+                type: "f",
                 value: 1.0
             }
         },
@@ -196,72 +212,49 @@ if (!THREE.Effects) THREE.Effects = {};
         fragmentShader: `
         varying vec2 vUv;
 
-        uniform sampler2D depthTexture;
-        uniform float stepSize;
+        uniform sampler2D tDiffuse;
+
+        uniform float fExposure;
+        uniform float fDecay;
+        uniform float fDensity;
+        uniform float fWeight;
+        uniform float fClamp;
 
         void main() {
-            const float tapsPerPass = 6.0;
+            const int numSamples = 20;
             const vec2 lightPosition = vec2(0.5, 0.5);
 
-            vec2 delta = lightPosition - vUv;
-            float distance = length(delta);
+            vec2 delta = vUv - lightPosition;
+            delta *= 1.0 / float(numSamples) * fDensity;
+            float illuminationDecay = 1.0;
+            vec4 fragColor = vec4(0.0);
 
-            vec2 stepVector = stepSize * delta / distance;
-            float iterations = distance / stepSize;
+            vec2 coord = vUv;
 
-            vec2 tapUv = vUv;
-            float col = 0.0;
-            for (float i = 0.0; i < tapsPerPass; i += 1.0) {
-                col += (i <= iterations && tapUv.y < 1.0 ? texture2D(depthTexture, tapUv).r : 0.0);
-                tapUv += stepVector;
+            for (int i = 0; i < numSamples; i++) {
+                coord -= delta;
+                vec4 texel = texture2D(tDiffuse, coord);
+                texel *= illuminationDecay * fWeight;
+
+                fragColor += texel;
+
+                illuminationDecay *= fDecay;
             }
-            col /= tapsPerPass;
-            gl_FragColor = vec4(col, col, col, 1.0);
+            fragColor *= fExposure;
+            fragColor = clamp(fragColor, 0.0, fClamp);
+            gl_FragColor = fragColor;
         }`
     };
 
-    THREE.Effects.godRaysCombine = {
+    THREE.Effects.additive = {
         uniforms: {
-            diffuseTexture: {
+            tDiffuse: {
                 type: 't'
             },
-            godRaysTexture: {
+            tAdd: {
                 type: 't'
             },
-            godRaysIntensity: {
-                type: 'f',
-                value: 0.69
-            }
-        },
-        vertexShader: `
-        varying vec2 vUv;
-
-        void main() {
-            vUv = uv;
-            ${mixinPosition}
-        }
-        `,
-        fragmentShader: `
-        varying vec2 vUv;
-
-        uniform sampler2D diffuseTexture;
-        uniform sampler2D godRaysTexture;
-        uniform float godRaysIntensity;
-
-        void main() {
-            // Since our depth texture foreground objects are white and background
-            // objects black, the god-rays will be white streaks. Therefore value is inverted
-            // before being combined with diffuseTexture.
-            // gl_FragColor = texture2D(diffuseTexture, vUv) + godRaysIntensity * vec4(1.0 - texture2D(godRaysTexture, vUv).r);
-            gl_FragColor = texture2D(diffuseTexture, vUv) + godRaysIntensity * vec4(texture2D(godRaysTexture, vUv).r);
-            gl_FragColor.a = 1.0;
-        }
-        `
-    };
-
-    THREE.Effects.light = {
-        uniforms: {
-            aspect: {
+            fCoefficient: {
                 type: 'f',
                 value: 1.0
             }
@@ -277,21 +270,14 @@ if (!THREE.Effects) THREE.Effects = {};
         fragmentShader: `
         varying vec2 vUv;
 
-        uniform float aspect;
+        uniform sampler2D tDiffuse;
+        uniform sampler2D tAdd;
+        uniform float fCoefficient;
 
         void main() {
-            const vec3 lightColor = vec3(1.0, 0.9, 0.0);
-            const vec3 backgroundColor = vec3(1.0);
-            const vec2 lightPosition = vec2(0.5, 0.5);
-
-            vec2 diff = vUv - lightPosition;
-            diff.x *= aspect;
-
-            float prop = clamp(length(diff)*0.5, 0.0, 1.0);
-            prop = 0.35 * pow(1.0 - prop, 3.0);
-
-            gl_FragColor.xyz = mix(lightColor, backgroundColor, 1.0 - prop);
-            gl_FragColor.w = 1.0;
+            vec4 texel = texture2D(tDiffuse, vUv);
+            vec4 add = texture2D(tAdd, vUv);
+            gl_FragColor = texel + add * fCoefficient;
         }
         `
     };
