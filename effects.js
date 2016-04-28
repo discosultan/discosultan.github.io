@@ -258,4 +258,41 @@ if (!THREE.Effects) THREE.Effects = {};
         }
         `
     };
+
+    THREE.Effects.light = {
+        uniforms: {
+            aspect: {
+                type: 'f',
+                value: 1.0
+            }
+        },
+        vertexShader: `
+        varying vec2 vUv;
+
+        void main() {
+            vUv = uv;
+            ${mixinPosition}
+        }
+        `,
+        fragmentShader: `
+        varying vec2 vUv;
+
+        uniform float aspect;
+
+        void main() {
+            const vec3 lightColor = vec3(1.0, 0.9, 0.0);
+            const vec3 backgroundColor = vec3(1.0);
+            const vec2 lightPosition = vec2(0.5, 0.5);
+
+            vec2 diff = vUv - lightPosition;
+            diff.x *= aspect;
+
+            float prop = clamp(length(diff)*0.5, 0.0, 1.0);
+            prop = 0.35 * pow(1.0 - prop, 3.0);
+
+            gl_FragColor.xyz = mix(lightColor, backgroundColor, 1.0 - prop);
+            gl_FragColor.w = 1.0;
+        }
+        `
+    };
 })(THREE);

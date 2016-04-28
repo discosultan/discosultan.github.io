@@ -51,8 +51,8 @@ function App(container) {
     var diffuseMaterial = new THREE.ShaderMaterial(THREE.Effects.cubesDiffuse);
     var depthMaterial = new THREE.ShaderMaterial(THREE.Effects.cubesDepth);
     // var randomAge = Math.PI + Math.random() * Math.PI * 2;
-    // diffuseMaterial.uniforms.age = randomAge;
-    // depthMaterial.uniforms.age = randomAge;
+    // diffuseMaterial.uniforms.age.value = randomAge;
+    // depthMaterial.uniforms.age.value = randomAge;
     // Create mesh and add to scene.
     var mesh = new THREE.Mesh(geometry, diffuseMaterial);
     scene.add(mesh);
@@ -88,11 +88,12 @@ function App(container) {
     function createGodRaysPostProcess() {
         var godRaysGenerateMaterial = new THREE.ShaderMaterial(THREE.Effects.godRaysGenerate);
         var godRaysCombineMaterial = new THREE.ShaderMaterial(THREE.Effects.godRaysCombine);
+        var lightMaterial = new THREE.ShaderMaterial(THREE.Effects.light);
         var quad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2), godRaysGenerateMaterial);
-        var light = new THREE.Mesh(
-            new THREE.IcosahedronGeometry(50, 3),
-            new THREE.MeshBasicMaterial({ color: 0x77bbff })
-        );
+        // var light = new THREE.Mesh(
+        //     new THREE.IcosahedronGeometry(50, 3),
+        //     new THREE.MeshBasicMaterial({ color: 0x77bbff })
+        // );
         var godRays = {
             enabled: true,
             scene: new THREE.Scene(),
@@ -102,21 +103,26 @@ function App(container) {
         // godRays.scene.add(light);
 
         var diffuseRT, depthRT, godRaysRT1, godRaysRT2;
-        setupRenderTargets();
+        // setupRenderTargets();
+
+        (godRays.resize = function() {
+            setupRenderTargets();
+            lightMaterial.uniforms.aspect.value = window.innerWidth / window.innerHeight;
+        })();
 
         godRays.render = function() {
+            // Render light.
+            godRays.scene.overrideMaterial = lightMaterial;
+            renderer.render(godRays.scene, godRays.camera, diffuseRT);
+
             renderer.clearTarget(diffuseRT, true, true, false);
             scene.overrideMaterial = null;
             renderer.render(scene, camera, diffuseRT);
             scene.overrideMaterial = depthMaterial;
             renderer.render(scene, camera, depthRT, true);
 
-            // Render light.
-            godRays.scene.overrideMaterial = null;
-            // TODO: render light
-
             // Length of god days in texture space [0..1].
-            var filterLength = 1.0;
+            var filterLength = 0.25;
             // Samples taken by filter.
             var tapsPerPass = 6;
 
@@ -144,14 +150,10 @@ function App(container) {
 
             // Final pass - combine.
             godRaysCombineMaterial.uniforms.diffuseTexture.value = diffuseRT;
-	          godRaysCombineMaterial.uniforms.godRaysTexture.value = godRaysRT2;
+            godRaysCombineMaterial.uniforms.godRaysTexture.value = godRaysRT2;
             godRays.scene.overrideMaterial = godRaysCombineMaterial;
             renderer.render(godRays.scene, godRays.camera);
         };
-
-        godRays.resize = function() {
-            setupRenderTargets();
-        }
 
         return godRays;
 
