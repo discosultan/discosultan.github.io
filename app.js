@@ -87,11 +87,13 @@ function App(container) {
 
         var godRaysMaterial = new THREE.ShaderMaterial(THREE.Effects.godRays);
         var additiveMaterial = new THREE.ShaderMaterial(THREE.Effects.additive);
+        var horizontalBlurMaterial = new THREE.ShaderMaterial(THREE.Effects.horizontalBlur);
+        var verticalBlurMaterial = new THREE.ShaderMaterial(THREE.Effects.verticalBlur);
 
         var lightColor = new THREE.Color(0.349, 1.0, 1.0);
         var occlusionScene = new THREE.Scene();
         var lightMesh = new THREE.Mesh(
-            new THREE.IcosahedronGeometry(10, 3),
+            new THREE.IcosahedronGeometry(5, 3),
             new THREE.MeshBasicMaterial({ color: lightColor })
         );
         var cubesMeshBlack = new THREE.Mesh(geometry, blackMaterial);
@@ -106,8 +108,10 @@ function App(container) {
             enabled: true
         };
 
-        var diffuseRT, occlusionRT, godRaysRT1, godRaysRT2;
+        var diffuseRT, godRaysRT1, godRaysRT2;
         (godRays.resize = function() {
+            horizontalBlurMaterial.uniforms.fH.value = 1 / window.innerWidth;
+            verticalBlurMaterial.uniforms.fV.value = 1 / window.innerHeight;
             setupRenderTargets();
         })();
 
@@ -117,26 +121,29 @@ function App(container) {
             renderer.clearTarget(diffuseRT, true, true, false);
             renderer.render(scene, camera, diffuseRT);
 
-            renderer.render(occlusionScene, camera, occlusionRT, true);
+            renderer.render(occlusionScene, camera, godRaysRT1, true);
 
-            // Pass 1 - render into first god rays target.
-            godRaysMaterial.uniforms.tDiffuse.value = occlusionRT;
-            quadScene.overrideMaterial = godRaysMaterial;
+            // Blur.
+            horizontalBlurMaterial.uniforms.tDiffuse.value = godRaysRT1;
+            quadScene.overrideMaterial = horizontalBlurMaterial;
             renderer.render(quadScene, camera, godRaysRT2);
 
-            // // Pass 2 - render into second target.
-            // pass = 2.0;
-            // stepLength = filterLength * Math.pow(tapsPerPass, -pass);
-            // godRaysGenerateMaterial.uniforms.stepSize.value = stepLength;
-            // godRaysGenerateMaterial.uniforms.depthTexture.value = godRaysRT2;
-            // renderer.render(quadScene, camera, godRaysRT1);
-            //
-            // // Pass 3.
-            // pass = 3.0;
-            // stepLength = filterLength * Math.pow(tapsPerPass, -pass);
-            // godRaysGenerateMaterial.uniforms.stepSize.value = stepLength;
-            // godRaysGenerateMaterial.uniforms.depthTexture.value = godRaysRT1;
-            // renderer.render(quadScene, camera, godRaysRT2);
+            verticalBlurMaterial.uniforms.tDiffuse.value = godRaysRT2;
+            quadScene.overrideMaterial = verticalBlurMaterial;
+            renderer.render(quadScene, camera, godRaysRT1);
+
+            horizontalBlurMaterial.uniforms.tDiffuse.value = godRaysRT1;
+            quadScene.overrideMaterial = horizontalBlurMaterial;
+            renderer.render(quadScene, camera, godRaysRT2);
+
+            verticalBlurMaterial.uniforms.tDiffuse.value = godRaysRT2;
+            quadScene.overrideMaterial = verticalBlurMaterial;
+            renderer.render(quadScene, camera, godRaysRT1);
+
+            // Gen god rays.
+            godRaysMaterial.uniforms.tDiffuse.value = godRaysRT1;
+            quadScene.overrideMaterial = godRaysMaterial;
+            renderer.render(quadScene, camera, godRaysRT2);
 
             // Final pass - combine.
             additiveMaterial.uniforms.tDiffuse.value = diffuseRT;
@@ -155,10 +162,10 @@ function App(container) {
             };
             var w = window.innerWidth,
                 h = window.innerHeight;
-            var reducedSizeFactor = 1;
-            // var reducedSizeFactor = 0.25;
+            // var reducedSizeFactor = 1.0;
+            // var reducedSizeFactor = 0.5;
+            var reducedSizeFactor = 0.25;
             diffuseRT = new THREE.WebGLRenderTarget(w, h, rtParams);
-            occlusionRT = new THREE.WebGLRenderTarget(w, h, rtParams);
             godRaysRT1 = new THREE.WebGLRenderTarget(w * reducedSizeFactor, h * reducedSizeFactor, rtParams);
             godRaysRT2 = new THREE.WebGLRenderTarget(w * reducedSizeFactor, h * reducedSizeFactor, rtParams);
         }

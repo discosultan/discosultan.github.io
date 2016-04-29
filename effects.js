@@ -1,6 +1,6 @@
 if (!THREE.Effects) THREE.Effects = {};
 
-(function(THREE) {
+(function(effects) {
     var mixinCommon = `
     // ref: http://alteredqualia.com/three/examples/webgl_cubes.html
     vec3 rotateVectorByQuaternion(vec3 v, vec4 q) {
@@ -115,7 +115,7 @@ if (!THREE.Effects) THREE.Effects = {};
     vDiffuse += light2Intensity * max(dot(normal, light2InvDir), 0.0) * light2Factor * light2Color;
   `;
 
-    THREE.Effects.cubesDiffuse = {
+    effects.cubesDiffuse = {
         uniforms: {
             fAge: {
                 type: 'f',
@@ -145,7 +145,7 @@ if (!THREE.Effects) THREE.Effects = {};
       `
     };
 
-    THREE.Effects.cubesBlack = {
+    effects.cubesBlack = {
         uniforms: {
             fAge: {
                 type: 'f',
@@ -175,7 +175,7 @@ if (!THREE.Effects) THREE.Effects = {};
     gl_Position = vec4(position, 1.0);
     `;
 
-    THREE.Effects.godRays = {
+    effects.godRays = {
         uniforms: {
             tDiffuse: {
                 type: "t"
@@ -190,7 +190,8 @@ if (!THREE.Effects) THREE.Effects = {};
             },
             fDensity: {
                 type: "f",
-                value: 0.96
+                // value: 0.96
+                value: 0.5
             },
             fWeight: {
                 type: "f",
@@ -246,7 +247,7 @@ if (!THREE.Effects) THREE.Effects = {};
         }`
     };
 
-    THREE.Effects.additive = {
+    effects.additive = {
         uniforms: {
             tDiffuse: {
                 type: 't'
@@ -281,4 +282,86 @@ if (!THREE.Effects) THREE.Effects = {};
         }
         `
     };
-})(THREE);
+
+    effects.horizontalBlur = {
+        uniforms: {
+            tDiffuse: {
+                type: 't'
+            },
+            fH: {
+                type: 'f',
+                value: 1.0 / 512.0
+            }
+        },
+        vertexShader: `
+        varying vec2 vUv;
+
+        void main() {
+            vUv = uv;
+            ${mixinPosition}
+        }
+        `,
+        fragmentShader: `
+        varying vec2 vUv;
+
+        uniform sampler2D tDiffuse;
+        uniform float fH;
+
+        void main() {
+            vec4 sum = vec4(0.0);
+            sum += texture2D( tDiffuse, vec2(vUv.x - 4.0 * fH, vUv.y)) * 0.051;
+    				sum += texture2D( tDiffuse, vec2(vUv.x - 3.0 * fH, vUv.y)) * 0.0918;
+    				sum += texture2D( tDiffuse, vec2(vUv.x - 2.0 * fH, vUv.y)) * 0.12245;
+    				sum += texture2D( tDiffuse, vec2(vUv.x - 1.0 * fH, vUv.y)) * 0.1531;
+    				sum += texture2D( tDiffuse, vec2(vUv.x, 		  	  vUv.y)) * 0.1633;
+    				sum += texture2D( tDiffuse, vec2(vUv.x + 1.0 * fH, vUv.y)) * 0.1531;
+    				sum += texture2D( tDiffuse, vec2(vUv.x + 2.0 * fH, vUv.y)) * 0.12245;
+    				sum += texture2D( tDiffuse, vec2(vUv.x + 3.0 * fH, vUv.y)) * 0.0918;
+    				sum += texture2D( tDiffuse, vec2(vUv.x + 4.0 * fH, vUv.y)) * 0.051;
+    				gl_FragColor = sum;
+        }
+        `
+    };
+
+    effects.verticalBlur = {
+        uniforms: {
+            tDiffuse: {
+                type: 't'
+            },
+            fV: {
+                type: 'f',
+                value: 1.0 / 512.0
+            }
+        },
+        vertexShader: `
+      varying vec2 vUv;
+
+      void main() {
+          vUv = uv;
+          ${mixinPosition}
+      }
+      `,
+        fragmentShader: `
+      varying vec2 vUv;
+
+      uniform sampler2D tDiffuse;
+      uniform float fV;
+
+      void main() {
+          vec4 sum = vec4(0.0);
+
+          sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y - 4.0 * fV)) * 0.051;
+          sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y - 3.0 * fV)) * 0.0918;
+          sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y - 2.0 * fV)) * 0.12245;
+          sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y - 1.0 * fV)) * 0.1531;
+          sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y			    )) * 0.1633;
+          sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y + 1.0 * fV)) * 0.1531;
+          sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y + 2.0 * fV)) * 0.12245;
+          sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y + 3.0 * fV)) * 0.0918;
+          sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y + 4.0 * fV)) * 0.051;
+
+          gl_FragColor = sum;
+      }
+      `
+    };
+})(THREE.Effects);
