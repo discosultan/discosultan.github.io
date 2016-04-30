@@ -1,7 +1,7 @@
-// Assumes global access to three.js and window object.
 function App(container) {
     // Setup helper variables.
     var zeroVector = new THREE.Vector3(0, 0, 0);
+    var gui = new dat.GUI();
 
     // Setup renderer.
     var renderer = new THREE.WebGLRenderer({
@@ -38,6 +38,7 @@ function App(container) {
     var geometry = createGeometry();
     // Setup materials.
     var diffuseMaterial = new THREE.ShaderMaterial(THREE.Effects.cubesDiffuse);
+    addMaterialToDatGUI("Cubes", diffuseMaterial);
     // var randomAge = Math.PI + Math.random() * Math.PI * 2;
     // diffuseMaterial.uniforms.age.value = randomAge;
     // depthMaterial.uniforms.age.value = randomAge;
@@ -89,12 +90,15 @@ function App(container) {
         var additiveMaterial = new THREE.ShaderMaterial(THREE.Effects.additive);
         var horizontalBlurMaterial = new THREE.ShaderMaterial(THREE.Effects.horizontalBlur);
         var verticalBlurMaterial = new THREE.ShaderMaterial(THREE.Effects.verticalBlur);
+        addMaterialToDatGUI("God Rays", godRaysMaterial);
 
         var lightColor = new THREE.Color(0.349, 1.0, 1.0);
         var occlusionScene = new THREE.Scene();
         var lightMesh = new THREE.Mesh(
             new THREE.IcosahedronGeometry(5, 3),
-            new THREE.MeshBasicMaterial({ color: lightColor })
+            new THREE.MeshBasicMaterial({
+                color: lightColor
+            })
         );
         var cubesMeshBlack = new THREE.Mesh(geometry, blackMaterial);
         occlusionScene.add(lightMesh);
@@ -110,8 +114,8 @@ function App(container) {
 
         var diffuseRT, godRaysRT1, godRaysRT2;
         (godRays.resize = function() {
-            horizontalBlurMaterial.uniforms.fH.value = 1 / window.innerWidth;
-            verticalBlurMaterial.uniforms.fV.value = 1 / window.innerHeight;
+            horizontalBlurMaterial.uniforms.fH.value = 1 / container.offsetWidth;
+            verticalBlurMaterial.uniforms.fV.value = 1 / container.offsetHeight;
             setupRenderTargets();
         })();
 
@@ -160,16 +164,46 @@ function App(container) {
                 magFilter: THREE.LinearFilter,
                 format: THREE.RGBFormat
             };
-            var w = window.innerWidth,
-                h = window.innerHeight;
+            var w = container.offsetWidth,
+                h = container.offsetHeight;
             // var reducedSizeFactor = 1.0;
-            // var reducedSizeFactor = 0.5;
-            var reducedSizeFactor = 0.25;
+            var reducedSizeFactor = 0.5;
+            // var reducedSizeFactor = 0.25;
             diffuseRT = new THREE.WebGLRenderTarget(w, h, rtParams);
             godRaysRT1 = new THREE.WebGLRenderTarget(w * reducedSizeFactor, h * reducedSizeFactor, rtParams);
             godRaysRT2 = new THREE.WebGLRenderTarget(w * reducedSizeFactor, h * reducedSizeFactor, rtParams);
         }
     }
+
+    function addMaterialToDatGUI(name, material) {
+        var folder = gui.addFolder(name);
+        for (var property in material.uniforms) {
+            // Check if is own property and filter age uniforms.
+            if (material.uniforms.hasOwnProperty(property) && property !== 'fAge') {
+                var uniform = material.uniforms[property];
+                var value = uniform.value;
+                // Do not add textures.
+                if (uniform.type === 't') continue;
+
+                if (typeof value === 'object') {
+                    var subfolder = folder.addFolder(getName(uniform, property));
+                    for (var valueProperty in value) {
+                        if (value.hasOwnProperty(valueProperty)) {
+                            subfolder.add(value, valueProperty);
+                        }
+                    }
+                } else {
+                    folder.add(uniform, 'value').name(getName(uniform, property));
+                }
+            }
+        }
+        folder.open();
+
+        function getName(uniform, property) {
+            return property.substring(uniform.type.length);
+        }
+    }
+
 
     function createGeometry() {
         // Create an unindexed buffer.

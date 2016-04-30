@@ -92,22 +92,22 @@ if (!THREE.Effects) THREE.Effects = {};
 
     var mixinCubeLighting = `
     // LIGHTING.
-    vDiffuse = vec3(0.0);
-
-    // Apply directional light.
     // We use Gouraud shading for per vertex lighting.
-    const vec3 light1Color = vec3(1.0, 0.0, 0.0);
-    const vec3 light1InvDir = vec3(0.0, 1.0, 0.0);
-    const float light1Intensity = 0.75;
 
+    // Ambient light.
+    vDiffuse = v4AmbientLight.xyz * v4AmbientLight.w;
+
+    // // Directional light.
+    // const vec3 light1Color = vec3(1.0, 0.0, 0.0);
+    // const vec3 light1InvDir = vec3(0.0, 1.0, 0.0);
+    // const float light1Intensity = 0.75;
     // vDiffuse += light1Intensity * max(dot(normal, light1InvDir), 0.0) * light1Color;
 
-    // Apply point light.
+    // Point light.
     const vec3 light2Color = vec3(0.349, 1.0, 1.0);
     const vec3 light2Position = vec3(0.0, 0.0, 0.0);
     const float light2Intensity = 1.0;
     const float light2MaxDistance = 100.0;
-
     vec3 light2InvVector = light2Position - position;
     float light2Distance = length(light2InvVector);
     vec3 light2InvDir = light2InvVector / light2Distance;
@@ -120,11 +120,16 @@ if (!THREE.Effects) THREE.Effects = {};
             fAge: {
                 type: 'f',
                 value: Math.PI
+            },
+            v4AmbientLight: {
+                type: '4f',
+                value: new THREE.Vector4(0,0,0,1)
             }
         },
         vertexColors: THREE.VertexColors,
         vertexShader: `
         uniform float fAge;
+        uniform vec4 v4AmbientLight;
 
         attribute vec3 random1;
         attribute vec4 random2;
