@@ -10,7 +10,8 @@ function App(container) {
         preserveDrawingBuffer: true
     });
 
-    this.clearColor = new THREE.Color(0x07070C);
+    // this.clearColor = new THREE.Color(0x07070C);
+    this.clearColor = new THREE.Color(0x002F2F);
 
     var folder = gui.addFolder('App');
     addObjectToDatGUI(folder, 'ClearColor', this.clearColor, function(color) { renderer.setClearColor(color); });
@@ -28,14 +29,17 @@ function App(container) {
         container.offsetWidth / container.offsetHeight,
         0.1, 1000);
     // camera.position.set(-20, 25, 20);
+    // folder.add(camera.position, 'x');
+    // folder.add(camera.position, 'z');
 
-    var cameraAxisOfRotation = new THREE.Vector3(0.35, 1.0, 0.35);
+    var cameraAxisOfRotation = new THREE.Vector3(0.4, 1.0, 0.4);
     cameraAxisOfRotation.normalize();
     camera.up.set(cameraAxisOfRotation.x, cameraAxisOfRotation.y, cameraAxisOfRotation.z);
     // camera.up.set(1,0,0);
     camera.position.set(100, 0, 0);
-    camera.rotationSpeed = Math.PI * 0.025;
-    // camera.lookAt(zeroVector);
+    // camera.rotationSpeed = Math.PI * 0.025;
+    camera.rotationSpeed = Math.PI * 0.2;
+    rotateCameraBy(Math.PI * 0.2);
 
     // Setup scene.
     var scene = new THREE.Scene();
@@ -44,15 +48,13 @@ function App(container) {
     // Setup materials.
     var diffuseMaterial = new THREE.ShaderMaterial(THREE.Effects.cubesDiffuse);
     addMaterialToDatGUI("Cubes", diffuseMaterial);
-    // var randomAge = Math.PI + Math.random() * Math.PI * 2;
-    // diffuseMaterial.uniforms.age.value = randomAge;
-    // depthMaterial.uniforms.age.value = randomAge;
     // Create mesh and add to scene.
     var cubesMesh = new THREE.Mesh(geometry, diffuseMaterial);
     scene.add(cubesMesh);
 
     // Create volumetric light scattering (god rays) post process
     var godRays = createGodRaysPostProcess();
+    folder.add(godRays, 'enabled');
 
     this.resize = function() {
         renderer.setSize(container.offsetWidth, container.offsetHeight);
@@ -69,14 +71,10 @@ function App(container) {
         previousTimestamp = timestamp;
         diffuseMaterial.uniforms.fAge.value += deltaSeconds;
 
-        // Rotate camera.
+        // // Rotate camera.
         var angle = camera.rotationSpeed * deltaSeconds;
-        var s = Math.sin(angle);
-        var c = Math.cos(angle);
-        camera.position.set(
-            camera.position.x * c - camera.position.z * s,
-            0,
-            camera.position.x * s + camera.position.z * c);
+        rotateCameraBy(angle);
+        camera.up.set(cameraAxisOfRotation.x, cameraAxisOfRotation.y, cameraAxisOfRotation.z);
         camera.lookAt(zeroVector);
 
         if (godRays.enabled) {
@@ -88,6 +86,15 @@ function App(container) {
         requestAnimationFrame(render);
     }
 
+    function rotateCameraBy(angle) {
+        var s = Math.sin(angle);
+        var c = Math.cos(angle);
+        camera.position.set(
+            camera.position.x * c - camera.position.z * s,
+            0,
+            camera.position.x * s + camera.position.z * c);
+    }
+
     function createGodRaysPostProcess() {
         var blackMaterial = new THREE.ShaderMaterial(THREE.Effects.cubesBlack);
 
@@ -97,10 +104,11 @@ function App(container) {
         var verticalBlurMaterial = new THREE.ShaderMaterial(THREE.Effects.verticalBlur);
         addMaterialToDatGUI("God Rays", godRaysMaterial);
 
-        var lightColor = new THREE.Color(0.349, 1.0, 1.0);
+        // var lightColor = new THREE.Color(0.349, 1.0, 1.0);
+        var lightColor = new THREE.Color(0x046380);
         var occlusionScene = new THREE.Scene();
         var lightMesh = new THREE.Mesh(
-            new THREE.IcosahedronGeometry(5, 3),
+            new THREE.IcosahedronGeometry(10, 3),
             new THREE.MeshBasicMaterial({
                 color: lightColor
             })
@@ -171,12 +179,10 @@ function App(container) {
             };
             var w = container.offsetWidth,
                 h = container.offsetHeight;
-            // var reducedSizeFactor = 1.0;
-            var reducedSizeFactor = 0.5;
-            // var reducedSizeFactor = 0.25;
+            var reductionFactor = 1;
             diffuseRT = new THREE.WebGLRenderTarget(w, h, rtParams);
-            godRaysRT1 = new THREE.WebGLRenderTarget(w * reducedSizeFactor, h * reducedSizeFactor, rtParams);
-            godRaysRT2 = new THREE.WebGLRenderTarget(w * reducedSizeFactor, h * reducedSizeFactor, rtParams);
+            godRaysRT1 = new THREE.WebGLRenderTarget(w >> reductionFactor, h >> reductionFactor, rtParams);
+            godRaysRT2 = new THREE.WebGLRenderTarget(w >> reductionFactor, h >> reductionFactor, rtParams);
         }
     }
 
@@ -218,11 +224,11 @@ function App(container) {
 
     function createGeometry() {
         // Create an unindexed buffer.
-        var numCubes = 5000;
+        var numCubes = 7500;
         var numTrianglesPerCube = 12;
         var numTriangles = numTrianglesPerCube * numCubes;
 
-        var halfSize = 0.6; // half cube side length.
+        var halfSize = 0.5; // half cube side length.
 
         var v1 = new THREE.Vector3(-halfSize, -halfSize, -halfSize);
         var v2 = new THREE.Vector3(+halfSize, -halfSize, -halfSize);

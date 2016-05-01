@@ -60,22 +60,22 @@ if (!THREE.Effects) THREE.Effects = {};
     // TRANSLATION.
     // Y-translation.
     const float yOffset = 60.0;
-    const float yDistance = 120.0;
-    float transitionSecondsY = 30.0;
+    const float yDistance = 130.0;
+    float transitionSecondsY = 60.0;
     float randomizedAgeY = fAge * (random1.y) + random1.z * transitionSecondsY;
     float moduloRandomizedAgeY = mod(randomizedAgeY, transitionSecondsY);
     float positionY = position.y - yOffset + moduloRandomizedAgeY / transitionSecondsY * yDistance;
 
     // X- & Z-translation.
-    const float xzDistance = 25.0;
-    const float xzAgeFactor = 0.2;
+    const float xzDistance = 20.0;
+    const float xzAgeFactor = 0.25;
     float leftOrRight = random2.x;
     float frontOrBack = random2.y;
     moduloRandomizedAgeY *= xzAgeFactor;
     float positionX = position.x + cos(moduloRandomizedAgeY) * leftOrRight * xzDistance;
     float positionZ = position.z + sin(moduloRandomizedAgeY) * frontOrBack * xzDistance;
 
-    float offsetAmount = 4.0;
+    float offsetAmount = 2.5;
 
     position = vec3(
         positionX + random2.z * offsetAmount,
@@ -193,7 +193,8 @@ if (!THREE.Effects) THREE.Effects = {};
             },
             fExposure: {
                 type: "f",
-                value: 0.6
+                // value: 0.6
+                value: 0.25
             },
             fDecay: {
                 type: "f",
@@ -202,11 +203,12 @@ if (!THREE.Effects) THREE.Effects = {};
             fDensity: {
                 type: "f",
                 // value: 0.96
-                value: 0.5
+                value: 0.45
             },
             fWeight: {
                 type: "f",
-                value: 0.4
+                // value: 0.4
+                value: 0.65
             },
             fClamp: {
                 type: "f",
