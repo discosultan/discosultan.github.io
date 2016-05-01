@@ -185,6 +185,7 @@ if (!THREE.Effects) THREE.Effects = {};
     gl_Position = vec4(position, 1.0);
     `;
 
+    // ref: https://github.com/BKcore/Three.js-extensions/blob/master/sources/Shaders.js
     effects.godRays = {
         uniforms: {
             tDiffuse: {
@@ -257,6 +258,7 @@ if (!THREE.Effects) THREE.Effects = {};
         }`
     };
 
+    // ref: https://github.com/BKcore/Three.js-extensions/blob/master/sources/Shaders.js
     effects.additive = {
         uniforms: {
             tDiffuse: {
@@ -293,6 +295,7 @@ if (!THREE.Effects) THREE.Effects = {};
         `
     };
 
+    // ref: https://github.com/BKcore/Three.js-experiments-pool/blob/master/r48/js/ShaderExtras.js
     effects.horizontalBlur = {
         uniforms: {
             tDiffuse: {
@@ -333,6 +336,7 @@ if (!THREE.Effects) THREE.Effects = {};
         `
     };
 
+    // ref: https://github.com/BKcore/Three.js-experiments-pool/blob/master/r48/js/ShaderExtras.js
     effects.verticalBlur = {
         uniforms: {
             tDiffuse: {
