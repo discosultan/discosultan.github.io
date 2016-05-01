@@ -104,15 +104,15 @@ if (!THREE.Effects) THREE.Effects = {};
     // vDiffuse += light1Intensity * max(dot(normal, light1InvDir), 0.0) * light1Color;
 
     // Point light.
-    const vec3 light2Color = vec3(0.349, 1.0, 1.0);
-    const vec3 light2Position = vec3(0.0, 0.0, 0.0);
-    const float light2Intensity = 1.0;
-    const float light2MaxDistance = 100.0;
-    vec3 light2InvVector = light2Position - position;
-    float light2Distance = length(light2InvVector);
-    vec3 light2InvDir = light2InvVector / light2Distance;
-    float light2Factor = 1.0 - min(light2Distance / light2MaxDistance, 1.0);
-    vDiffuse += light2Intensity * max(dot(normal, light2InvDir), 0.0) * light2Factor * light2Color;
+    // const vec3 light2Color = vec3(0.349, 1.0, 1.0);
+    // const float light2Intensity = 1.0;
+    const vec3 pointLightPosition = vec3(0.0, 0.0, 0.0);
+    const float pointLightMaxDistance = 50.0;
+    vec3 pointLightInvVector = pointLightPosition - position;
+    float pointLightDistance = length(pointLightInvVector);
+    vec3 pointLightInvDir = pointLightInvVector / pointLightDistance;
+    float pointLightFactor = 1.0 - min(pointLightDistance / pointLightMaxDistance, 1.0);
+    vDiffuse += v4PointLight.w * max(dot(normal, pointLightInvDir), 0.0) * pointLightFactor * v4PointLight.xyz;
   `;
 
     effects.cubesDiffuse = {
@@ -122,14 +122,19 @@ if (!THREE.Effects) THREE.Effects = {};
                 value: Math.PI
             },
             v4AmbientLight: {
-                type: '4f',
+                type: 'v4',
                 value: new THREE.Vector4(0,0,0,1)
+            },
+            v4PointLight: {
+                type: 'v4',
+                value: new THREE.Vector4(0.349,1,1)
             }
         },
         vertexColors: THREE.VertexColors,
         vertexShader: `
         uniform float fAge;
         uniform vec4 v4AmbientLight;
+        uniform vec4 v4PointLight;
 
         attribute vec3 random1;
         attribute vec4 random2;

@@ -9,9 +9,14 @@ function App(container) {
         stencil: false,
         preserveDrawingBuffer: true
     });
-    // renderer.setClearColor(0xDDDDDD);
-    renderer.setClearColor(0x07070C);
-    // renderer.setClearColor(0x000000);
+
+    this.clearColor = new THREE.Color(0x07070C);
+
+    var folder = gui.addFolder('App');
+    addObjectToDatGUI(folder, 'ClearColor', this.clearColor, function(color) { renderer.setClearColor(color); });
+    folder.open();
+
+    renderer.setClearColor(this.clearColor);
     renderer.setSize(container.offsetWidth, container.offsetHeight);
     renderer.autoClear = false;
     renderer.sortObjects = false;
@@ -186,12 +191,7 @@ function App(container) {
                 if (uniform.type === 't') continue;
 
                 if (typeof value === 'object') {
-                    var subfolder = folder.addFolder(getName(uniform, property));
-                    for (var valueProperty in value) {
-                        if (value.hasOwnProperty(valueProperty)) {
-                            subfolder.add(value, valueProperty);
-                        }
-                    }
+                    addObjectToDatGUI(folder, getName(uniform, property), value);
                 } else {
                     folder.add(uniform, 'value').name(getName(uniform, property));
                 }
@@ -204,6 +204,17 @@ function App(container) {
         }
     }
 
+    function addObjectToDatGUI(folder, name, value, onChange) {
+        var subfolder = folder.addFolder(name);
+        for (var property in value) {
+            if (value.hasOwnProperty(property)) {
+                var ctrl = subfolder.add(value, property);
+                if (onChange) {
+                    ctrl.onChange(function (propertyValue) { onChange(value); });
+                }
+            }
+        }
+    }
 
     function createGeometry() {
         // Create an unindexed buffer.
