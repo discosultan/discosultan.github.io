@@ -2,6 +2,7 @@ function CubesSimulation(container) {
     // Setup helper variables.
     var ZERO_VECTOR = new THREE.Vector3(0, 0, 0);
     var TWO_PI = Math.PI*2;
+    var self = this;
     var gui = new dat.GUI();
 
     // Setup renderer.
@@ -33,7 +34,7 @@ function CubesSimulation(container) {
 
     var cameraAxisOfRotation = new THREE.Vector3(0.0, 1.0, 0.25);
     cameraAxisOfRotation.normalize();
-    var rotation = Math.random() * TWO_PI;
+    this.cameraRotation = Math.random() * TWO_PI;
     var rotationSpeed = Math.PI * 0.1;
 
     camera.up.set(cameraAxisOfRotation.x, cameraAxisOfRotation.y, cameraAxisOfRotation.z);
@@ -63,21 +64,23 @@ function CubesSimulation(container) {
     };
 
     var previousTimestamp = 0;
+    var totalSeconds = 0;
     requestAnimationFrame(render);
 
     function render(timestamp) {
         var deltaSeconds = (timestamp - previousTimestamp) * 0.001;
+        totalSeconds += deltaSeconds;
         previousTimestamp = timestamp;
         diffuseMaterial.uniforms.fAge.value += deltaSeconds;
 
         // Rotate camera.
-        rotation = (rotation + rotationSpeed*deltaSeconds) % TWO_PI;
+        self.cameraRotation = (self.cameraRotation + rotationSpeed*deltaSeconds) % TWO_PI;
 
-        camera.position.set(100, 0, 0).applyAxisAngle(cameraAxisOfRotation, rotation);
+        camera.position.set(100, 0, 0).applyAxisAngle(cameraAxisOfRotation, self.cameraRotation);
         camera.lookAt(ZERO_VECTOR);
 
         if (godRays.enabled) {
-            godRays.render();
+            godRays.render(totalSeconds);
         } else {
             renderer.clear(true, true, false);
             renderer.render(scene, camera);
@@ -94,36 +97,47 @@ function CubesSimulation(container) {
         var verticalBlurMaterial = new THREE.ShaderMaterial(THREE.Effects.verticalBlur);
         addMaterialToDatGUI("God Rays", godRaysMaterial);
 
+        var godRays = {
+            enabled: true
+        };
+
         // var lightColor = new THREE.Color(0.349, 1.0, 1.0);
         var lightColor = new THREE.Color(0x046380);
         var occlusionScene = new THREE.Scene();
-        var lightMesh = new THREE.Mesh(
+        godRays.lightMesh = new THREE.Mesh(
             new THREE.IcosahedronGeometry(12, 3),
             new THREE.MeshBasicMaterial({
                 color: lightColor
             })
         );
         var cubesMeshBlack = new THREE.Mesh(geometry, blackMaterial);
-        occlusionScene.add(lightMesh);
+        occlusionScene.add(godRays.lightMesh);
         occlusionScene.add(cubesMeshBlack);
 
         var quadScene = new THREE.Scene();
         var quadMesh = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2), godRaysMaterial);
         quadScene.add(quadMesh);
 
-        var godRays = {
-            enabled: true
-        };
-
         var diffuseRT, godRaysRT1, godRaysRT2;
         (godRays.resize = function() {
-            horizontalBlurMaterial.uniforms.fH.value = 1 / container.offsetWidth;
-            verticalBlurMaterial.uniforms.fV.value = 1 / container.offsetHeight;
+            var blurriness = 3;
+            horizontalBlurMaterial.uniforms.fH.value = blurriness / container.offsetWidth;
+            verticalBlurMaterial.uniforms.fV.value = blurriness / container.offsetHeight;
             setupRenderTargets();
         })();
 
-        godRays.render = function() {
+        var lightProjectedPosition = new THREE.Vector3();
+        godRays.render = function(totalSeconds) {
             blackMaterial.uniforms.fAge.value = diffuseMaterial.uniforms.fAge.value;
+            godRays.lightMesh.position.y = Math.sin(totalSeconds) * 30;
+            diffuseMaterial.uniforms.v3PointLightPosition.value.y = godRays.lightMesh.position.y;
+
+            lightProjectedPosition.copy(godRays.lightMesh.position);
+            lightProjectedPosition.project(camera);
+            godRaysMaterial.uniforms.v2LightPosition.value.x = (lightProjectedPosition.x + 1)*0.5;
+            godRaysMaterial.uniforms.v2LightPosition.value.y = (lightProjectedPosition.y + 1)*0.5;
+
+            // console.log(lightScreenPosition);
 
             renderer.clearTarget(diffuseRT, true, true, false);
             renderer.render(scene, camera, diffuseRT);
@@ -214,7 +228,7 @@ function CubesSimulation(container) {
 
     function createGeometry() {
         // Create an unindexed buffer.
-        var numCubes = 7500;
+        var numCubes = 5500;
         var numTrianglesPerCube = 12;
         var numTriangles = numTrianglesPerCube * numCubes;
 

@@ -218,6 +218,10 @@ if (!THREE.Effects) THREE.Effects = {};
             fClamp: {
                 type: "f",
                 value: 1.0
+            },
+            v2LightPosition: {
+                type: "v2",
+                value: new THREE.Vector2(0.5, 0.5)
             }
         },
         vertexShader: `
@@ -238,12 +242,13 @@ if (!THREE.Effects) THREE.Effects = {};
         uniform float fDensity;
         uniform float fWeight;
         uniform float fClamp;
+        uniform vec2 v2LightPosition;
 
         void main() {
             const int numSamples = 20;
-            const vec2 lightPosition = vec2(0.5, 0.5);
+            // const vec2 lightPosition = vec2(0.5, 0.5);
 
-            vec2 delta = vUv - lightPosition;
+            vec2 delta = vUv - v2LightPosition;
             delta *= 1.0 / float(numSamples) * fDensity;
             float illuminationDecay = 1.0;
             vec4 fragColor = vec4(0.0);
