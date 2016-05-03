@@ -95,7 +95,7 @@ if (!THREE.Effects) THREE.Effects = {};
     // We use Gouraud shading for per vertex lighting.
 
     // Ambient light.
-    vDiffuse = v4AmbientLight.xyz * v4AmbientLight.w;
+    vDiffuse = v4AmbientLightColor.xyz * v4AmbientLightColor.w;
 
     // // Directional light.
     // const vec3 light1Color = vec3(1.0, 0.0, 0.0);
@@ -106,13 +106,13 @@ if (!THREE.Effects) THREE.Effects = {};
     // Point light.
     // const vec3 light2Color = vec3(0.349, 1.0, 1.0);
     // const float light2Intensity = 1.0;
-    const vec3 pointLightPosition = vec3(0.0, 0.0, 0.0);
+    // const vec3 pointLightPosition = vec3(0.0, 0.0, 0.0);
     const float pointLightMaxDistance = 50.0;
-    vec3 pointLightInvVector = pointLightPosition - position;
+    vec3 pointLightInvVector = v3PointLightPosition - position;
     float pointLightDistance = length(pointLightInvVector);
     vec3 pointLightInvDir = pointLightInvVector / pointLightDistance;
     float pointLightFactor = 1.0 - min(pointLightDistance / pointLightMaxDistance, 1.0);
-    vDiffuse += v4PointLight.w * max(dot(normal, pointLightInvDir), 0.0) * pointLightFactor * v4PointLight.xyz;
+    vDiffuse += v4PointLightColor.w * max(dot(normal, pointLightInvDir), 0.0) * pointLightFactor * v4PointLightColor.xyz;
   `;
 
     effects.cubesDiffuse = {
@@ -121,20 +121,25 @@ if (!THREE.Effects) THREE.Effects = {};
                 type: 'f',
                 value: Math.PI
             },
-            v4AmbientLight: {
+            v4AmbientLightColor: {
                 type: 'v4',
                 value: new THREE.Vector4(0,0,0,1)
             },
-            v4PointLight: {
+            v4PointLightColor: {
                 type: 'v4',
                 value: new THREE.Vector4(0.349,1,1)
+            },
+            v3PointLightPosition: {
+                type: 'v3',
+                value: new THREE.Vector3(0,0,0)
             }
         },
         vertexColors: THREE.VertexColors,
         vertexShader: `
         uniform float fAge;
-        uniform vec4 v4AmbientLight;
-        uniform vec4 v4PointLight;
+        uniform vec4 v4AmbientLightColor;
+        uniform vec4 v4PointLightColor;
+        uniform vec3 v3PointLightPosition;
 
         attribute vec3 random1;
         attribute vec4 random2;

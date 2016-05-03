@@ -1,6 +1,7 @@
-function App(container) {
+function CubesSimulation(container) {
     // Setup helper variables.
-    var zeroVector = new THREE.Vector3(0, 0, 0);
+    var ZERO_VECTOR = new THREE.Vector3(0, 0, 0);
+    var TWO_PI = Math.PI*2;
     var gui = new dat.GUI();
 
     // Setup renderer.
@@ -11,9 +12,10 @@ function App(container) {
     });
 
     // this.clearColor = new THREE.Color(0x07070C);
-    this.clearColor = new THREE.Color(0x002F2F);
+    // this.clearColor = new THREE.Color(0x002F2F);
+    this.clearColor = new THREE.Color(0x001B1B);
 
-    var folder = gui.addFolder('App');
+    var folder = gui.addFolder('CubesSimulation');
     addObjectToDatGUI(folder, 'ClearColor', this.clearColor, function(color) { renderer.setClearColor(color); });
     folder.open();
 
@@ -28,18 +30,15 @@ function App(container) {
         45,
         container.offsetWidth / container.offsetHeight,
         0.1, 1000);
-    // camera.position.set(-20, 25, 20);
-    // folder.add(camera.position, 'x');
-    // folder.add(camera.position, 'z');
 
-    var cameraAxisOfRotation = new THREE.Vector3(0.4, 1.0, 0.4);
+    var cameraAxisOfRotation = new THREE.Vector3(0.0, 1.0, 0.25);
     cameraAxisOfRotation.normalize();
+    var rotation = Math.random() * TWO_PI;
+    var rotationSpeed = Math.PI * 0.1;
+
     camera.up.set(cameraAxisOfRotation.x, cameraAxisOfRotation.y, cameraAxisOfRotation.z);
-    // camera.up.set(1,0,0);
     camera.position.set(100, 0, 0);
-    // camera.rotationSpeed = Math.PI * 0.025;
-    camera.rotationSpeed = Math.PI * 0.2;
-    rotateCameraBy(Math.PI * 0.2);
+    camera.lookAt(ZERO_VECTOR);
 
     // Setup scene.
     var scene = new THREE.Scene();
@@ -71,11 +70,11 @@ function App(container) {
         previousTimestamp = timestamp;
         diffuseMaterial.uniforms.fAge.value += deltaSeconds;
 
-        // // Rotate camera.
-        var angle = camera.rotationSpeed * deltaSeconds;
-        rotateCameraBy(angle);
-        camera.up.set(cameraAxisOfRotation.x, cameraAxisOfRotation.y, cameraAxisOfRotation.z);
-        camera.lookAt(zeroVector);
+        // Rotate camera.
+        rotation = (rotation + rotationSpeed*deltaSeconds) % TWO_PI;
+
+        camera.position.set(100, 0, 0).applyAxisAngle(cameraAxisOfRotation, rotation);
+        camera.lookAt(ZERO_VECTOR);
 
         if (godRays.enabled) {
             godRays.render();
@@ -84,15 +83,6 @@ function App(container) {
             renderer.render(scene, camera);
         }
         requestAnimationFrame(render);
-    }
-
-    function rotateCameraBy(angle) {
-        var s = Math.sin(angle);
-        var c = Math.cos(angle);
-        camera.position.set(
-            camera.position.x * c - camera.position.z * s,
-            0,
-            camera.position.x * s + camera.position.z * c);
     }
 
     function createGodRaysPostProcess() {
@@ -108,7 +98,7 @@ function App(container) {
         var lightColor = new THREE.Color(0x046380);
         var occlusionScene = new THREE.Scene();
         var lightMesh = new THREE.Mesh(
-            new THREE.IcosahedronGeometry(10, 3),
+            new THREE.IcosahedronGeometry(12, 3),
             new THREE.MeshBasicMaterial({
                 color: lightColor
             })
