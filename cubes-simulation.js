@@ -2,6 +2,7 @@ function CubesSimulation(container) {
     // Setup helper variables.
     var ZERO_VECTOR = new THREE.Vector3(0, 0, 0);
     var TWO_PI = Math.PI*2;
+    var PI_OVER_TWO = Math.PI*0.5;
     var self = this;
     var gui = new dat.GUI();
 
@@ -44,12 +45,12 @@ function CubesSimulation(container) {
     // Setup scene.
     var scene = new THREE.Scene();
     // Create geometry.
-    var geometry = createGeometry();
+    var cubesGeometry = createCubesGeometry();
     // Setup materials.
     var diffuseMaterial = new THREE.ShaderMaterial(THREE.Effects.cubesDiffuse);
     addMaterialToDatGUI("Cubes", diffuseMaterial);
     // Create mesh and add to scene.
-    var cubesMesh = new THREE.Mesh(geometry, diffuseMaterial);
+    var cubesMesh = new THREE.Mesh(cubesGeometry, diffuseMaterial);
     scene.add(cubesMesh);
 
     // Create volumetric light scattering (god rays) post process
@@ -104,13 +105,24 @@ function CubesSimulation(container) {
         // var lightColor = new THREE.Color(0.349, 1.0, 1.0);
         var lightColor = new THREE.Color(0x046380);
         var occlusionScene = new THREE.Scene();
-        godRays.lightMesh = new THREE.Mesh(
-            new THREE.IcosahedronGeometry(12, 3),
-            new THREE.MeshBasicMaterial({
-                color: lightColor
-            })
-        );
-        var cubesMeshBlack = new THREE.Mesh(geometry, blackMaterial);
+
+        var lightGeometry = new createCircleGeometry(10);
+        var lightMesh = new THREE.Mesh(lightGeometry, new THREE.MeshBasicMaterial({ color: lightColor }));
+        // var x = 120, y = 250, z = 0;
+        var rx = PI_OVER_TWO, ry = 0, rz = 0;
+        var s = 1;
+        // lightMesh.position.set(x, y, z - 75);
+        lightMesh.rotation.set(rx, ry, rz);
+        lightMesh.scale.set(s, s, s);
+
+        // godRays.lightMesh = new THREE.Mesh(
+        //     new THREE.IcosahedronGeometry(12, 3),
+        //     new THREE.MeshBasicMaterial({
+        //         color: lightColor
+        //     })
+        // );
+        godRays.lightMesh = lightMesh;
+        var cubesMeshBlack = new THREE.Mesh(cubesGeometry, blackMaterial);
         occlusionScene.add(godRays.lightMesh);
         occlusionScene.add(cubesMeshBlack);
 
@@ -129,7 +141,7 @@ function CubesSimulation(container) {
         var lightProjectedPosition = new THREE.Vector3();
         godRays.render = function(totalSeconds) {
             blackMaterial.uniforms.fAge.value = diffuseMaterial.uniforms.fAge.value;
-            godRays.lightMesh.position.y = Math.sin(totalSeconds) * 30;
+            godRays.lightMesh.position.y = Math.sin(totalSeconds) * 50;
             diffuseMaterial.uniforms.v3PointLightPosition.value.y = godRays.lightMesh.position.y;
 
             lightProjectedPosition.copy(godRays.lightMesh.position);
@@ -226,7 +238,18 @@ function CubesSimulation(container) {
         }
     }
 
-    function createGeometry() {
+    function createCircleGeometry(radius) {
+        var shape = new THREE.Shape();
+        shape.moveTo(0, radius);
+        shape.quadraticCurveTo(radius, radius, radius, 0);
+        shape.quadraticCurveTo(radius, -radius, 0, -radius);
+        shape.quadraticCurveTo(-radius, -radius, -radius, 0);
+        shape.quadraticCurveTo(-radius, radius, 0, radius);
+        var extrudeSettings = { amount: 8, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
+        return new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    }
+
+    function createCubesGeometry() {
         // Create an unindexed buffer.
         var numCubes = 5500;
         var numTrianglesPerCube = 12;
