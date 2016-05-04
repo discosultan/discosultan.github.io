@@ -1,3 +1,16 @@
 ? hold left mouse button to disable clearing render target
 ? flicker godrays by turning postprocess off and on again occasionally
 ? move camera by the position of cursor on the screen
+
+simulation: {
+  cameraRotation: number;
+  clearColor: THREE.Color;
+  cubesDiffuseMaterial: THREE.Material;
+  godRays: {
+    cubesBlackMaterial: THREE.Material;
+    godRaysMaterial: THREE.Material;
+    lightMesh: THREE.Mesh;
+  }
+
+  resize: () => void;
+}

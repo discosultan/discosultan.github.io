@@ -62,7 +62,7 @@ if (!THREE.Effects) THREE.Effects = {};
     const float yOffset = 60.0;
     const float yDistance = 130.0;
     float transitionSecondsY = 60.0;
-    float randomizedAgeY = fAge * (random1.y) + random1.z * transitionSecondsY;
+    float randomizedAgeY = fAge * (random1.y + 0.5) * 0.5 + (random1.z) * transitionSecondsY;
     float moduloRandomizedAgeY = mod(randomizedAgeY, transitionSecondsY);
     float positionY = position.y - yOffset + moduloRandomizedAgeY / transitionSecondsY * yDistance;
 
@@ -75,7 +75,7 @@ if (!THREE.Effects) THREE.Effects = {};
     float positionX = position.x + cos(moduloRandomizedAgeY) * leftOrRight * xzDistance;
     float positionZ = position.z + sin(moduloRandomizedAgeY) * frontOrBack * xzDistance;
 
-    float offsetAmount = 2.5;
+    float offsetAmount = 2.4;
 
     position = vec3(
         positionX + random2.z * offsetAmount,
@@ -107,7 +107,7 @@ if (!THREE.Effects) THREE.Effects = {};
     // const vec3 light2Color = vec3(0.349, 1.0, 1.0);
     // const float light2Intensity = 1.0;
     // const vec3 pointLightPosition = vec3(0.0, 0.0, 0.0);
-    const float pointLightMaxDistance = 50.0;
+    const float pointLightMaxDistance = 75.0;
     vec3 pointLightInvVector = v3PointLightPosition - position;
     float pointLightDistance = length(pointLightInvVector);
     vec3 pointLightInvDir = pointLightInvVector / pointLightDistance;
@@ -119,7 +119,7 @@ if (!THREE.Effects) THREE.Effects = {};
         uniforms: {
             fAge: {
                 type: 'f',
-                value: Math.PI
+                value: 60
             },
             v4AmbientLightColor: {
                 type: 'v4',
@@ -164,7 +164,7 @@ if (!THREE.Effects) THREE.Effects = {};
         uniforms: {
             fAge: {
                 type: 'f',
-                value: Math.PI
+                value: 60
             }
         },
         vertexColors: THREE.VertexColors,
@@ -199,7 +199,7 @@ if (!THREE.Effects) THREE.Effects = {};
             fExposure: {
                 type: "f",
                 // value: 0.6
-                value: 0.25
+                value: 0.5
             },
             fDecay: {
                 type: "f",
@@ -208,7 +208,7 @@ if (!THREE.Effects) THREE.Effects = {};
             fDensity: {
                 type: "f",
                 // value: 0.96
-                value: 0.45
+                value: 0.5
             },
             fWeight: {
                 type: "f",
