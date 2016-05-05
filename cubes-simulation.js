@@ -46,7 +46,7 @@ function CubesSimulation(container) {
     // Setup scene.
     var scene = new THREE.Scene();
     // Create geometry.
-    var cubesGeometry = createCubesGeometry();    
+    var cubesGeometry = createCubesGeometry();
     // Setup materials.
     this.cubesDiffuseMaterial = new THREE.ShaderMaterial(THREE.Effects.cubesDiffuse);
     addMaterialToDatGUI("Cubes", this.cubesDiffuseMaterial);
@@ -214,7 +214,7 @@ function CubesSimulation(container) {
                 if (typeof value === 'object') {
                     addObjectToDatGUI(folder, getName(uniform, property), value);
                 } else {
-                    folder.add(uniform, 'value').name(getName(uniform, property));
+                    folder.add(uniform, 'value').name(getName(uniform, property)).step(0.01);
                 }
             }
         }
@@ -229,7 +229,7 @@ function CubesSimulation(container) {
         var subfolder = folder.addFolder(name);
         for (var property in value) {
             if (value.hasOwnProperty(property)) {
-                var ctrl = subfolder.add(value, property);
+                var ctrl = subfolder.add(value, property).step(0.01);
                 if (onChange) {
                     ctrl.onChange(function (propertyValue) { onChange(value); });
                 }
