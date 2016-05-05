@@ -46,7 +46,7 @@ function CubesSimulation(container) {
     // Setup scene.
     var scene = new THREE.Scene();
     // Create geometry.
-    var cubesGeometry = createCubesGeometry();
+    var cubesGeometry = createCubesGeometry();    
     // Setup materials.
     this.cubesDiffuseMaterial = new THREE.ShaderMaterial(THREE.Effects.cubesDiffuse);
     addMaterialToDatGUI("Cubes", this.cubesDiffuseMaterial);
@@ -107,7 +107,9 @@ function CubesSimulation(container) {
         var occlusionScene = new THREE.Scene();
 
         var lightGeometry = new createCircleGeometry(10, 4);
-        var lightMesh = new THREE.Mesh(lightGeometry, new THREE.MeshBasicMaterial({ color: lightColor }));
+        var lightMaterial = new THREE.MeshBasicMaterial({ color: lightColor });
+        addObjectToDatGUI(folder, "LightColor", lightMaterial.color)
+        var lightMesh = new THREE.Mesh(lightGeometry, lightMaterial);
         lightMesh.position.set(0, 0, 0);
         lightMesh.rotation.set(PI_OVER_TWO, 0, 0);
         lightMesh.scale.set(1, 1, 1);

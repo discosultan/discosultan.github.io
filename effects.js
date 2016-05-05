@@ -199,7 +199,7 @@ if (!THREE.Effects) THREE.Effects = {};
             fExposure: {
                 type: "f",
                 // value: 0.6
-                value: 0.5
+                value: 0.75
             },
             fDecay: {
                 type: "f",
