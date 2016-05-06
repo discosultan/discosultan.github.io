@@ -2,6 +2,7 @@
 <html>
 
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -9,10 +10,17 @@
 <body>
     <section id="simulation"></section>
 
+    <section id="menu">
+        <div class="menu__element-left">LEFT PANEL</div>
+        <div class="menu__element-center">CENTER PANEL</div>
+        <div class="menu__element-right">RIGHT PANEL</div>
+        <span class="stretch"></span>
+    </section>
+
     <script src="vendor/three.min.js"></script>
     <script src="vendor/dat.gui.min.js"></script>
-    <script src="effects.js?v=1"></script>
-    <script src="cubes-simulation.js?v=1"></script>
+    <script src="effects.js?v=2"></script>
+    <script src="cubes-simulation.js?v=2"></script>
     <script>
         var simulation = new CubesSimulation(document.getElementById('simulation'));
         window.onresize = simulation.resize;

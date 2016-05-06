@@ -7,10 +7,19 @@ simulation: {
   clearColor: THREE.Color;
   cubesDiffuseMaterial: THREE.Material;
   godRays: {
+    enabled: boolean;
     cubesBlackMaterial: THREE.Material;
     godRaysMaterial: THREE.Material;
     lightMesh: THREE.Mesh;
-  }
+
+    render: (totalSeconds: number) => void;
+  };
+  background: {
+    enabled: boolean;
+
+    resize: () => void;
+    render: () => void;
+  };
 
   resize: () => void;
 }

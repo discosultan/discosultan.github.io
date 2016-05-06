@@ -176,7 +176,7 @@ function CubesSimulation(container) {
         var lightProjectedPosition = new THREE.Vector3();
         godRays.render = function(totalSeconds) {
             godRays.cubesBlackMaterial.uniforms.fAge.value = self.cubesDiffuseMaterial.uniforms.fAge.value;
-            godRays.lightMesh.position.y = Math.sin(totalSeconds) * 50;
+            godRays.lightMesh.position.y = Math.sin(totalSeconds * 0.6) * 50;
             self.cubesDiffuseMaterial.uniforms.v3PointLightPosition.value.y = godRays.lightMesh.position.y;
 
             lightProjectedPosition.copy(godRays.lightMesh.position);
