@@ -65,7 +65,7 @@ function CubesSimulation(container) {
     };
 
     var previousTimestamp = 0;
-    var totalSeconds = 0;
+    var totalSeconds = Math.random() * 60;
     requestAnimationFrame(render);
 
     function render(timestamp) {
