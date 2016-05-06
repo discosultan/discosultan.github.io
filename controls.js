@@ -1,3 +1,5 @@
+'use strict';
+
 function addControls(simulation) {
     var gui = new dat.GUI();
 
@@ -8,7 +10,7 @@ function addControls(simulation) {
         simulation.renderer.setClearColor(color);
     });
     addObjectToDatGUI(folder, "LightColor", simulation.godRays.lightMaterial.color)
-    
+
     folder.add(simulation.godRays, 'enabled').name('GodRaysEnabled');
     folder.add(simulation.background, 'enabled').name('BackgroundEnabled');
 

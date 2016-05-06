@@ -1,3 +1,5 @@
+'use strict';
+
 if (!THREE.Effects) THREE.Effects = {};
 
 (function(effects) {

@@ -1,3 +1,5 @@
+'use strict';
+
 function CubesSimulation(container) {
     // Setup helper variables.
     var ZERO_VECTOR = new THREE.Vector3(0, 0, 0);
