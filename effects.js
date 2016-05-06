@@ -44,8 +44,8 @@ if (!THREE.Effects) THREE.Effects = {};
     - rotation speed (float 0..1)           - random1.x
     - age (float 0..1)                      - random1.y
     - age speed (float 0..1)                - random1.z
-    - left or right (float 0..1) -> -1 or 1 - random2.x
-    - front or back (float 0..1) -> -1 or 1 - random2.y
+    - left or right (float -1 or 1)         - random2.x
+    - front or back (float -1 or 1)         - random2.y
     - x offset (float -1..1)                - random2.z
     - y offset (float -1..1)                - random2.w
     http://stackoverflow.com/a/3956538/1466456
@@ -60,8 +60,8 @@ if (!THREE.Effects) THREE.Effects = {};
     // TRANSLATION.
     // Y-translation.
     const float yOffset = 60.0;
-    const float yDistance = 130.0;
-    float transitionSecondsY = 60.0;
+    const float yDistance = 120.0;
+    const float transitionSecondsY = 60.0;
     float randomizedAgeY = fAge * (random1.y + 0.5) * 0.5 + (random1.z) * transitionSecondsY;
     float moduloRandomizedAgeY = mod(randomizedAgeY, transitionSecondsY);
     float positionY = position.y - yOffset + moduloRandomizedAgeY / transitionSecondsY * yDistance;
@@ -75,7 +75,7 @@ if (!THREE.Effects) THREE.Effects = {};
     float positionX = position.x + cos(moduloRandomizedAgeY) * leftOrRight * xzDistance;
     float positionZ = position.z + sin(moduloRandomizedAgeY) * frontOrBack * xzDistance;
 
-    float offsetAmount = 2.4;
+    float offsetAmount = 9.5;
 
     position = vec3(
         positionX + random2.z * offsetAmount,
@@ -123,15 +123,15 @@ if (!THREE.Effects) THREE.Effects = {};
             },
             v4AmbientLightColor: {
                 type: 'v4',
-                value: new THREE.Vector4(0,0,0,1)
+                value: new THREE.Vector4(0, 0, 0, 1)
             },
             v4PointLightColor: {
                 type: 'v4',
-                value: new THREE.Vector4(0.349,1,1)
+                value: new THREE.Vector4(0.349, 1, 1)
             },
             v3PointLightPosition: {
                 type: 'v3',
-                value: new THREE.Vector3(0,0,0)
+                value: new THREE.Vector3(0, 0, 0)
             }
         },
         vertexColors: THREE.VertexColors,
@@ -184,6 +184,84 @@ if (!THREE.Effects) THREE.Effects = {};
           gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
         }
       `
+    };
+
+    /*
+    random components:
+    - rotation axis (vec 3 dir normal)      - color
+    - rotation speed (float 0..1)           - random1.x
+    - age (float 0..1)                      - random1.y
+    - age speed (float 0..1)                - random1.z
+    - left or right (float -1 or 1)         - random2.x
+    - front or back (float -1 or 1)         - random2.y
+    - x offset (float -1..1)                - random2.z
+    - y offset (float -1..1)                - random2.w
+    */
+    effects.background = {
+        uniforms: {
+            fAge: {
+                type: 'f',
+                value: 60
+            }
+        },
+        vertexColors: THREE.VertexColors,
+        vertexShader: `
+            uniform float fAge;
+
+            attribute vec3 random1;
+            attribute vec4 random2;
+
+            varying lowp vec3 vDiffuse;
+
+            ${mixinCommon}
+            void main() {
+                // ROTATION.
+                const float rotationSpeed = 3.0;
+                vec4 rotation = axisAngleToQuaternion(color, fAge * random1.x * rotationSpeed);
+                vec3 position = rotateVectorByQuaternion(position, rotation);
+                vec3 normal = rotateVectorByQuaternion(normal, rotation);
+
+                // TRANSLATION.
+                const float transitionSecondsY = 30.0;
+                const float zOffset = -150.0;
+                const float xOffset = 160.0;
+                const float yOffset = 60.0;
+                const float yDistance = 120.0;
+                // const vec3 scale = vec3(1.0);
+
+                float randomizedAgeY = fAge * (random1.y + 0.5) * 0.5 + (random1.z) * transitionSecondsY;
+                float moduloRandomizedAgeY = mod(randomizedAgeY, transitionSecondsY);
+                float positionY = position.y - yOffset + moduloRandomizedAgeY / transitionSecondsY * yDistance;
+
+                // position *= scale;
+                position = vec3(
+                    position.x + random2.z * xOffset,
+                    positionY,
+                    zOffset
+                );
+
+                // LIGHTING.
+                vDiffuse = vec3(0.0);
+                // Directional light.
+                const vec3 light1Color = vec3(0.35, 1.0, 1.0);
+                const vec3 light1InvDir = vec3(0.0, 1.0, 0.0);
+                const float light1Intensity = 0.25;
+                vDiffuse += light1Intensity * max(dot(normal, light1InvDir), 0.0) * light1Color;
+
+                // COORDINATE SPACE TRANSFORMATION.
+                // Transform from local to camera space.
+                vec4 mvPosition = viewMatrix * vec4(position, 1.0);
+
+                // Transform from camera to clip space.
+                gl_Position = projectionMatrix * mvPosition;
+            }
+        `,
+        fragmentShader: `
+        varying lowp vec3 vDiffuse;
+        void main() {
+            gl_FragColor = vec4(vDiffuse, 1.0);
+        }
+        `
     };
 
     var mixinPosition = `

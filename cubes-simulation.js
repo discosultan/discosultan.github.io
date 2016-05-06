@@ -1,8 +1,8 @@
 function CubesSimulation(container) {
     // Setup helper variables.
     var ZERO_VECTOR = new THREE.Vector3(0, 0, 0);
-    var TWO_PI = Math.PI*2;
-    var PI_OVER_TWO = Math.PI*0.5;
+    var TWO_PI = Math.PI * 2;
+    var PI_OVER_TWO = Math.PI * 0.5;
     var self = this;
     var gui = new dat.GUI();
 
@@ -19,7 +19,9 @@ function CubesSimulation(container) {
     this.clearColor = new THREE.Color(0, 0.05, 0.05);
 
     var folder = gui.addFolder('CubesSimulation');
-    addObjectToDatGUI(folder, 'ClearColor', this.clearColor, function(color) { renderer.setClearColor(color); });
+    addObjectToDatGUI(folder, 'ClearColor', this.clearColor, function(color) {
+        renderer.setClearColor(color);
+    });
     folder.open();
 
     renderer.setClearColor(this.clearColor);
@@ -56,13 +58,18 @@ function CubesSimulation(container) {
 
     // Create volumetric light scattering (god rays) post process
     this.godRays = createGodRaysPostProcess();
-    folder.add(this.godRays, 'enabled');
+    folder.add(this.godRays, 'enabled').name('GodRaysEnabled');
+
+    // Create background.
+    this.background = createBackground();
+    folder.add(this.background, 'enabled').name('BackgroundEnabled');
 
     this.resize = function() {
         renderer.setSize(container.offsetWidth, container.offsetHeight);
         camera.aspect = container.offsetWidth / container.offsetHeight;
         camera.updateProjectionMatrix();
         self.godRays.resize();
+        self.background.resize();
     };
 
     var previousTimestamp = 0;
@@ -76,7 +83,7 @@ function CubesSimulation(container) {
         self.cubesDiffuseMaterial.uniforms.fAge.value += deltaSeconds;
 
         // Rotate camera.
-        self.cameraRotation = (self.cameraRotation + rotationSpeed*deltaSeconds) % TWO_PI;
+        self.cameraRotation = (self.cameraRotation + rotationSpeed * deltaSeconds) % TWO_PI;
 
         camera.position.set(100, 0, 0).applyAxisAngle(cameraAxisOfRotation, self.cameraRotation);
         camera.lookAt(ZERO_VECTOR);
@@ -86,8 +93,41 @@ function CubesSimulation(container) {
         } else {
             renderer.clear(true, true, false);
             renderer.render(scene, camera);
+            if (self.background.enabled) {
+                self.background.render();
+            }
         }
         requestAnimationFrame(render);
+    }
+
+    function createBackground() {
+        var backgroundScene = new THREE.Scene();
+        var backgroundMaterial = new THREE.ShaderMaterial(THREE.Effects.background);
+        var backgroundMesh = new THREE.Mesh(cubesGeometry, backgroundMaterial);
+        backgroundScene.add(backgroundMesh);
+        var background = {
+            enabled: true
+        };
+        // Setup camera.
+        var backgroundCamera = new THREE.PerspectiveCamera(
+            45,
+            container.offsetWidth / container.offsetHeight,
+            0.1, 1000);
+        (background.resize = function() {
+            backgroundCamera.aspect = container.offsetWidth / container.offsetHeight;
+            backgroundCamera.updateProjectionMatrix();
+        })();
+        background.render = function(renderTarget) {
+            backgroundMaterial.uniforms.fAge.value = self.cubesDiffuseMaterial.uniforms.fAge.value;
+            // Render only a subset of the entire cubes buffer.
+            cubesGeometry.setDrawRange(0, 36 * 50);
+
+            renderer.render(backgroundScene, backgroundCamera, renderTarget);
+
+            // Reset draw range.
+            cubesGeometry.setDrawRange(0, cubesGeometry.attributes.position.count);
+        }
+        return background;
     }
 
     function createGodRaysPostProcess() {
@@ -107,19 +147,15 @@ function CubesSimulation(container) {
         var occlusionScene = new THREE.Scene();
 
         var lightGeometry = new createCircleGeometry(10, 4);
-        var lightMaterial = new THREE.MeshBasicMaterial({ color: lightColor });
+        var lightMaterial = new THREE.MeshBasicMaterial({
+            color: lightColor
+        });
         addObjectToDatGUI(folder, "LightColor", lightMaterial.color)
         var lightMesh = new THREE.Mesh(lightGeometry, lightMaterial);
         lightMesh.position.set(0, 0, 0);
         lightMesh.rotation.set(PI_OVER_TWO, 0, 0);
         lightMesh.scale.set(1, 1, 1);
 
-        // godRays.lightMesh = new THREE.Mesh(
-        //     new THREE.IcosahedronGeometry(12, 3),
-        //     new THREE.MeshBasicMaterial({
-        //         color: lightColor
-        //     })
-        // );
         godRays.lightMesh = lightMesh;
         var cubesMeshBlack = new THREE.Mesh(cubesGeometry, godRays.cubesBlackMaterial);
         occlusionScene.add(godRays.lightMesh);
@@ -145,12 +181,13 @@ function CubesSimulation(container) {
 
             lightProjectedPosition.copy(godRays.lightMesh.position);
             lightProjectedPosition.project(camera);
-            godRays.godRaysMaterial.uniforms.v2LightPosition.value.x = (lightProjectedPosition.x + 1)*0.5;
-            godRays.godRaysMaterial.uniforms.v2LightPosition.value.y = (lightProjectedPosition.y + 1)*0.5;
-
-            // console.log(lightScreenPosition);
+            godRays.godRaysMaterial.uniforms.v2LightPosition.value.x = (lightProjectedPosition.x + 1) * 0.5;
+            godRays.godRaysMaterial.uniforms.v2LightPosition.value.y = (lightProjectedPosition.y + 1) * 0.5;
 
             renderer.clearTarget(diffuseRT, true, true, false);
+            if (self.background.enabled) {
+                self.background.render(diffuseRT);
+            }
             renderer.render(scene, camera, diffuseRT);
 
             renderer.render(occlusionScene, camera, godRaysRT1, true);
@@ -231,7 +268,9 @@ function CubesSimulation(container) {
             if (value.hasOwnProperty(property)) {
                 var ctrl = subfolder.add(value, property).step(0.01);
                 if (onChange) {
-                    ctrl.onChange(function (propertyValue) { onChange(value); });
+                    ctrl.onChange(function(propertyValue) {
+                        onChange(value);
+                    });
                 }
             }
         }
@@ -244,13 +283,20 @@ function CubesSimulation(container) {
         shape.quadraticCurveTo(radius, -radius, 0, -radius);
         shape.quadraticCurveTo(-radius, -radius, -radius, 0);
         shape.quadraticCurveTo(-radius, radius, 0, radius);
-        var extrudeSettings = { amount: thickness, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
+        var extrudeSettings = {
+            amount: thickness,
+            bevelEnabled: true,
+            bevelSegments: 2,
+            steps: 2,
+            bevelSize: 1,
+            bevelThickness: 1
+        };
         return new THREE.ExtrudeGeometry(shape, extrudeSettings);
     }
 
     function createCubesGeometry() {
         // Create an unindexed buffer.
-        var numCubes = 10000;
+        var numCubes = 8000;
         var numTrianglesPerCube = 12;
         var numTriangles = numTrianglesPerCube * numCubes;
 
@@ -328,7 +374,7 @@ function CubesSimulation(container) {
             for (var i = 0; i < 4; i++) {
                 random += Math.random() * delta - delta * 0.5;
             }
-            return random;
+            return random * 0.25;
         }
 
         function addTriangle(k, vc, vb, va, rv1, rv2, rv3) {
@@ -438,7 +484,7 @@ function CubesSimulation(container) {
         result.addAttribute('color', new THREE.BufferAttribute(colors, 3));
         result.addAttribute('random1', new THREE.BufferAttribute(randoms1, 3));
         result.addAttribute('random2', new THREE.BufferAttribute(randoms2, 4));
-        result.computeBoundingSphere(); // used for frustum culling by three.js.
+        // result.computeBoundingSphere(); // used for frustum culling by three.js.
         return result;
     }
 }
