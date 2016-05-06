@@ -4,10 +4,9 @@ function CubesSimulation(container) {
     var TWO_PI = Math.PI * 2;
     var PI_OVER_TWO = Math.PI * 0.5;
     var self = this;
-    var gui = new dat.GUI();
 
     // Setup renderer.
-    var renderer = new THREE.WebGLRenderer({
+    this.renderer = new THREE.WebGLRenderer({
         antialias: false,
         stencil: false,
         preserveDrawingBuffer: true
@@ -18,17 +17,11 @@ function CubesSimulation(container) {
     // this.clearColor = new THREE.Color(0x001B1B);
     this.clearColor = new THREE.Color(0, 0.05, 0.05);
 
-    var folder = gui.addFolder('CubesSimulation');
-    addObjectToDatGUI(folder, 'ClearColor', this.clearColor, function(color) {
-        renderer.setClearColor(color);
-    });
-    folder.open();
-
-    renderer.setClearColor(this.clearColor);
-    renderer.setSize(container.offsetWidth, container.offsetHeight);
-    renderer.autoClear = false;
-    renderer.sortObjects = false;
-    container.appendChild(renderer.domElement);
+    this.renderer.setClearColor(this.clearColor);
+    this.renderer.setSize(container.offsetWidth, container.offsetHeight);
+    this.renderer.autoClear = false;
+    this.renderer.sortObjects = false;
+    container.appendChild(this.renderer.domElement);
 
     // Setup camera.
     var camera = new THREE.PerspectiveCamera(
@@ -51,21 +44,18 @@ function CubesSimulation(container) {
     var cubesGeometry = createCubesGeometry();
     // Setup materials.
     this.cubesDiffuseMaterial = new THREE.ShaderMaterial(THREE.Effects.cubesDiffuse);
-    addMaterialToDatGUI("Cubes", this.cubesDiffuseMaterial);
     // Create mesh and add to scene.
     var cubesMesh = new THREE.Mesh(cubesGeometry, this.cubesDiffuseMaterial);
     scene.add(cubesMesh);
 
     // Create volumetric light scattering (god rays) post process
     this.godRays = createGodRaysPostProcess();
-    folder.add(this.godRays, 'enabled').name('GodRaysEnabled');
 
     // Create background.
     this.background = createBackground();
-    folder.add(this.background, 'enabled').name('BackgroundEnabled');
 
     this.resize = function() {
-        renderer.setSize(container.offsetWidth, container.offsetHeight);
+        self.renderer.setSize(container.offsetWidth, container.offsetHeight);
         camera.aspect = container.offsetWidth / container.offsetHeight;
         camera.updateProjectionMatrix();
         self.godRays.resize();
@@ -91,8 +81,8 @@ function CubesSimulation(container) {
         if (self.godRays.enabled) {
             self.godRays.render(totalSeconds);
         } else {
-            renderer.clear(true, true, false);
-            renderer.render(scene, camera);
+            this.renderer.clear(true, true, false);
+            this.renderer.render(scene, camera);
             if (self.background.enabled) {
                 self.background.render();
             }
@@ -122,7 +112,7 @@ function CubesSimulation(container) {
             // Render only a subset of the entire cubes buffer.
             cubesGeometry.setDrawRange(0, 36 * 50);
 
-            renderer.render(backgroundScene, backgroundCamera, renderTarget);
+            self.renderer.render(backgroundScene, backgroundCamera, renderTarget);
 
             // Reset draw range.
             cubesGeometry.setDrawRange(0, cubesGeometry.attributes.position.count);
@@ -140,18 +130,16 @@ function CubesSimulation(container) {
         var additiveMaterial = new THREE.ShaderMaterial(THREE.Effects.additive);
         var horizontalBlurMaterial = new THREE.ShaderMaterial(THREE.Effects.horizontalBlur);
         var verticalBlurMaterial = new THREE.ShaderMaterial(THREE.Effects.verticalBlur);
-        addMaterialToDatGUI("God Rays", godRays.godRaysMaterial);
 
         // var lightColor = new THREE.Color(0.349, 1.0, 1.0);
         var lightColor = new THREE.Color(0x046380);
         var occlusionScene = new THREE.Scene();
 
         var lightGeometry = new createCircleGeometry(10, 4);
-        var lightMaterial = new THREE.MeshBasicMaterial({
+        godRays.lightMaterial = new THREE.MeshBasicMaterial({
             color: lightColor
         });
-        addObjectToDatGUI(folder, "LightColor", lightMaterial.color)
-        var lightMesh = new THREE.Mesh(lightGeometry, lightMaterial);
+        var lightMesh = new THREE.Mesh(lightGeometry, godRays.lightMaterial);
         lightMesh.position.set(0, 0, 0);
         lightMesh.rotation.set(PI_OVER_TWO, 0, 0);
         lightMesh.scale.set(1, 1, 1);
@@ -184,41 +172,41 @@ function CubesSimulation(container) {
             godRays.godRaysMaterial.uniforms.v2LightPosition.value.x = (lightProjectedPosition.x + 1) * 0.5;
             godRays.godRaysMaterial.uniforms.v2LightPosition.value.y = (lightProjectedPosition.y + 1) * 0.5;
 
-            renderer.clearTarget(diffuseRT, true, true, false);
+            self.renderer.clearTarget(diffuseRT, true, true, false);
             if (self.background.enabled) {
                 self.background.render(diffuseRT);
             }
-            renderer.render(scene, camera, diffuseRT);
+            self.renderer.render(scene, camera, diffuseRT);
 
-            renderer.render(occlusionScene, camera, godRaysRT1, true);
+            self.renderer.render(occlusionScene, camera, godRaysRT1, true);
 
             // Blur.
             horizontalBlurMaterial.uniforms.tDiffuse.value = godRaysRT1;
             quadScene.overrideMaterial = horizontalBlurMaterial;
-            renderer.render(quadScene, camera, godRaysRT2);
+            self.renderer.render(quadScene, camera, godRaysRT2);
 
             verticalBlurMaterial.uniforms.tDiffuse.value = godRaysRT2;
             quadScene.overrideMaterial = verticalBlurMaterial;
-            renderer.render(quadScene, camera, godRaysRT1);
+            self.renderer.render(quadScene, camera, godRaysRT1);
 
             horizontalBlurMaterial.uniforms.tDiffuse.value = godRaysRT1;
             quadScene.overrideMaterial = horizontalBlurMaterial;
-            renderer.render(quadScene, camera, godRaysRT2);
+            self.renderer.render(quadScene, camera, godRaysRT2);
 
             verticalBlurMaterial.uniforms.tDiffuse.value = godRaysRT2;
             quadScene.overrideMaterial = verticalBlurMaterial;
-            renderer.render(quadScene, camera, godRaysRT1);
+            self.renderer.render(quadScene, camera, godRaysRT1);
 
             // Gen god rays.
             godRays.godRaysMaterial.uniforms.tDiffuse.value = godRaysRT1;
             quadScene.overrideMaterial = godRays.godRaysMaterial;
-            renderer.render(quadScene, camera, godRaysRT2);
+            self.renderer.render(quadScene, camera, godRaysRT2);
 
             // Final pass - combine.
             additiveMaterial.uniforms.tDiffuse.value = diffuseRT;
             additiveMaterial.uniforms.tAdd.value = godRaysRT2;
             quadScene.overrideMaterial = additiveMaterial;
-            renderer.render(quadScene, camera);
+            self.renderer.render(quadScene, camera);
         };
 
         return godRays;
@@ -235,44 +223,6 @@ function CubesSimulation(container) {
             diffuseRT = new THREE.WebGLRenderTarget(w, h, rtParams);
             godRaysRT1 = new THREE.WebGLRenderTarget(w >> reductionFactor, h >> reductionFactor, rtParams);
             godRaysRT2 = new THREE.WebGLRenderTarget(w >> reductionFactor, h >> reductionFactor, rtParams);
-        }
-    }
-
-    function addMaterialToDatGUI(name, material) {
-        var folder = gui.addFolder(name);
-        for (var property in material.uniforms) {
-            // Check if is own property and filter age uniforms.
-            if (material.uniforms.hasOwnProperty(property) && property !== 'fAge') {
-                var uniform = material.uniforms[property];
-                var value = uniform.value;
-                // Do not add textures.
-                if (uniform.type === 't') continue;
-
-                if (typeof value === 'object') {
-                    addObjectToDatGUI(folder, getName(uniform, property), value);
-                } else {
-                    folder.add(uniform, 'value').name(getName(uniform, property)).step(0.01);
-                }
-            }
-        }
-        folder.open();
-
-        function getName(uniform, property) {
-            return property.substring(uniform.type.length);
-        }
-    }
-
-    function addObjectToDatGUI(folder, name, value, onChange) {
-        var subfolder = folder.addFolder(name);
-        for (var property in value) {
-            if (value.hasOwnProperty(property)) {
-                var ctrl = subfolder.add(value, property).step(0.01);
-                if (onChange) {
-                    ctrl.onChange(function(propertyValue) {
-                        onChange(value);
-                    });
-                }
-            }
         }
     }
 

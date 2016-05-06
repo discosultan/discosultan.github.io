@@ -23,9 +23,13 @@
     <script src="vendor/dat.gui.min.js"></script>
     <script src="effects.js?v=2"></script>
     <script src="cubes-simulation.js?v=2"></script>
+    <script src="controls.js?v=2"></script>
     <script>
         var simulation = new CubesSimulation(document.getElementById('simulation'));
         window.onresize = simulation.resize;
+
+        // Add TESTING controls.
+        addControls(simulation);
     </script>
 </body>
 
