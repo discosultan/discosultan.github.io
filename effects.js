@@ -1,42 +1,38 @@
 if (!THREE.Effects) THREE.Effects = {};
 
 (function(effects) {
-    var mixinCommon = `
     // ref: http://alteredqualia.com/three/examples/webgl_cubes.html
-    vec3 rotateVectorByQuaternion(vec3 v, vec4 q) {
-        vec3 dest = vec3(0.0);
+    var mixinCommon =
+        'vec3 rotateVectorByQuaternion(vec3 v, vec4 q) { ' +
+            'vec3 dest = vec3(0.0); ' +
 
-        float x = v.x, y = v.y, z = v.z;
-        float qx = q.x, qy = q.y, qz = q.z, qw = q.w;
+            'float x = v.x, y = v.y, z = v.z; ' +
+            'float qx = q.x, qy = q.y, qz = q.z, qw = q.w; ' +
 
-        // calculate quaternion * vector
-        float ix =  qw * x + qy * z - qz * y,
-              iy =  qw * y + qz * x - qx * z,
-              iz =  qw * z + qx * y - qy * x,
-              iw = -qx * x - qy * y - qz * z;
+            'float ix =  qw * x + qy * z - qz * y, ' +
+                  'iy =  qw * y + qz * x - qx * z, ' +
+                  'iz =  qw * z + qx * y - qy * x, ' +
+                  'iw = -qx * x - qy * y - qz * z; ' +
 
-        // calculate result * inverse quaternion
-        dest.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
-        dest.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
-        dest.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+            'dest.x = ix * qw + iw * -qx + iy * -qz - iz * -qy; ' +
+            'dest.y = iy * qw + iw * -qy + iz * -qx - ix * -qz; ' +
+            'dest.z = iz * qw + iw * -qz + ix * -qy - iy * -qx; ' +
 
-        return dest;
-    }
+            'return dest; ' +
+        '} ' +
 
-    // ref: http://alteredqualia.com/three/examples/webgl_cubes.html
-    vec4 axisAngleToQuaternion(vec3 axis, float angle) {
-        vec4 dest = vec4(0.0);
+        'vec4 axisAngleToQuaternion(vec3 axis, float angle) { ' +
+            'vec4 dest = vec4(0.0); ' +
 
-        float halfAngle = angle / 2.0;
-        float s = sin(halfAngle);
+            'float halfAngle = angle / 2.0; ' +
+            'float s = sin(halfAngle); ' +
 
-        dest.x = axis.x * s;
-        dest.y = axis.y * s;
-        dest.z = axis.z * s;
-        dest.w = cos(halfAngle);
-        return dest;
-    }
-  `;
+            'dest.x = axis.x * s; ' +
+            'dest.y = axis.y * s; ' +
+            'dest.z = axis.z * s; ' +
+            'dest.w = cos(halfAngle); ' +
+            'return dest; ' +
+        '}';
 
     /*
     random components:
@@ -50,70 +46,64 @@ if (!THREE.Effects) THREE.Effects = {};
     - y offset (float -1..1)                - random2.w
     http://stackoverflow.com/a/3956538/1466456
     */
-    var mixinCubePosition = `
-    // ROTATION.
-    const float rotationSpeed = 3.0;
-    vec4 rotation = axisAngleToQuaternion(color, fAge * random1.x * rotationSpeed);
-    vec3 position = rotateVectorByQuaternion(position, rotation);
-    vec3 normal = rotateVectorByQuaternion(normal, rotation);
+    var mixinCubePosition =
+        '/* ROTATION. */ ' +
+        'const float rotationSpeed = 3.0; ' +
+        'vec4 rotation = axisAngleToQuaternion(color, fAge * random1.x * rotationSpeed); ' +
+        'vec3 position = rotateVectorByQuaternion(position, rotation); ' +
+        'vec3 normal = rotateVectorByQuaternion(normal, rotation); ' +
 
-    // TRANSLATION.
-    // Y-translation.
-    const float yOffset = 60.0;
-    const float yDistance = 120.0;
-    const float transitionSecondsY = 60.0;
-    float randomizedAgeY = fAge * (random1.y + 0.5) * 0.5 + (random1.z) * transitionSecondsY;
-    float moduloRandomizedAgeY = mod(randomizedAgeY, transitionSecondsY);
-    float positionY = position.y - yOffset + moduloRandomizedAgeY / transitionSecondsY * yDistance;
+        '/* TRANSLATION. */ ' +
+        '/* Y-translation. */ ' +
+        'const float yOffset = 60.0; ' +
+        'const float yDistance = 120.0; ' +
+        'const float transitionSecondsY = 60.0; ' +
+        'float randomizedAgeY = fAge * (random1.y + 0.5) * 0.5 + (random1.z) * transitionSecondsY; ' +
+        'float moduloRandomizedAgeY = mod(randomizedAgeY, transitionSecondsY); ' +
+        'float positionY = position.y - yOffset + moduloRandomizedAgeY / transitionSecondsY * yDistance; ' +
 
-    // X- & Z-translation.
-    const float xzDistance = 20.0;
-    const float xzAgeFactor = 0.25;
-    float leftOrRight = random2.x;
-    float frontOrBack = random2.y;
-    moduloRandomizedAgeY *= xzAgeFactor;
-    float positionX = position.x + cos(moduloRandomizedAgeY) * leftOrRight * xzDistance;
-    float positionZ = position.z + sin(moduloRandomizedAgeY) * frontOrBack * xzDistance;
+        '/* X- & Z-translation. */ ' +
+        'const float xzDistance = 20.0; ' +
+        'const float xzAgeFactor = 0.25; ' +
+        'float leftOrRight = random2.x; ' +
+        'float frontOrBack = random2.y; ' +
+        'moduloRandomizedAgeY *= xzAgeFactor; ' +
+        'float positionX = position.x + cos(moduloRandomizedAgeY) * leftOrRight * xzDistance; ' +
+        'float positionZ = position.z + sin(moduloRandomizedAgeY) * frontOrBack * xzDistance; ' +
 
-    float offsetAmount = 9.5;
+        'float offsetAmount = 9.5; ' +
 
-    position = vec3(
-        positionX + random2.z * offsetAmount,
-        positionY,
-        positionZ + random2.w * offsetAmount);
+        'position = vec3( ' +
+            'positionX + random2.z * offsetAmount, ' +
+            'positionY, ' +
+            'positionZ + random2.w * offsetAmount); ' +
 
-    // COORDINATE SPACE TRANSFORMATION.
-    // Transform from local to camera space.
-    vec4 mvPosition = viewMatrix * vec4(position, 1.0);
+        '/* COORDINATE SPACE TRANSFORMATION. */ ' +
+        'vec4 mvPosition = viewMatrix * vec4(position, 1.0); ' +
+        'gl_Position = projectionMatrix * mvPosition;';
 
-    // Transform from camera to clip space.
-    gl_Position = projectionMatrix * mvPosition;
-  `;
+    var mixinCubeLighting =
+        '/* We use Gouraud shading for per vertex lighting. */ ' +
 
-    var mixinCubeLighting = `
-    // LIGHTING.
-    // We use Gouraud shading for per vertex lighting.
+        '/* Ambient light. */ ' +
+        'vDiffuse = v4AmbientLightColor.xyz * v4AmbientLightColor.w; ' +
 
-    // Ambient light.
-    vDiffuse = v4AmbientLightColor.xyz * v4AmbientLightColor.w;
+        '/* Directional light. */ ' +
+        '/* const vec3 light1Color = vec3(1.0, 0.0, 0.0); */ ' +
+        '/* const vec3 light1InvDir = vec3(0.0, 1.0, 0.0); */ ' +
+        '/* const float light1Intensity = 0.75; */ ' +
+        '/* vDiffuse += light1Intensity * max(dot(normal, light1InvDir), 0.0) * light1Color; */ ' +
 
-    // // Directional light.
-    // const vec3 light1Color = vec3(1.0, 0.0, 0.0);
-    // const vec3 light1InvDir = vec3(0.0, 1.0, 0.0);
-    // const float light1Intensity = 0.75;
-    // vDiffuse += light1Intensity * max(dot(normal, light1InvDir), 0.0) * light1Color;
-
-    // Point light.
-    // const vec3 light2Color = vec3(0.349, 1.0, 1.0);
-    // const float light2Intensity = 1.0;
-    // const vec3 pointLightPosition = vec3(0.0, 0.0, 0.0);
-    const float pointLightMaxDistance = 75.0;
-    vec3 pointLightInvVector = v3PointLightPosition - position;
-    float pointLightDistance = length(pointLightInvVector);
-    vec3 pointLightInvDir = pointLightInvVector / pointLightDistance;
-    float pointLightFactor = 1.0 - min(pointLightDistance / pointLightMaxDistance, 1.0);
-    vDiffuse += v4PointLightColor.w * max(dot(normal, pointLightInvDir), 0.0) * pointLightFactor * v4PointLightColor.xyz;
-  `;
+        '/* Point light. */ ' +
+        '/* const vec3 light2Color = vec3(0.349, 1.0, 1.0); */ ' +
+        '/* const float light2Intensity = 1.0; */ ' +
+        '/* const vec3 pointLightPosition = vec3(0.0, 0.0, 0.0); */ ' +
+        'const float pointLightMaxDistance = 75.0; ' +
+        'vec3 pointLightInvVector = v3PointLightPosition - position; ' +
+        'float pointLightDistance = length(pointLightInvVector); ' +
+        'vec3 pointLightInvDir = pointLightInvVector / pointLightDistance; ' +
+        'float pointLightFactor = 1.0 - min(pointLightDistance / pointLightMaxDistance, 1.0); ' +
+        'vDiffuse += v4PointLightColor.w * max(dot(normal, pointLightInvDir), 0.0) * pointLightFactor * v4PointLightColor.xyz;';
 
     effects.cubesDiffuse = {
         uniforms: {
@@ -135,29 +125,29 @@ if (!THREE.Effects) THREE.Effects = {};
             }
         },
         vertexColors: THREE.VertexColors,
-        vertexShader: `
-        uniform float fAge;
-        uniform vec4 v4AmbientLightColor;
-        uniform vec4 v4PointLightColor;
-        uniform vec3 v3PointLightPosition;
 
-        attribute vec3 random1;
-        attribute vec4 random2;
+        vertexShader:
+            'uniform float fAge; ' +
+            'uniform vec4 v4AmbientLightColor; ' +
+            'uniform vec4 v4PointLightColor; ' +
+            'uniform vec3 v3PointLightPosition; ' +
 
-        varying lowp vec3 vDiffuse;
+            'attribute vec3 random1; ' +
+            'attribute vec4 random2; ' +
 
-        ${mixinCommon}
-        void main() {
-          ${mixinCubePosition}
-          ${mixinCubeLighting}
-        }
-      `,
-        fragmentShader: `
-        varying lowp vec3 vDiffuse;
-        void main() {
-          gl_FragColor = vec4(vDiffuse, 1.0);
-        }
-      `
+            'varying lowp vec3 vDiffuse; ' +
+
+            mixinCommon +
+            'void main() { ' +
+                mixinCubePosition +
+                mixinCubeLighting +
+            '}',
+
+        fragmentShader:
+            'varying lowp vec3 vDiffuse; ' +
+            'void main() { ' +
+                'gl_FragColor = vec4(vDiffuse, 1.0); ' +
+            '}'
     };
 
     effects.cubesBlack = {
@@ -168,22 +158,22 @@ if (!THREE.Effects) THREE.Effects = {};
             }
         },
         vertexColors: THREE.VertexColors,
-        vertexShader: `
-        uniform float fAge;
 
-        attribute vec3 random1;
-        attribute vec4 random2;
+        vertexShader:
+            'uniform float fAge; ' +
 
-        ${mixinCommon}
-        void main() {
-          ${mixinCubePosition}
-        }
-      `,
-        fragmentShader: `
-        void main() {
-          gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-        }
-      `
+            'attribute vec3 random1; ' +
+            'attribute vec4 random2; ' +
+
+            mixinCommon +
+            'void main() { ' +
+                mixinCubePosition +
+            '}',
+
+        fragmentShader:
+            'void main() { ' +
+                'gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); ' +
+            '}'
     };
 
     /*
@@ -205,68 +195,61 @@ if (!THREE.Effects) THREE.Effects = {};
             }
         },
         vertexColors: THREE.VertexColors,
-        vertexShader: `
-            uniform float fAge;
+        vertexShader:
+            'uniform float fAge; ' +
 
-            attribute vec3 random1;
-            attribute vec4 random2;
+            'attribute vec3 random1; ' +
+            'attribute vec4 random2; ' +
 
-            varying lowp vec3 vDiffuse;
+            'varying lowp vec3 vDiffuse; ' +
 
-            ${mixinCommon}
-            void main() {
-                // ROTATION.
-                const float rotationSpeed = 3.0;
-                vec4 rotation = axisAngleToQuaternion(color, fAge * random1.x * rotationSpeed);
-                vec3 position = rotateVectorByQuaternion(position, rotation);
-                vec3 normal = rotateVectorByQuaternion(normal, rotation);
+            mixinCommon +
+            'void main() { ' +
+                '/* ROTATION. */ ' +
+                'const float rotationSpeed = 3.0; ' +
+                'vec4 rotation = axisAngleToQuaternion(color, fAge * random1.x * rotationSpeed); ' +
+                'vec3 position = rotateVectorByQuaternion(position, rotation); ' +
+                'vec3 normal = rotateVectorByQuaternion(normal, rotation); ' +
 
-                // TRANSLATION.
-                const float transitionSecondsY = 30.0;
-                const float zOffset = -150.0;
-                const float xOffset = 160.0;
-                const float yOffset = 60.0;
-                const float yDistance = 120.0;
-                // const vec3 scale = vec3(1.0);
+                '/* TRANSLATION. */ ' +
+                'const float transitionSecondsY = 30.0; ' +
+                'const float zOffset = -150.0; ' +
+                'const float xOffset = 160.0; ' +
+                'const float yOffset = 60.0; ' +
+                'const float yDistance = 120.0; ' +
 
-                float randomizedAgeY = fAge * (random1.y + 0.5) * 0.5 + (random1.z) * transitionSecondsY;
-                float moduloRandomizedAgeY = mod(randomizedAgeY, transitionSecondsY);
-                float positionY = position.y - yOffset + moduloRandomizedAgeY / transitionSecondsY * yDistance;
+                'float randomizedAgeY = fAge * (random1.y + 0.5) * 0.5 + (random1.z) * transitionSecondsY; ' +
+                'float moduloRandomizedAgeY = mod(randomizedAgeY, transitionSecondsY); ' +
+                'float positionY = position.y - yOffset + moduloRandomizedAgeY / transitionSecondsY * yDistance; ' +
 
-                // position *= scale;
-                position = vec3(
-                    position.x + random2.z * xOffset,
-                    positionY,
-                    zOffset
-                );
+                'position = vec3( ' +
+                    'position.x + random2.z * xOffset, ' +
+                    'positionY, ' +
+                    'zOffset ' +
+                '); ' +
 
-                // LIGHTING.
-                vDiffuse = vec3(0.0);
-                // Directional light.
-                const vec3 light1Color = vec3(0.35, 1.0, 1.0);
-                const vec3 light1InvDir = vec3(0.0, 1.0, 0.0);
-                const float light1Intensity = 0.25;
-                vDiffuse += light1Intensity * max(dot(normal, light1InvDir), 0.0) * light1Color;
+                '/* LIGHTING. */ ' +
+                'vDiffuse = vec3(0.0); ' +
+                '/* Directional light. */ ' +
+                'const vec3 light1Color = vec3(0.35, 1.0, 1.0); ' +
+                'const vec3 light1InvDir = vec3(0.0, 1.0, 0.0); ' +
+                'const float light1Intensity = 0.25; ' +
+                'vDiffuse += light1Intensity * max(dot(normal, light1InvDir), 0.0) * light1Color; ' +
 
-                // COORDINATE SPACE TRANSFORMATION.
-                // Transform from local to camera space.
-                vec4 mvPosition = viewMatrix * vec4(position, 1.0);
+                '/* COORDINATE SPACE TRANSFORMATION. */ ' +
+                'vec4 mvPosition = viewMatrix * vec4(position, 1.0); ' +
+                'gl_Position = projectionMatrix * mvPosition; ' +
+            '}',
 
-                // Transform from camera to clip space.
-                gl_Position = projectionMatrix * mvPosition;
-            }
-        `,
-        fragmentShader: `
-        varying lowp vec3 vDiffuse;
-        void main() {
-            gl_FragColor = vec4(vDiffuse, 1.0);
-        }
-        `
+        fragmentShader:
+            'varying lowp vec3 vDiffuse; ' +
+            'void main() { ' +
+                'gl_FragColor = vec4(vDiffuse, 1.0); ' +
+            '}'
     };
 
-    var mixinPosition = `
-    gl_Position = vec4(position, 1.0);
-    `;
+    var mixinPosition =
+        'gl_Position = vec4(position, 1.0); ';
 
     // ref: https://github.com/BKcore/Three.js-extensions/blob/master/sources/Shaders.js
     effects.godRays = {
@@ -302,50 +285,49 @@ if (!THREE.Effects) THREE.Effects = {};
                 value: new THREE.Vector2(0.5, 0.5)
             }
         },
-        vertexShader: `
-        varying vec2 vUv;
+        vertexShader:
+            'varying vec2 vUv; ' +
 
-        void main() {
-            vUv = uv;
-            ${mixinPosition}
-        }
-        `,
-        fragmentShader: `
-        varying vec2 vUv;
+            'void main() { ' +
+                'vUv = uv; ' +
+                mixinPosition +
+            '}',
 
-        uniform sampler2D tDiffuse;
+        fragmentShader:
+            'varying vec2 vUv; ' +
 
-        uniform float fExposure;
-        uniform float fDecay;
-        uniform float fDensity;
-        uniform float fWeight;
-        uniform float fClamp;
-        uniform vec2 v2LightPosition;
+            'uniform sampler2D tDiffuse; ' +
 
-        void main() {
-            const int numSamples = 20;
-            // const vec2 lightPosition = vec2(0.5, 0.5);
+            'uniform float fExposure; ' +
+            'uniform float fDecay; ' +
+            'uniform float fDensity; ' +
+            'uniform float fWeight; ' +
+            'uniform float fClamp; ' +
+            'uniform vec2 v2LightPosition; ' +
 
-            vec2 delta = vUv - v2LightPosition;
-            delta *= 1.0 / float(numSamples) * fDensity;
-            float illuminationDecay = 1.0;
-            vec4 fragColor = vec4(0.0);
+            'void main() { ' +
+                'const int numSamples = 20; ' +
 
-            vec2 coord = vUv;
+                'vec2 delta = vUv - v2LightPosition; ' +
+                'delta *= 1.0 / float(numSamples) * fDensity; ' +
+                'float illuminationDecay = 1.0; ' +
+                'vec4 fragColor = vec4(0.0); ' +
 
-            for (int i = 0; i < numSamples; i++) {
-                coord -= delta;
-                vec4 texel = texture2D(tDiffuse, coord);
-                texel *= illuminationDecay * fWeight;
+                'vec2 coord = vUv; ' +
 
-                fragColor += texel;
+                'for (int i = 0; i < numSamples; i++) { ' +
+                    'coord -= delta; ' +
+                    'vec4 texel = texture2D(tDiffuse, coord); ' +
+                    'texel *= illuminationDecay * fWeight; ' +
 
-                illuminationDecay *= fDecay;
-            }
-            fragColor *= fExposure;
-            fragColor = clamp(fragColor, 0.0, fClamp);
-            gl_FragColor = fragColor;
-        }`
+                    'fragColor += texel; ' +
+
+                    'illuminationDecay *= fDecay; ' +
+                '} ' +
+                'fragColor *= fExposure; ' +
+                'fragColor = clamp(fragColor, 0.0, fClamp); ' +
+                'gl_FragColor = fragColor; ' +
+            '}'
     };
 
     // ref: https://github.com/BKcore/Three.js-extensions/blob/master/sources/Shaders.js
@@ -362,27 +344,26 @@ if (!THREE.Effects) THREE.Effects = {};
                 value: 1.0
             }
         },
-        vertexShader: `
-        varying vec2 vUv;
+        vertexShader:
+            'varying vec2 vUv; ' +
 
-        void main() {
-            vUv = uv;
-            ${mixinPosition}
-        }
-        `,
-        fragmentShader: `
-        varying vec2 vUv;
+            'void main() { ' +
+                'vUv = uv; ' +
+                mixinPosition +
+            '}',
 
-        uniform sampler2D tDiffuse;
-        uniform sampler2D tAdd;
-        uniform float fCoefficient;
+        fragmentShader:
+            'varying vec2 vUv; ' +
 
-        void main() {
-            vec4 texel = texture2D(tDiffuse, vUv);
-            vec4 add = texture2D(tAdd, vUv);
-            gl_FragColor = texel + add * fCoefficient;
-        }
-        `
+            'uniform sampler2D tDiffuse; ' +
+            'uniform sampler2D tAdd; ' +
+            'uniform float fCoefficient; ' +
+
+            'void main() { ' +
+                'vec4 texel = texture2D(tDiffuse, vUv); ' +
+                'vec4 add = texture2D(tAdd, vUv); ' +
+                'gl_FragColor = texel + add * fCoefficient; ' +
+            '}'
     };
 
     // ref: https://github.com/BKcore/Three.js-experiments-pool/blob/master/r48/js/ShaderExtras.js
@@ -396,34 +377,33 @@ if (!THREE.Effects) THREE.Effects = {};
                 value: 1.0 / 512.0
             }
         },
-        vertexShader: `
-        varying vec2 vUv;
+        vertexShader:
+            'varying vec2 vUv; ' +
 
-        void main() {
-            vUv = uv;
-            ${mixinPosition}
-        }
-        `,
-        fragmentShader: `
-        varying vec2 vUv;
+            'void main() { ' +
+                'vUv = uv; ' +
+                mixinPosition +
+            '}',
 
-        uniform sampler2D tDiffuse;
-        uniform float fH;
+        fragmentShader:
+            'varying vec2 vUv; ' +
 
-        void main() {
-            vec4 sum = vec4(0.0);
-            sum += texture2D( tDiffuse, vec2(vUv.x - 4.0 * fH, vUv.y)) * 0.051;
-    				sum += texture2D( tDiffuse, vec2(vUv.x - 3.0 * fH, vUv.y)) * 0.0918;
-    				sum += texture2D( tDiffuse, vec2(vUv.x - 2.0 * fH, vUv.y)) * 0.12245;
-    				sum += texture2D( tDiffuse, vec2(vUv.x - 1.0 * fH, vUv.y)) * 0.1531;
-    				sum += texture2D( tDiffuse, vec2(vUv.x, 		  	  vUv.y)) * 0.1633;
-    				sum += texture2D( tDiffuse, vec2(vUv.x + 1.0 * fH, vUv.y)) * 0.1531;
-    				sum += texture2D( tDiffuse, vec2(vUv.x + 2.0 * fH, vUv.y)) * 0.12245;
-    				sum += texture2D( tDiffuse, vec2(vUv.x + 3.0 * fH, vUv.y)) * 0.0918;
-    				sum += texture2D( tDiffuse, vec2(vUv.x + 4.0 * fH, vUv.y)) * 0.051;
-    				gl_FragColor = sum;
-        }
-        `
+            'uniform sampler2D tDiffuse; ' +
+            'uniform float fH; ' +
+
+            'void main() { ' +
+                'vec4 sum = vec4(0.0); ' +
+                'sum += texture2D( tDiffuse, vec2(vUv.x - 4.0 * fH, vUv.y)) * 0.051; ' +
+        				'sum += texture2D( tDiffuse, vec2(vUv.x - 3.0 * fH, vUv.y)) * 0.0918; ' +
+        				'sum += texture2D( tDiffuse, vec2(vUv.x - 2.0 * fH, vUv.y)) * 0.12245; ' +
+        				'sum += texture2D( tDiffuse, vec2(vUv.x - 1.0 * fH, vUv.y)) * 0.1531; ' +
+        				'sum += texture2D( tDiffuse, vec2(vUv.x, 		  	    vUv.y)) * 0.1633; ' +
+        				'sum += texture2D( tDiffuse, vec2(vUv.x + 1.0 * fH, vUv.y)) * 0.1531; ' +
+        				'sum += texture2D( tDiffuse, vec2(vUv.x + 2.0 * fH, vUv.y)) * 0.12245; ' +
+        				'sum += texture2D( tDiffuse, vec2(vUv.x + 3.0 * fH, vUv.y)) * 0.0918; ' +
+        				'sum += texture2D( tDiffuse, vec2(vUv.x + 4.0 * fH, vUv.y)) * 0.051; ' +
+        				'gl_FragColor = sum; ' +
+            '}'
     };
 
     // ref: https://github.com/BKcore/Three.js-experiments-pool/blob/master/r48/js/ShaderExtras.js
@@ -437,35 +417,35 @@ if (!THREE.Effects) THREE.Effects = {};
                 value: 1.0 / 512.0
             }
         },
-        vertexShader: `
-      varying vec2 vUv;
 
-      void main() {
-          vUv = uv;
-          ${mixinPosition}
-      }
-      `,
-        fragmentShader: `
-      varying vec2 vUv;
+        vertexShader:
+            'varying vec2 vUv; ' +
 
-      uniform sampler2D tDiffuse;
-      uniform float fV;
+            'void main() { ' +
+                'vUv = uv; ' +
+                mixinPosition +
+            '}',
 
-      void main() {
-          vec4 sum = vec4(0.0);
+        fragmentShader:
+            'varying vec2 vUv; ' +
 
-          sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y - 4.0 * fV)) * 0.051;
-          sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y - 3.0 * fV)) * 0.0918;
-          sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y - 2.0 * fV)) * 0.12245;
-          sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y - 1.0 * fV)) * 0.1531;
-          sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y			    )) * 0.1633;
-          sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y + 1.0 * fV)) * 0.1531;
-          sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y + 2.0 * fV)) * 0.12245;
-          sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y + 3.0 * fV)) * 0.0918;
-          sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y + 4.0 * fV)) * 0.051;
+            'uniform sampler2D tDiffuse; ' +
+            'uniform float fV; ' +
 
-          gl_FragColor = sum;
-      }
-      `
+            'void main() { ' +
+                'vec4 sum = vec4(0.0); ' +
+
+                'sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y - 4.0 * fV)) * 0.051; ' +
+                'sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y - 3.0 * fV)) * 0.0918; ' +
+                'sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y - 2.0 * fV)) * 0.12245; ' +
+                'sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y - 1.0 * fV)) * 0.1531; ' +
+                'sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y			      )) * 0.1633; ' +
+                'sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y + 1.0 * fV)) * 0.1531; ' +
+                'sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y + 2.0 * fV)) * 0.12245; ' +
+                'sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y + 3.0 * fV)) * 0.0918; ' +
+                'sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y + 4.0 * fV)) * 0.051; ' +
+
+                'gl_FragColor = sum; ' +
+            '}'
     };
 })(THREE.Effects);
