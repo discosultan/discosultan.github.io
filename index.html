@@ -13,9 +13,21 @@
     <section id="simulation"></section>
 
     <section id="menu">
-        <div class="menu__element-left">LEFT PANEL</div>
-        <div class="menu__element-center">CENTER PANEL</div>
-        <div class="menu__element-right">RIGHT PANEL</div>
+        <div class="menu-element left">
+            <div class="menu-element-content">
+                LEFT PANEL
+            </div>
+        </div>
+        <div class="menu-element center">
+            <div class="menu-element-content">
+                CENTER PANEL
+            </div>
+        </div>
+        <div class="menu-element right">
+            <div class="menu-element-content">
+                RIGHT PANEL
+            </div>
+        </div>
         <span class="stretch"></span>
     </section>
 
@@ -24,12 +36,15 @@
     <script src="effects.js?v=2"></script>
     <script src="cubes-simulation.js?v=2"></script>
     <script src="controls.js?v=2"></script>
+    <script src="menu.js?v=2"></script>
     <script>
         var simulation = new CubesSimulation(document.getElementById('simulation'));
         window.onresize = simulation.resize;
 
         // Add TESTING controls.
         addControls(simulation);
+
+        var menu = new Menu(document.getElementById('menu'));
     </script>
 </body>
 
