@@ -39,21 +39,29 @@ function Menu(container) {
     }
 
     function assignElementsClasses(elements) {
-        for (var i = 0; i < elements.length; i++) {
+        for (var i = 0; i < elements.length; i++) {            
             var element = elements[i];
+            element.classList.remove('left-out');
             element.classList.remove('left');
             element.classList.remove('center');
             element.classList.remove('right');
+            element.classList.remove('right-out');
             var index = parseInt(element.dataset.index);
             switch (index) {
                 case 0:
-                    element.classList.add('left');
+                    element.classList.add('left-out');
                     break;
                 case 1:
-                    element.classList.add('center');
+                    element.classList.add('left');
                     break;
                 case 2:
+                    element.classList.add('center');
+                    break;
+                case 3:
                     element.classList.add('right');
+                    break;
+                case 4:
+                    element.classList.add('right-out');
                     break;
             }
         }
