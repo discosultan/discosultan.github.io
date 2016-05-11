@@ -1,13 +1,14 @@
 function Menu(container) {
-    var elements = container.getElementsByClassName('menu-element');
+    var elements = container.getElementsByClassName('menu-element');    
+
     for (var i = 0; i < elements.length; i++) {
         var element = elements[i];
         element.dataset.index = i;
         element.addEventListener('click', function() {
             var index = parseInt(this.dataset.index);
-            if (index === 0) {
+            if (index === 1) { // left
                 rotateElementsRight(elements);
-            } else if (index === 2) {
+            } else if (index === 3) { // right
                 rotateElementsLeft(elements);
             }
         });
@@ -39,13 +40,14 @@ function Menu(container) {
     }
 
     function assignElementsClasses(elements) {
-        for (var i = 0; i < elements.length; i++) {            
+        for (var i = 0; i < elements.length; i++) {
             var element = elements[i];
             element.classList.remove('left-out');
             element.classList.remove('left');
             element.classList.remove('center');
             element.classList.remove('right');
             element.classList.remove('right-out');
+            element.classList.remove('hide');
             var index = parseInt(element.dataset.index);
             switch (index) {
                 case 0:
@@ -62,6 +64,9 @@ function Menu(container) {
                     break;
                 case 4:
                     element.classList.add('right-out');
+                    break;
+                default:
+                    element.classList.add('hide');
                     break;
             }
         }
