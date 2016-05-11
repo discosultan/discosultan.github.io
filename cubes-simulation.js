@@ -70,8 +70,9 @@ function CubesSimulation(container) {
 
     function render(timestamp) {
         var deltaSeconds = (timestamp - previousTimestamp) * 0.001;
-        totalSeconds += deltaSeconds;
         previousTimestamp = timestamp;
+
+        totalSeconds += deltaSeconds;
         self.cubesDiffuseMaterial.uniforms.fAge.value += deltaSeconds;
 
         // Rotate camera.
@@ -83,8 +84,8 @@ function CubesSimulation(container) {
         if (self.godRays.enabled) {
             self.godRays.render(totalSeconds);
         } else {
-            this.renderer.clear(true, true, false);
-            this.renderer.render(scene, camera);
+            self.renderer.clear(true, true, false);
+            self.renderer.render(scene, camera);
             if (self.background.enabled) {
                 self.background.render();
             }
