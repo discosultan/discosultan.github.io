@@ -13,51 +13,33 @@
     <section id="simulation"></section>
 
     <section id="menu">
-        <div class="menu-element left-out">
-            <div class="menu-element-background"></div>
-            <div class="menu-element-content">
-                RIGHT PANEL
-            </div>
-        </div>
-        <div class="menu-element left">
-            <div class="menu-element-background"></div>
-            <div class="menu-element-content">
-                LEFT PANEL
-            </div>
-        </div>
-        <div class="menu-element center">
-            <div class="menu-element-background"></div>
-            <div class="menu-element-content">
-                CENTER PANEL
-            </div>
-        </div>
-        <div class="menu-element right">
-            <div class="menu-element-background"></div>
-            <div class="menu-element-content">
-                RIGHT PANEL
-            </div>
-        </div>
-        <div class="menu-element right-out">
-            <div class="menu-element-background"></div>
-            <div class="menu-element-content">
-                LEFT PANEL
-            </div>
-        </div>
-        <div class="menu-element hide">
-            <div class="menu-element-background"></div>
-            <div class="menu-element-content">
-                CENTER PANEL
-            </div>
-        </div>
         <span class="stretch"></span>
+        <section class="menu-element left">
+            <div class="menu-element-background"></div>
+            <div class="menu-element-content">
+                LEFT PANEL
+            </div>
+        </section>
+        <section class="menu-element center">
+            <div class="menu-element-background"></div>
+            <div class="menu-element-content">
+                CENTER PANEL
+            </div>
+        </section>
+        <section class="menu-element right">
+            <div class="menu-element-background"></div>
+            <div class="menu-element-content">
+                RIGHT PANEL
+            </div>
+        </section>
     </section>
 
     <script src="vendor/three.min.js"></script>
     <script src="vendor/dat.gui.js"></script>
-    <script src="effects.js?v=2"></script>
-    <script src="cubes-simulation.js?v=2"></script>
-    <script src="controls.js?v=2"></script>
-    <script src="menu.js?v=2"></script>
+    <script src="effects.js?v=3"></script>
+    <script src="cubes-simulation.js?v=3"></script>
+    <script src="controls.js?v=3"></script>
+    <script src="menu.js?v=3"></script>
     <script>
         var simulation = new CubesSimulation(document.getElementById('simulation'));
         window.onresize = simulation.resize;

@@ -37,7 +37,7 @@ html, body {
     width: 33.33%;
     width: calc(100% / 3);
     height: 100%;
-    transition: transform-origin 400ms, transform 400ms, opacity 600ms;
+    transition: transform-origin 400ms, transform 400ms, opacity 400ms;
 }
 .menu-element.left .menu-element-content:hover, .menu-element.right .menu-element-content:hover, .menu-element.center .menu-element-content {
     box-shadow: 0px 0px 10px 2px rgba(255, 255, 255, 1);
