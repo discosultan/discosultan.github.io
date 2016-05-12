@@ -1,3 +1,5 @@
+'use strict';
+
 function Menu(container, simulation) {
     var CAMERA_ROTATION_AMOUNT = Math.PI * 0.25;
     var CAMERA_ROTATION_SECONDS = 0.4;
