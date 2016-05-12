@@ -10,7 +10,7 @@ function Menu(container, simulation) {
             var element = elements[i];
             var newElement = element.cloneNode(true);
             container.appendChild(newElement);
-        }        
+        }
     }
 
     for (var i = 0; i < elements.length; i++) {
@@ -31,9 +31,9 @@ function Menu(container, simulation) {
         // if (self.transitionInProgress) return;
 
         if (evt.keyCode === 37) { // Left arrow.
-            rotateElementsLeft(elements);
-        } else if (evt.keyCode === 39) { // Right arrow.
             rotateElementsRight(elements);
+        } else if (evt.keyCode === 39) { // Right arrow.
+            rotateElementsLeft(elements);
         }
     }, false);
 
@@ -140,26 +140,26 @@ function Menu(container, simulation) {
         }
 
         function lerp(v0, v1, t) {
-            return v0 + t*(v1 - v0);
+            return v0 + t * (v1 - v0);
         }
 
         /**
-        * Solver for cubic bezier curve with implicit control points at (0,0) and (1.0, 1.0)
-        * Ref: http://stackoverflow.com/a/11697909/1466456
-        */
+         * Solver for cubic bezier curve with implicit control points at (0,0) and (1.0, 1.0)
+         * Ref: http://stackoverflow.com/a/11697909/1466456
+         */
         function UnitBezier(p1x, p1y, p2x, p2y) {
             // pre-calculate the polynomial coefficients
             // First and last control points are implied to be (0,0) and (1.0, 1.0)
             this.cx = 3.0 * p1x;
             this.bx = 3.0 * (p2x - p1x) - this.cx;
-            this.ax = 1.0 - this.cx -this.bx;
+            this.ax = 1.0 - this.cx - this.bx;
 
             this.cy = 3.0 * p1y;
             this.by = 3.0 * (p2y - p1y) - this.cy;
             this.ay = 1.0 - this.cy - this.by;
         }
 
-        UnitBezier.prototype.sampleCurveY = function (t) {
+        UnitBezier.prototype.sampleCurveY = function(t) {
             return ((this.ay * t + this.by) * t + this.cy) * t;
         }
     }
