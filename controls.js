@@ -2,6 +2,7 @@
 
 function addControls(simulation) {
     var gui = new dat.GUI();
+    gui.close();
 
     var folder = gui.addFolder('CubesSimulation');
     folder.open();

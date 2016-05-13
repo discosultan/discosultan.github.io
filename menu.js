@@ -19,6 +19,7 @@ function Menu(container, simulation) {
         var element = elements[i];
         element.dataset.index = i;
         element.addEventListener('click', function() {
+            if (transitionDisabled()) return;
             var index = parseInt(this.dataset.index);
             if (index === 0) { // left
                 rotateElementsRight(elements);
@@ -29,9 +30,11 @@ function Menu(container, simulation) {
     }
     assignElementsClasses(elements);
 
-    window.addEventListener('keydown', function(evt) {
-        // if (self.transitionInProgress) return;
+    var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+    var transitionInProgress = false;
 
+    window.addEventListener('keydown', function(evt) {
+        if (transitionDisabled()) return;
         if (evt.keyCode === 37) { // Left arrow.
             rotateElementsRight(elements);
         } else if (evt.keyCode === 39) { // Right arrow.
@@ -39,10 +42,15 @@ function Menu(container, simulation) {
         }
     }, false);
 
-    var transitionInProgress = false;
     var previousTimestamp = 0;
     var processes = [];
     requestAnimationFrame(update);
+
+    function transitionDisabled() {
+        // On Firefox browser, allow transitioning only one menu element at a time.
+        // Otherwise, there was weird flickering with css animations.
+        return isFirefox && self.transitionInProgress;
+    }
 
     function update(timestamp) {
         var deltaSeconds = (timestamp - previousTimestamp) * 0.001;
@@ -97,7 +105,6 @@ function Menu(container, simulation) {
             element.classList.remove('center');
             element.classList.remove('right');
             element.classList.remove('right-out');
-            element.classList.remove('hide');
             var index = parseInt(element.dataset.index);
             switch (index) {
                 case 0:
@@ -113,7 +120,9 @@ function Menu(container, simulation) {
                     element.classList.add('right-out');
                     break;
                 default:
-                    element.classList.add(index === lastIndex ? 'left-out' : 'hide');
+                    if (index === lastIndex) {
+                        element.classList.add('left-out');
+                    }
                     break;
             }
         }

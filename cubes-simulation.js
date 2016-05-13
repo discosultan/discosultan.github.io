@@ -11,7 +11,7 @@ function CubesSimulation(container) {
     this.renderer = new THREE.WebGLRenderer({
         antialias: false,
         stencil: false,
-        preserveDrawingBuffer: true
+        preserveDrawingBuffer: false
     });
 
     // this.clearColor = new THREE.Color(0x07070C);
@@ -84,7 +84,8 @@ function CubesSimulation(container) {
         if (self.godRays.enabled) {
             self.godRays.render(totalSeconds);
         } else {
-            self.renderer.clear(true, true, false);
+            // Required when renderer preserveDrawingBuffer: true
+            // self.renderer.clear(true, true, false);
             self.renderer.render(scene, camera);
             if (self.background.enabled) {
                 self.background.render();
