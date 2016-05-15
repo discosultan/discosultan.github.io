@@ -5,19 +5,28 @@ function Menu(container, simulation) {
     var CAMERA_ROTATION_SECONDS = 0.4;
     var MINIMUM_NUMBER_OF_ELEMENTS = 5;
 
+    var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+    var transitionInProgress = false;
+
     var elements = container.getElementsByClassName('menu-element');
     var elementCount = elements.length;
-    if (elementCount < MINIMUM_NUMBER_OF_ELEMENTS) {
+    // Ensure we have at least 5 elements in the menu. If we have less,
+    // then simply duplicate all existing elements until we do.
+    while (elementCount < MINIMUM_NUMBER_OF_ELEMENTS) {
         for (var i = 0; i < elementCount; i++) {
             var element = elements[i];
             var newElement = element.cloneNode(true);
             container.appendChild(newElement);
         }
+        elementCount = elements.length;
     }
 
-    for (var i = 0; i < elements.length; i++) {
+    for (var i = 0; i < elementCount; i++) {
         var element = elements[i];
+        // Assign an index. This index will be used to determine the element's
+        // current position on the menu (for example, 0 - left, 1 - center, etc).
         element.dataset.index = i;
+        // Rotate menu elements when clicking on left/right menu element.
         element.addEventListener('click', function() {
             if (transitionDisabled()) return;
             var index = parseInt(this.dataset.index);
@@ -28,11 +37,8 @@ function Menu(container, simulation) {
             }
         });
     }
-    assignElementsClasses(elements);
 
-    var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-    var transitionInProgress = false;
-
+    // Rotate menu elements with left/right keyboard arrows.
     window.addEventListener('keydown', function(evt) {
         if (transitionDisabled()) return;
         if (evt.keyCode === 37) { // Left arrow.
@@ -41,6 +47,20 @@ function Menu(container, simulation) {
             rotateElementsLeft(elements);
         }
     }, false);
+
+    // Rotate menu elements with swipe touch gestures.
+    var hammer = new Hammer.Manager(document.body);
+    hammer.add(new Hammer.Swipe());
+    hammer.on('swipeleft', function() {
+        if (transitionDisabled()) return;
+        rotateElementsLeft(elements);
+    });
+    hammer.on('swiperight', function() {
+        if (transitionDisabled()) return;
+        rotateElementsRight(elements);
+    });
+
+    assignElementsClasses(elements);
 
     var previousTimestamp = 0;
     var processes = [];
