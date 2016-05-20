@@ -185,30 +185,30 @@ function CubesSimulation(container) {
             self.renderer.render(occlusionScene, camera, godRaysRT1, true);
 
             // Blur.
-            horizontalBlurMaterial.uniforms.tDiffuse.value = godRaysRT1;
+            horizontalBlurMaterial.uniforms.tDiffuse.value = godRaysRT1.texture;
             quadScene.overrideMaterial = horizontalBlurMaterial;
             self.renderer.render(quadScene, camera, godRaysRT2);
 
-            verticalBlurMaterial.uniforms.tDiffuse.value = godRaysRT2;
+            verticalBlurMaterial.uniforms.tDiffuse.value = godRaysRT2.texture;
             quadScene.overrideMaterial = verticalBlurMaterial;
             self.renderer.render(quadScene, camera, godRaysRT1);
 
-            horizontalBlurMaterial.uniforms.tDiffuse.value = godRaysRT1;
+            horizontalBlurMaterial.uniforms.tDiffuse.value = godRaysRT1.texture;
             quadScene.overrideMaterial = horizontalBlurMaterial;
             self.renderer.render(quadScene, camera, godRaysRT2);
 
-            verticalBlurMaterial.uniforms.tDiffuse.value = godRaysRT2;
+            verticalBlurMaterial.uniforms.tDiffuse.value = godRaysRT2.texture;
             quadScene.overrideMaterial = verticalBlurMaterial;
             self.renderer.render(quadScene, camera, godRaysRT1);
 
             // Gen god rays.
-            godRays.godRaysMaterial.uniforms.tDiffuse.value = godRaysRT1;
+            godRays.godRaysMaterial.uniforms.tDiffuse.value = godRaysRT1.texture;
             quadScene.overrideMaterial = godRays.godRaysMaterial;
             self.renderer.render(quadScene, camera, godRaysRT2);
 
             // Final pass - combine.
-            additiveMaterial.uniforms.tDiffuse.value = diffuseRT;
-            additiveMaterial.uniforms.tAdd.value = godRaysRT2;
+            additiveMaterial.uniforms.tDiffuse.value = diffuseRT.texture;
+            additiveMaterial.uniforms.tAdd.value = godRaysRT2.texture;
             quadScene.overrideMaterial = additiveMaterial;
             self.renderer.render(quadScene, camera);
         };
