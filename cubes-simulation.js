@@ -14,10 +14,7 @@ function CubesSimulation(container) {
         preserveDrawingBuffer: false
     });
 
-    // this.clearColor = new THREE.Color(0x07070C);
-    // this.clearColor = new THREE.Color(0x002F2F);
-    // this.clearColor = new THREE.Color(0x001B1B);
-    this.clearColor = new THREE.Color(0, 0.05, 0.05);
+    this.clearColor = new THREE.Color(0x001B1B);
 
     this.renderer.setClearColor(this.clearColor);
     this.renderer.setSize(container.offsetWidth, container.offsetHeight);
@@ -95,13 +92,15 @@ function CubesSimulation(container) {
     }
 
     function createBackground() {
+        var background = {
+            enabled: true
+        };
+        
         var backgroundScene = new THREE.Scene();
         var backgroundMaterial = new THREE.ShaderMaterial(THREE.Effects.background);
         var backgroundMesh = new THREE.Mesh(cubesGeometry, backgroundMaterial);
         backgroundScene.add(backgroundMesh);
-        var background = {
-            enabled: true
-        };
+        
         // Setup camera.
         var backgroundCamera = new THREE.PerspectiveCamera(
             45,
@@ -137,6 +136,7 @@ function CubesSimulation(container) {
 
         // var lightColor = new THREE.Color(0.349, 1.0, 1.0);
         var lightColor = new THREE.Color(0x046380);
+        var occlusionClearColor = new THREE.Color(0x000000);
         var occlusionScene = new THREE.Scene();
 
         var lightGeometry = new createCircleGeometry(10, 4);
@@ -159,11 +159,11 @@ function CubesSimulation(container) {
 
         var diffuseRT, godRaysRT1, godRaysRT2;
         (godRays.resize = function() {
-            var blurriness = 3;
+            var blurriness = 1;
             horizontalBlurMaterial.uniforms.fH.value = blurriness / container.offsetWidth;
             verticalBlurMaterial.uniforms.fV.value = blurriness / container.offsetHeight;
             setupRenderTargets();
-        })();
+        })();                        
 
         var lightProjectedPosition = new THREE.Vector3();
         godRays.render = function(totalSeconds) {
@@ -176,13 +176,17 @@ function CubesSimulation(container) {
             godRays.godRaysMaterial.uniforms.v2LightPosition.value.x = (lightProjectedPosition.x + 1) * 0.5;
             godRays.godRaysMaterial.uniforms.v2LightPosition.value.y = (lightProjectedPosition.y + 1) * 0.5;
 
+            // Render normal scene.
             self.renderer.clearTarget(diffuseRT, true, true, false);
             if (self.background.enabled) {
                 self.background.render(diffuseRT);
             }
             self.renderer.render(scene, camera, diffuseRT);
 
+            // Render occlusion scene.
+            self.renderer.setClearColor(occlusionClearColor);
             self.renderer.render(occlusionScene, camera, godRaysRT1, true);
+            self.renderer.setClearColor(self.clearColor); // Restore clear color.
 
             // Blur.
             horizontalBlurMaterial.uniforms.tDiffuse.value = godRaysRT1.texture;
