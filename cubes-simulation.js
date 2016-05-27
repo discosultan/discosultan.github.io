@@ -159,7 +159,7 @@ function CubesSimulation(container) {
 
         var diffuseRT, godRaysRT1, godRaysRT2;
         (godRays.resize = function() {
-            var blurriness = 1;
+            var blurriness = 2;
             horizontalBlurMaterial.uniforms.fH.value = blurriness / container.offsetWidth;
             verticalBlurMaterial.uniforms.fV.value = blurriness / container.offsetHeight;
             setupRenderTargets();
@@ -254,11 +254,11 @@ function CubesSimulation(container) {
 
     function createCubesGeometry() {
         // Create an unindexed buffer.
-        var numCubes = 8000;
+        var numCubes = 25000;
         var numTrianglesPerCube = 12;
         var numTriangles = numTrianglesPerCube * numCubes;
 
-        var halfSize = 0.5; // half cube side length.
+        var halfSize = 0.3; // half cube side length.
 
         var v1 = new THREE.Vector3(-halfSize, -halfSize, -halfSize);
         var v2 = new THREE.Vector3(+halfSize, -halfSize, -halfSize);
@@ -273,8 +273,8 @@ function CubesSimulation(container) {
         var positions = new Float32Array(numTriangles * 3 * 3); // 3 components per vertex and 3 vertices per triangle.
         var normals = new Float32Array(numTriangles * 3 * 3);
         var colors = new Float32Array(numTriangles * 3 * 3);
-        var randoms1 = new Float32Array(numTriangles * 3 * 3);
-        var randoms2 = new Float32Array(numTriangles * 4 * 3); // 4 components per vertex and 3 vertices per triangle.
+        var randoms1 = new Float32Array(numTriangles * 4 * 3); // 4 components per vertex and 3 vertices per triangle.
+        var randoms2 = new Float32Array(numTriangles * 4 * 3);
 
         var cb = new THREE.Vector3();
         var ab = new THREE.Vector3();
@@ -284,7 +284,7 @@ function CubesSimulation(container) {
         var pc = new THREE.Vector3();
 
         var rv1 = new THREE.Vector3();
-        var rv2 = new THREE.Vector3();
+        var rv2 = new THREE.Vector4();
         var rv3 = new THREE.Vector4();
 
         for (var i = 0; i < numTriangles; i += numTrianglesPerCube) {
@@ -299,7 +299,7 @@ function CubesSimulation(container) {
             var planarY = sinAzimuth * sqrtInvPlanarZSq;
             rv1.set(planarX, planarY, planarZ);
 
-            rv2.set(Math.random(), Math.random(), Math.random());
+            rv2.set(Math.random(), Math.random(), Math.random(), normallyDistributedRandom(-1, 1));
             rv3.set(
                 Math.random() > 0.5 ? 1 : -1,
                 Math.random() > 0.5 ? 1 : -1,
@@ -408,17 +408,20 @@ function CubesSimulation(container) {
             colors[j + 7] = rv1.y;
             colors[j + 8] = rv1.z;
 
-            randoms1[j + 0] = rv2.x;
-            randoms1[j + 1] = rv2.y;
-            randoms1[j + 2] = rv2.z;
+            randoms1[l + 0] = rv2.x;
+            randoms1[l + 1] = rv2.y;
+            randoms1[l + 2] = rv2.z;
+            randoms1[l + 3] = rv2.w;
 
-            randoms1[j + 3] = rv2.x;
-            randoms1[j + 4] = rv2.y;
-            randoms1[j + 5] = rv2.z;
+            randoms1[l + 4] = rv2.x;
+            randoms1[l + 5] = rv2.y;
+            randoms1[l + 6] = rv2.z;
+            randoms1[l + 7] = rv2.w;
 
-            randoms1[j + 6] = rv2.x;
-            randoms1[j + 7] = rv2.y;
-            randoms1[j + 8] = rv2.z;
+            randoms1[l + 8] = rv2.x;
+            randoms1[l + 9] = rv2.y;
+            randoms1[l + 10] = rv2.z;
+            randoms1[l + 11] = rv2.w;
 
             randoms2[l + 0] = rv3.x;
             randoms2[l + 1] = rv3.y;
@@ -440,7 +443,7 @@ function CubesSimulation(container) {
         result.addAttribute('position', new THREE.BufferAttribute(positions, 3));
         result.addAttribute('normal', new THREE.BufferAttribute(normals, 3));
         result.addAttribute('color', new THREE.BufferAttribute(colors, 3));
-        result.addAttribute('random1', new THREE.BufferAttribute(randoms1, 3));
+        result.addAttribute('random1', new THREE.BufferAttribute(randoms1, 4));
         result.addAttribute('random2', new THREE.BufferAttribute(randoms2, 4));
         // result.computeBoundingSphere(); // used for frustum culling by three.js.
         return result;

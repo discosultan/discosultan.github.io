@@ -42,10 +42,11 @@ if (!THREE.Effects) THREE.Effects = {};
     - rotation speed (float 0..1)           - random1.x
     - age (float 0..1)                      - random1.y
     - age speed (float 0..1)                - random1.z
+    - y offset (float -1..1)                - random1.w
     - left or right (float -1 or 1)         - random2.x
     - front or back (float -1 or 1)         - random2.y
     - x offset (float -1..1)                - random2.z
-    - y offset (float -1..1)                - random2.w
+    - z offset (float -1..1)                - random2.w
     http://stackoverflow.com/a/3956538/1466456
     */
     var mixinCubePosition =
@@ -59,25 +60,25 @@ if (!THREE.Effects) THREE.Effects = {};
         '/* Y-translation. */ ' +
         'const float yOffset = 60.0; ' +
         'const float yDistance = 120.0; ' +
-        'const float transitionSecondsY = 60.0; ' +
+        'const float transitionSecondsY = 90.0; ' +
         'float randomizedAgeY = fAge * (random1.y + 0.5) * 0.5 + (random1.z) * transitionSecondsY; ' +
         'float moduloRandomizedAgeY = mod(randomizedAgeY, transitionSecondsY); ' +
         'float positionY = position.y - yOffset + moduloRandomizedAgeY / transitionSecondsY * yDistance; ' +
 
         '/* X- & Z-translation. */ ' +
         'const float xzDistance = 20.0; ' +
-        'const float xzAgeFactor = 0.25; ' +
+        'const float xzAgeFactor = 0.15; ' +
         'float leftOrRight = random2.x; ' +
         'float frontOrBack = random2.y; ' +
         'moduloRandomizedAgeY *= xzAgeFactor; ' +
         'float positionX = position.x + cos(moduloRandomizedAgeY) * leftOrRight * xzDistance; ' +
         'float positionZ = position.z + sin(moduloRandomizedAgeY) * frontOrBack * xzDistance; ' +
 
-        'float offsetAmount = 9.5; ' +
+        'const float offsetAmount = 9.5; ' +
 
         'position = vec3( ' +
             'positionX + random2.z * offsetAmount, ' +
-            'positionY, ' +
+            'positionY + random1.w * offsetAmount, ' +
             'positionZ + random2.w * offsetAmount); ' +
 
         '/* COORDINATE SPACE TRANSFORMATION. */ ' +
@@ -134,7 +135,7 @@ if (!THREE.Effects) THREE.Effects = {};
             'uniform vec4 v4PointLightColor; ' +
             'uniform vec3 v3PointLightPosition; ' +
 
-            'attribute vec3 random1; ' +
+            'attribute vec4 random1; ' +
             'attribute vec4 random2; ' +
 
             'varying lowp vec3 vDiffuse; ' +
@@ -164,7 +165,7 @@ if (!THREE.Effects) THREE.Effects = {};
         vertexShader:
             'uniform float fAge; ' +
 
-            'attribute vec3 random1; ' +
+            'attribute vec4 random1; ' +
             'attribute vec4 random2; ' +
 
             mixinCommon +
@@ -183,7 +184,7 @@ if (!THREE.Effects) THREE.Effects = {};
     - rotation axis (vec 3 dir normal)      - color
     - rotation speed (float 0..1)           - random1.x
     - age (float 0..1)                      - random1.y
-    - age speed (float 0..1)                - random1.z
+    - age speed (float 0..1)                - random1.z    
     - left or right (float -1 or 1)         - random2.x
     - front or back (float -1 or 1)         - random2.y
     - x offset (float -1..1)                - random2.z
@@ -200,7 +201,7 @@ if (!THREE.Effects) THREE.Effects = {};
         vertexShader:
             'uniform float fAge; ' +
 
-            'attribute vec3 random1; ' +
+            'attribute vec4 random1; ' +
             'attribute vec4 random2; ' +
 
             'varying lowp vec3 vDiffuse; ' +
@@ -262,21 +263,21 @@ if (!THREE.Effects) THREE.Effects = {};
             fExposure: {
                 type: "f",
                 // value: 0.6
-                value: 0.75
+                value: 0.5
             },
             fDecay: {
                 type: "f",
-                value: 0.93
+                value: 0.9
             },
             fDensity: {
                 type: "f",
                 // value: 0.96
-                value: 0.5
+                value: 0.8
             },
             fWeight: {
                 type: "f",
                 // value: 0.4
-                value: 0.65
+                value: 0.75
             },
             fClamp: {
                 type: "f",
