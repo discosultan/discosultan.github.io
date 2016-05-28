@@ -60,14 +60,14 @@ if (!THREE.Effects) THREE.Effects = {};
         '/* Y-translation. */ ' +
         'const float yOffset = 60.0; ' +
         'const float yDistance = 120.0; ' +
-        'const float transitionSecondsY = 90.0; ' +
+        'const float transitionSecondsY = 60.0; ' +
         'float randomizedAgeY = fAge * (random1.y + 0.5) * 0.5 + (random1.z) * transitionSecondsY; ' +
         'float moduloRandomizedAgeY = mod(randomizedAgeY, transitionSecondsY); ' +
         'float positionY = position.y - yOffset + moduloRandomizedAgeY / transitionSecondsY * yDistance; ' +
 
         '/* X- & Z-translation. */ ' +
         'const float xzDistance = 20.0; ' +
-        'const float xzAgeFactor = 0.15; ' +
+        'const float xzAgeFactor = 0.2; ' +
         'float leftOrRight = random2.x; ' +
         'float frontOrBack = random2.y; ' +
         'moduloRandomizedAgeY *= xzAgeFactor; ' +
@@ -89,24 +89,21 @@ if (!THREE.Effects) THREE.Effects = {};
         '/* We use Gouraud shading for per vertex lighting. */ ' +
 
         '/* Ambient light. */ ' +
-        'vDiffuse = v4AmbientLightColor.xyz * v4AmbientLightColor.w; ' +
+        'const vec3 ambientLightColor = vec3(0.0, 0.0, 0.0);' +
+        'vDiffuse = ambientLightColor;' +
 
         '/* Directional light. */ ' +
-        '/* const vec3 light1Color = vec3(1.0, 0.0, 0.0); */ ' +
-        '/* const vec3 light1InvDir = vec3(0.0, 1.0, 0.0); */ ' +
-        '/* const float light1Intensity = 0.75; */ ' +
-        '/* vDiffuse += light1Intensity * max(dot(normal, light1InvDir), 0.0) * light1Color; */ ' +
+        'const vec3 dirLightColor = vec3(0.35, 1.0, 1.0) * 0.25; ' +
+        'const vec3 dirLightInvDir = vec3(0.0, 1.0, 0.0); ' +        
+        'vDiffuse += max(dot(normal, dirLightInvDir), 0.0) * dirLightColor; ' +
 
-        '/* Point light. */ ' +
-        '/* const vec3 light2Color = vec3(0.349, 1.0, 1.0); */ ' +
-        '/* const float light2Intensity = 1.0; */ ' +
-        '/* const vec3 pointLightPosition = vec3(0.0, 0.0, 0.0); */ ' +
-        'const float pointLightMaxDistance = 75.0; ' +
+        '/* Point light. */ ' +        
+        'const float pointLightMaxDistance = 65.0; ' +
         'vec3 pointLightInvVector = v3PointLightPosition - position; ' +
         'float pointLightDistance = length(pointLightInvVector); ' +
         'vec3 pointLightInvDir = pointLightInvVector / pointLightDistance; ' +
         'float pointLightFactor = 1.0 - min(pointLightDistance / pointLightMaxDistance, 1.0); ' +
-        'vDiffuse += v4PointLightColor.w * max(dot(normal, pointLightInvDir), 0.0) * pointLightFactor * v4PointLightColor.xyz;';
+        'vDiffuse += max(dot(normal, pointLightInvDir), 0.0) * pointLightFactor * v3PointLightColor;';
 
     effects.cubesDiffuse = {
         uniforms: {
@@ -114,13 +111,9 @@ if (!THREE.Effects) THREE.Effects = {};
                 type: 'f',
                 value: 60
             },
-            v4AmbientLightColor: {
-                type: 'v4',
-                value: new THREE.Vector4(0, 0, 0, 1)
-            },
-            v4PointLightColor: {
-                type: 'v4',
-                value: new THREE.Vector4(0.349, 1, 1)
+            v3PointLightColor: {
+                type: 'c',
+                value: new THREE.Color(0.349, 1, 1)
             },
             v3PointLightPosition: {
                 type: 'v3',
@@ -131,8 +124,7 @@ if (!THREE.Effects) THREE.Effects = {};
 
         vertexShader:
             'uniform float fAge; ' +
-            'uniform vec4 v4AmbientLightColor; ' +
-            'uniform vec4 v4PointLightColor; ' +
+            'uniform vec3 v3PointLightColor; ' +
             'uniform vec3 v3PointLightPosition; ' +
 
             'attribute vec4 random1; ' +
@@ -184,11 +176,12 @@ if (!THREE.Effects) THREE.Effects = {};
     - rotation axis (vec 3 dir normal)      - color
     - rotation speed (float 0..1)           - random1.x
     - age (float 0..1)                      - random1.y
-    - age speed (float 0..1)                - random1.z    
+    - age speed (float 0..1)                - random1.z 
+    - z offset(float -1..1)                 - random1.w   
     - left or right (float -1 or 1)         - random2.x
-    - front or back (float -1 or 1)         - random2.y
+    - not used (float -1 or 1)              - random2.y
     - x offset (float -1..1)                - random2.z
-    - y offset (float -1..1)                - random2.w
+    - not used (float -1..1)                - random2.w
     */
     effects.background = {
         uniforms: {
@@ -217,6 +210,7 @@ if (!THREE.Effects) THREE.Effects = {};
                 '/* TRANSLATION. */ ' +
                 'const float transitionSecondsY = 30.0; ' +
                 'const float zOffset = -150.0; ' +
+                'const float zDistance = 30.0;' +
                 'const float xOffset = 160.0; ' +
                 'const float yOffset = 60.0; ' +
                 'const float yDistance = 120.0; ' +
@@ -228,16 +222,15 @@ if (!THREE.Effects) THREE.Effects = {};
                 'position = vec3( ' +
                     'position.x + random2.z * xOffset, ' +
                     'positionY, ' +
-                    'zOffset ' +
+                    'zOffset + random1.w * zDistance ' + 
                 '); ' +
 
                 '/* LIGHTING. */ ' +
                 'vDiffuse = vec3(0.0); ' +
-                '/* Directional light. */ ' +
-                'const vec3 light1Color = vec3(0.35, 1.0, 1.0); ' +
-                'const vec3 light1InvDir = vec3(0.0, 1.0, 0.0); ' +
-                'const float light1Intensity = 0.25; ' +
-                'vDiffuse += light1Intensity * max(dot(normal, light1InvDir), 0.0) * light1Color; ' +
+                '/* Directional light. */ ' +                
+                'const vec3 dirLightColor = vec3(0.35, 1.0, 1.0) * 0.25; ' +
+                'const vec3 dirLightInvDir = vec3(0.0, 1.0, 0.0); ' +                
+                'vDiffuse += max(dot(normal, dirLightInvDir), 0.0) * dirLightColor; ' +
 
                 '/* COORDINATE SPACE TRANSFORMATION. */ ' +
                 'vec4 mvPosition = viewMatrix * vec4(position, 1.0); ' +
@@ -263,7 +256,7 @@ if (!THREE.Effects) THREE.Effects = {};
             fExposure: {
                 type: "f",
                 // value: 0.6
-                value: 0.5
+                value: 0.6
             },
             fDecay: {
                 type: "f",

@@ -31,7 +31,8 @@ function CubesSimulation(container) {
     var cameraAxisOfRotation = new THREE.Vector3(0.0, 1.0, 0.25);
     cameraAxisOfRotation.normalize();
     this.cameraRotation = Math.random() * TWO_PI;
-    var rotationSpeed = Math.PI * 0.025;
+    var rotationSpeed = Math.PI * 0.02;
+    rotationSpeed = 0;
 
     camera.up.set(cameraAxisOfRotation.x, cameraAxisOfRotation.y, cameraAxisOfRotation.z);
     camera.position.set(100, 0, 0);
@@ -113,7 +114,7 @@ function CubesSimulation(container) {
         background.render = function(renderTarget) {
             backgroundMaterial.uniforms.fAge.value = self.cubesDiffuseMaterial.uniforms.fAge.value;
             // Render only a subset of the entire cubes buffer.
-            cubesGeometry.setDrawRange(0, 36 * 50);
+            cubesGeometry.setDrawRange(0, 36 * 60);
 
             self.renderer.render(backgroundScene, backgroundCamera, renderTarget);
 
@@ -133,9 +134,8 @@ function CubesSimulation(container) {
         var additiveMaterial = new THREE.ShaderMaterial(THREE.Effects.additive);
         var horizontalBlurMaterial = new THREE.ShaderMaterial(THREE.Effects.horizontalBlur);
         var verticalBlurMaterial = new THREE.ShaderMaterial(THREE.Effects.verticalBlur);
-
-        // var lightColor = new THREE.Color(0.349, 1.0, 1.0);
-        var lightColor = new THREE.Color(0x046380);
+        
+        var lightColor = new THREE.Color(0.8, 0.6, 0.5);
         var occlusionClearColor = new THREE.Color(0x000000);
         var occlusionScene = new THREE.Scene();
 
@@ -159,7 +159,7 @@ function CubesSimulation(container) {
 
         var diffuseRT, godRaysRT1, godRaysRT2;
         (godRays.resize = function() {
-            var blurriness = 2;
+            var blurriness = 3;
             horizontalBlurMaterial.uniforms.fH.value = blurriness / container.offsetWidth;
             verticalBlurMaterial.uniforms.fV.value = blurriness / container.offsetHeight;
             setupRenderTargets();
@@ -168,8 +168,9 @@ function CubesSimulation(container) {
         var lightProjectedPosition = new THREE.Vector3();
         godRays.render = function(totalSeconds) {
             godRays.cubesBlackMaterial.uniforms.fAge.value = self.cubesDiffuseMaterial.uniforms.fAge.value;
-            godRays.lightMesh.position.y = Math.sin(totalSeconds * 0.6) * 50;
+            godRays.lightMesh.position.y = Math.sin(totalSeconds * 0.3) * 50;
             self.cubesDiffuseMaterial.uniforms.v3PointLightPosition.value.y = godRays.lightMesh.position.y;
+            self.cubesDiffuseMaterial.uniforms.v3PointLightColor.value.copy(lightColor);
 
             lightProjectedPosition.copy(godRays.lightMesh.position);
             lightProjectedPosition.project(camera);
@@ -254,11 +255,11 @@ function CubesSimulation(container) {
 
     function createCubesGeometry() {
         // Create an unindexed buffer.
-        var numCubes = 25000;
+        var numCubes = 10000;
         var numTrianglesPerCube = 12;
         var numTriangles = numTrianglesPerCube * numCubes;
 
-        var halfSize = 0.3; // half cube side length.
+        var halfSize = 0.45; // half cube side length.
 
         var v1 = new THREE.Vector3(-halfSize, -halfSize, -halfSize);
         var v2 = new THREE.Vector3(+halfSize, -halfSize, -halfSize);
@@ -276,12 +277,8 @@ function CubesSimulation(container) {
         var randoms1 = new Float32Array(numTriangles * 4 * 3); // 4 components per vertex and 3 vertices per triangle.
         var randoms2 = new Float32Array(numTriangles * 4 * 3);
 
-        var cb = new THREE.Vector3();
-        var ab = new THREE.Vector3();
-
-        var pa = new THREE.Vector3();
-        var pb = new THREE.Vector3();
-        var pc = new THREE.Vector3();
+        var na = new THREE.Vector3();
+        var nb = new THREE.Vector3();
 
         var rv1 = new THREE.Vector3();
         var rv2 = new THREE.Vector4();
@@ -338,63 +335,39 @@ function CubesSimulation(container) {
         function addTriangle(k, vc, vb, va, rv1, rv2, rv3) {
             // Setup positions.
 
-            pa.copy(va);
-            pb.copy(vb);
-            pc.copy(vc);
-
-            var ax = pa.x;
-            var ay = pa.y;
-            var az = pa.z;
-
-            var bx = pb.x;
-            var by = pb.y;
-            var bz = pb.z;
-
-            var cx = pc.x;
-            var cy = pc.y;
-            var cz = pc.z;
-
             var j = k * 9;
             var l = k * 12;
 
-            positions[j + 0] = ax;
-            positions[j + 1] = ay;
-            positions[j + 2] = az;
+            positions[j + 0] = va.x;
+            positions[j + 1] = va.y;
+            positions[j + 2] = va.z;
 
-            positions[j + 3] = bx;
-            positions[j + 4] = by;
-            positions[j + 5] = bz;
+            positions[j + 3] = vb.x;
+            positions[j + 4] = vb.y;
+            positions[j + 5] = vb.z;
 
-            positions[j + 6] = cx;
-            positions[j + 7] = cy;
-            positions[j + 8] = cz;
+            positions[j + 6] = vc.x;
+            positions[j + 7] = vc.y;
+            positions[j + 8] = vc.z;
 
             // Setup flat face normals.
 
-            pa.set(ax, ay, az);
-            pb.set(bx, by, bz);
-            pc.set(cx, cy, cz);
+            na.subVectors(vc, vb);
+            nb.subVectors(va, vb);
+            na.cross(nb);
+            na.normalize();
+            
+            normals[j + 0] = na.x;
+            normals[j + 1] = na.y;
+            normals[j + 2] = na.z;
 
-            cb.subVectors(pc, pb);
-            ab.subVectors(pa, pb);
-            cb.cross(ab);
-            cb.normalize();
+            normals[j + 3] = na.x;
+            normals[j + 4] = na.y;
+            normals[j + 5] = na.z;
 
-            var nx = cb.x;
-            var ny = cb.y;
-            var nz = cb.z;
-
-            normals[j + 0] = nx;
-            normals[j + 1] = ny;
-            normals[j + 2] = nz;
-
-            normals[j + 3] = nx;
-            normals[j + 4] = ny;
-            normals[j + 5] = nz;
-
-            normals[j + 6] = nx;
-            normals[j + 7] = ny;
-            normals[j + 8] = nz;
+            normals[j + 6] = na.x;
+            normals[j + 7] = na.y;
+            normals[j + 8] = na.z;
 
             colors[j + 0] = rv1.x;
             colors[j + 1] = rv1.y;
