@@ -170,7 +170,7 @@ function CubesSimulation(container) {
             godRays.cubesBlackMaterial.uniforms.fAge.value = self.cubesDiffuseMaterial.uniforms.fAge.value;
             godRays.lightMesh.position.y = Math.sin(totalSeconds * 0.3) * 50;
             self.cubesDiffuseMaterial.uniforms.v3PointLightPosition.value.y = godRays.lightMesh.position.y;
-            self.cubesDiffuseMaterial.uniforms.v3PointLightColor.value.copy(lightColor);
+            self.cubesDiffuseMaterial.uniforms.cPointLightColor.value.copy(lightColor);
 
             lightProjectedPosition.copy(godRays.lightMesh.position);
             lightProjectedPosition.project(camera);

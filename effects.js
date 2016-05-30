@@ -103,7 +103,7 @@ if (!THREE.Effects) THREE.Effects = {};
         'float pointLightDistance = length(pointLightInvVector); ' +
         'vec3 pointLightInvDir = pointLightInvVector / pointLightDistance; ' +
         'float pointLightFactor = 1.0 - min(pointLightDistance / pointLightMaxDistance, 1.0); ' +
-        'vDiffuse += max(dot(normal, pointLightInvDir), 0.0) * pointLightFactor * v3PointLightColor;';
+        'vDiffuse += max(dot(normal, pointLightInvDir), 0.0) * pointLightFactor * cPointLightColor;';
 
     effects.cubesDiffuse = {
         uniforms: {
@@ -111,7 +111,7 @@ if (!THREE.Effects) THREE.Effects = {};
                 type: 'f',
                 value: 60
             },
-            v3PointLightColor: {
+            cPointLightColor: {
                 type: 'c',
                 value: new THREE.Color(0.349, 1, 1)
             },
@@ -124,7 +124,7 @@ if (!THREE.Effects) THREE.Effects = {};
 
         vertexShader:
             'uniform float fAge; ' +
-            'uniform vec3 v3PointLightColor; ' +
+            'uniform vec3 cPointLightColor; ' +
             'uniform vec3 v3PointLightPosition; ' +
 
             'attribute vec4 random1; ' +
