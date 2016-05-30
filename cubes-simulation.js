@@ -284,18 +284,8 @@ function CubesSimulation(container) {
         var rv2 = new THREE.Vector4();
         var rv3 = new THREE.Vector4();
 
-        for (var i = 0; i < numTriangles; i += numTrianglesPerCube) {
-            // Create random unit vector (uniform distribution).
-            // Ref: http://www.gamedev.net/topic/499972-generate-a-random-unit-vector/
-            var azimuth = Math.random() * 2 * Math.PI;
-            var cosAzimuth = Math.cos(azimuth);
-            var sinAzimuth = Math.sin(azimuth);
-            var planarZ = Math.random() * 2 - 1; // in range [-1...1]
-            var sqrtInvPlanarZSq = Math.sqrt(1 - planarZ * planarZ);
-            var planarX = cosAzimuth * sqrtInvPlanarZSq;
-            var planarY = sinAzimuth * sqrtInvPlanarZSq;
-            rv1.set(planarX, planarY, planarZ);
-
+        for (var i = 0; i < numTriangles; i += numTrianglesPerCube) {            
+            setRandomUnitVector(rv1);
             rv2.set(Math.random(), Math.random(), Math.random(), normallyDistributedRandom(-1, 1));
             rv3.set(
                 Math.random() > 0.5 ? 1 : -1,
@@ -321,6 +311,19 @@ function CubesSimulation(container) {
 
             addTriangle(i + 10, v1, v4, v5, rv1, rv2, rv3);
             addTriangle(i + 11, v4, v8, v5, rv1, rv2, rv3);
+        }
+
+        function setRandomUnitVector(vector) {
+            // Create random unit vector (uniform distribution).
+            // Ref: http://www.gamedev.net/topic/499972-generate-a-random-unit-vector/
+            var azimuth = Math.random() * 2 * Math.PI;
+            var cosAzimuth = Math.cos(azimuth);
+            var sinAzimuth = Math.sin(azimuth);
+            var planarZ = Math.random() * 2 - 1; // in range [-1...1]
+            var sqrtInvPlanarZSq = Math.sqrt(1 - planarZ * planarZ);
+            var planarX = cosAzimuth * sqrtInvPlanarZSq;
+            var planarY = sinAzimuth * sqrtInvPlanarZSq;
+            vector.set(planarX, planarY, planarZ);
         }
 
         function normallyDistributedRandom(from, to) {
