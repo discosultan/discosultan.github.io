@@ -31,8 +31,7 @@ function CubesSimulation(container) {
     var cameraAxisOfRotation = new THREE.Vector3(0.0, 1.0, 0.25);
     cameraAxisOfRotation.normalize();
     this.cameraRotation = Math.random() * TWO_PI;
-    var rotationSpeed = Math.PI * 0.02;
-    rotationSpeed = 0;
+    this.rotationSpeed = Math.PI * 0.05;    
 
     camera.up.set(cameraAxisOfRotation.x, cameraAxisOfRotation.y, cameraAxisOfRotation.z);
     camera.position.set(100, 0, 0);
@@ -74,7 +73,7 @@ function CubesSimulation(container) {
         self.cubesDiffuseMaterial.uniforms.fAge.value += deltaSeconds;
 
         // Rotate camera.
-        self.cameraRotation = (self.cameraRotation + rotationSpeed * deltaSeconds) % TWO_PI;
+        self.cameraRotation = (self.cameraRotation + self.rotationSpeed * deltaSeconds) % TWO_PI;
 
         camera.position.set(100, 0, 0).applyAxisAngle(cameraAxisOfRotation, self.cameraRotation);
         camera.lookAt(ZERO_VECTOR);

@@ -1,6 +1,6 @@
 'use strict';
 
-function Menu(container, simulation) {
+function addMenuMovement(container, simulation) {
     var CAMERA_ROTATION_AMOUNT = Math.PI * 0.25;
     var CAMERA_ROTATION_SECONDS = 0.4;
     var MINIMUM_NUMBER_OF_ELEMENTS = 5;

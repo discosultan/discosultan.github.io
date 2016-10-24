@@ -10,32 +10,28 @@
 </head>
 
 <body>
+    <!-- Background cubes simulation -->
     <section id="simulation"></section>
 
-    <section id="menu">
+    <!-- Menu overlay -->
+    <!--<section id="menu">
         <span class="stretch"></span>
         <section class="menu-element left">
             <div class="menu-element-background"></div>
             <div class="menu-element-content">                
-                <!--LEFT PANEL-->
-                <!--<iframe style="width: 100%; height: 100%" src="http://varus.io/hyper/"></iframe>-->
             </div>
         </section>
         <section class="menu-element center">
             <div class="menu-element-background"></div>
             <div class="menu-element-content">
-                <!--CENTER PANEL-->
             </div>
         </section>
         <section class="menu-element right">
             <div class="menu-element-background"></div>
             <div class="menu-element-content">
-                <!--RIGHT PANEL-->
-                <!--<iframe style="width: 100%; height: 100%" src="http://varus.io/aurelia-minesweeper/"></iframe>
-                <iframe style="width: 100%; height: 100%" src="http://varus.io/vsdoc-2-md/"></iframe>-->
             </div>
         </section>
-    </section>
+    </section>-->
 
     <script src="vendor/three.min.js"></script>
     <script src="vendor/dat.gui.js"></script>
@@ -48,10 +44,12 @@
         var simulation = new CubesSimulation(document.getElementById('simulation'));
         window.onresize = simulation.resize;
 
-        // Add TESTING controls.
-        addControls(simulation);
+        // Add testing controls.
+        //addControls(simulation);
 
-        var menu = new Menu(document.getElementById('menu'), simulation);
+        // Add left-right swiping for menu and disable auto-rotation.        
+        //addMenuMovement(document.getElementById('menu'), simulation);
+        //simulation.rotationSpeed = 0;
     </script>
 </body>
 

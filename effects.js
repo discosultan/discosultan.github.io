@@ -255,7 +255,6 @@ if (!THREE.Effects) THREE.Effects = {};
             },
             fExposure: {
                 type: "f",
-                // value: 0.6
                 value: 0.6
             },
             fDecay: {
@@ -393,7 +392,7 @@ if (!THREE.Effects) THREE.Effects = {};
         				'sum += texture2D( tDiffuse, vec2(vUv.x - 3.0 * fH, vUv.y)) * 0.0918; ' +
         				'sum += texture2D( tDiffuse, vec2(vUv.x - 2.0 * fH, vUv.y)) * 0.12245; ' +
         				'sum += texture2D( tDiffuse, vec2(vUv.x - 1.0 * fH, vUv.y)) * 0.1531; ' +
-        				'sum += texture2D( tDiffuse, vec2(vUv.x, 		  	    vUv.y)) * 0.1633; ' +
+        				'sum += texture2D( tDiffuse, vec2(vUv.x, 		  	vUv.y)) * 0.1633; ' +
         				'sum += texture2D( tDiffuse, vec2(vUv.x + 1.0 * fH, vUv.y)) * 0.1531; ' +
         				'sum += texture2D( tDiffuse, vec2(vUv.x + 2.0 * fH, vUv.y)) * 0.12245; ' +
         				'sum += texture2D( tDiffuse, vec2(vUv.x + 3.0 * fH, vUv.y)) * 0.0918; ' +
@@ -435,7 +434,7 @@ if (!THREE.Effects) THREE.Effects = {};
                 'sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y - 3.0 * fV)) * 0.0918; ' +
                 'sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y - 2.0 * fV)) * 0.12245; ' +
                 'sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y - 1.0 * fV)) * 0.1531; ' +
-                'sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y			      )) * 0.1633; ' +
+                'sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y			)) * 0.1633; ' +
                 'sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y + 1.0 * fV)) * 0.1531; ' +
                 'sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y + 2.0 * fV)) * 0.12245; ' +
                 'sum += texture2D(tDiffuse, vec2(vUv.x, vUv.y + 3.0 * fV)) * 0.0918; ' +
