@@ -176,8 +176,8 @@ if (!THREE.Effects) THREE.Effects = {};
     - rotation axis (vec 3 dir normal)      - color
     - rotation speed (float 0..1)           - random1.x
     - age (float 0..1)                      - random1.y
-    - age speed (float 0..1)                - random1.z 
-    - z offset(float -1..1)                 - random1.w   
+    - age speed (float 0..1)                - random1.z
+    - z offset(float -1..1)                 - random1.w
     - left or right (float -1 or 1)         - random2.x
     - not used (float -1 or 1)              - random2.y
     - x offset (float -1..1)                - random2.z
