@@ -10,7 +10,7 @@
         <link rel="icon" href="./favicon.ico" type="image/x-icon">
         
         <style>
-            html, body, canvas {
+            html, body {
                 width: 100%;
                 height: 100%;
                 margin: 0;
@@ -18,7 +18,13 @@
             }
             body {
                 display: flex;
+                justify-content: center;
+                align-items: center;
                 background-color: #333745;
+            }
+            canvas {
+                width: 580px;
+                height: 300px; 
             }
             @font-face {
                 font-family: "Montserrat";
@@ -29,5 +35,7 @@
     </head>
     <body>
         <canvas id="canvas"></canvas>
+        <!-- Preload custom font -->
+        <div style="position: absolute; left: 0; top: 0; font-family: Montserrat; color: #333745">x</div>
     </body>
 </html>

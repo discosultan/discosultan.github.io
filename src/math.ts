@@ -9,10 +9,10 @@ Math.lerp = (a, b, amount) => a + (b - a) * amount;
 Math.TWO_PI = 2*Math.PI;
 
 export class Vec2 {
-    constructor (public x: number, public y: number) { }
+    constructor (public readonly x: number, public readonly y: number) { }
 
-    static get zero() { return new Vec2(0, 0); }
-    static get one() { return new Vec2(1, 1); }
+    static zero = new Vec2(0, 0);
+    static one = new Vec2(1, 1);
 
     static lerp(p1: Vec2, p2: Vec2, amount: number) {
         return new Vec2(

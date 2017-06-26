@@ -77,16 +77,6 @@ var Vec2 = (function () {
         this.x = x;
         this.y = y;
     }
-    Object.defineProperty(Vec2, "zero", {
-        get: function () { return new Vec2(0, 0); },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Vec2, "one", {
-        get: function () { return new Vec2(1, 1); },
-        enumerable: true,
-        configurable: true
-    });
     Vec2.lerp = function (p1, p2, amount) {
         return new Vec2(Math.lerp(p1.x, p2.x, amount), Math.lerp(p1.y, p2.y, amount));
     };
@@ -104,6 +94,8 @@ var Vec2 = (function () {
     return Vec2;
 }());
 
+Vec2.zero = new Vec2(0, 0);
+Vec2.one = new Vec2(1, 1);
 // Ref: https://gist.github.com/gre/1650294
 var Easing = {
     // No easing, no acceleration.
@@ -551,17 +543,21 @@ function init() {
         }
         else {
             if (hoverEffect) {
-                hoverEffect.resolve();
-                hoverEffect = null;
+                resolveHoverEffect();
             }
-            document.body.style.cursor = "auto";
         }
     };
     canvas.onclick = function (e) {
         if (hoverEffect) {
             window.open(hoverEffect.url);
+            resolveHoverEffect();
         }
     };
+    function resolveHoverEffect() {
+        document.body.style.cursor = "auto";
+        hoverEffect.resolve();
+        hoverEffect = null;
+    }
     // Globals to simplify debugging.
     window.renderer = renderer;
     window.processManager = processManager;

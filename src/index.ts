@@ -195,17 +195,21 @@ function init() {
             }
         } else {
             if (hoverEffect) {
-                hoverEffect.resolve();
-                hoverEffect = null;
+                resolveHoverEffect();
             }
-            document.body.style.cursor = "auto";
         }
     };
     canvas.onclick = e => {
         if (hoverEffect) {
             window.open(hoverEffect.url);
+            resolveHoverEffect();
         }
     };
+    function resolveHoverEffect() {
+        document.body.style.cursor = "auto";
+        hoverEffect!.resolve();
+        hoverEffect = null;
+    }
 
     // Globals to simplify debugging.
     window.renderer = renderer;
