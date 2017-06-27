@@ -1,11 +1,11 @@
-import Shape from "./shape";
+import { Shape } from "./shape";
 
-export default class Renderer {
+export class Renderer {
     readonly ctx: CanvasRenderingContext2D;
 
     constructor(public readonly canvas: HTMLCanvasElement, public readonly shapes: Shape[],
         public readonly translationFactorX = 0.5, public readonly translationFactorY = 0.5) {
-        this.ctx = <CanvasRenderingContext2D>canvas.getContext("2d");
+        this.ctx = canvas.getContext("2d")!;
     }
 
     step(dt: number) {

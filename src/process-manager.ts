@@ -1,5 +1,5 @@
 import { Easing } from "./math";
-import Shape from "./shape";
+import { Shape } from "./shape";
 
 export type Config = any;
 export type Status = "pending" | "fulfilled" | "rejected";
@@ -36,7 +36,7 @@ export class Process {
     }
 }
 
-export default class ProcessManager {
+export class ProcessManager {
     readonly processes: Process[] = [];
     timeScale = 1
 

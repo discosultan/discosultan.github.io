@@ -133,6 +133,7 @@ var Easing = {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Process; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return ProcessManager; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__math__ = __webpack_require__(0);
 
 var Process = (function () {
@@ -214,7 +215,7 @@ var ProcessManager = (function () {
     };
     return ProcessManager;
 }());
-/* harmony default export */ __webpack_exports__["b"] = (ProcessManager);
+
 
 
 /***/ }),
@@ -222,6 +223,7 @@ var ProcessManager = (function () {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Shape; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__math__ = __webpack_require__(0);
 
 ;
@@ -373,7 +375,7 @@ var Shape = (function () {
     };
     return Shape;
 }());
-/* harmony default export */ __webpack_exports__["a"] = (Shape);
+
 
 
 /***/ }),
@@ -411,8 +413,8 @@ function init() {
     var canvas = document.getElementById("canvas") || (function () { throw "Canvas not available."; })();
     var ctx = canvas.getContext("2d") || (function () { throw "2d context not available."; })();
     var shapes = [];
-    var processManager = new __WEBPACK_IMPORTED_MODULE_1__process_manager__["b" /* default */](shapes);
-    var renderer = new __WEBPACK_IMPORTED_MODULE_0__renderer__["a" /* default */](canvas, shapes, 0.36);
+    var processManager = new __WEBPACK_IMPORTED_MODULE_1__process_manager__["b" /* ProcessManager */](shapes);
+    var renderer = new __WEBPACK_IMPORTED_MODULE_0__renderer__["a" /* Renderer */](canvas, shapes, 0.36);
     // Config.
     var primaryColor = "#fff";
     var easingFn = __WEBPACK_IMPORTED_MODULE_3__math__["a" /* Easing */].easeInOutCubic;
@@ -435,30 +437,31 @@ function init() {
     // 2. fill shapes which will be filled after contours are in place
     var base = new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](hexDiameter, 0);
     var translationNE = __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */].rotate(base, 1 * Math.PI / 3), translationW = __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */].rotate(base, 1 * Math.PI / 1), translationSE = __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */].rotate(base, 5 * Math.PI / 3);
-    var hexMidContour = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* default */].empty({ strokeStyle: primaryColor }), hexNEContour = newHex(), hexWContour = newHex(), hexSEContour = newHex();
+    var hexMidContour = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].empty({ strokeStyle: primaryColor }), hexNEContour = newHex({ url: shapesMeta[1] }), hexWContour = newHex({ url: shapesMeta[2] }), hexSEContour = newHex({ url: shapesMeta[3] });
     shapes.push(hexMidContour); // Rest will be added during animation.
     // Hex fill mask will be added after contours are animated.
-    var hexFillMask = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* default */].empty({
+    var hexFillMask = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].empty({
         type: "none",
         scale: flipVertically
     });
-    var hexMidFill = newHex(), hexNEFill = newHex(translationNE), hexWFill = newHex(translationW), hexSEFill = newHex(translationSE);
+    var hexMidFill = newHex(), hexNEFill = newHex({ translation: translationNE }), hexWFill = newHex({ translation: translationW }), hexSEFill = newHex({ translation: translationSE });
     hexFillMask.push(hexMidFill, hexNEFill, hexWFill, hexSEFill);
-    function newHex(translation) {
-        if (translation === void 0) { translation = __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */].zero; }
-        return __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* default */].hex(0, 0, hexDiameter, { strokeStyle: primaryColor, translation: translation });
+    function newHex(config) {
+        if (config === void 0) { config = {}; }
+        config.strokeStyle = primaryColor;
+        return __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].hex(0, 0, hexDiameter, config);
     }
     addFillRect(hexMidFill, shapesMeta[0].color, shapesMeta[0].img);
     addFillRect(hexNEFill, shapesMeta[1].color, shapesMeta[1].img),
         addFillRect(hexWFill, shapesMeta[2].color, shapesMeta[2].img),
         addFillRect(hexSEFill, shapesMeta[3].color, shapesMeta[3].img);
     function addFillRect(shape, color, img) {
-        var bgFillRect = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* default */].rect(-hexDiameter / 2, -hexDiameter / 2, hexDiameter, hexDiameter, {
+        var bgFillRect = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].rect(-hexDiameter / 2, -hexDiameter / 2, hexDiameter, hexDiameter, {
             type: "fill",
             fillStyle: color
         });
         shape.push(bgFillRect);
-        var imgFillRect = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* default */].rect(0, 0, img.width, img.height, {
+        var imgFillRect = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].rect(0, 0, img.width, img.height, {
             type: "pattern",
             fillStyle: ctx.createPattern(img, "no-repeat"),
             scale: flipVertically,
@@ -466,10 +469,10 @@ function init() {
         });
         shape.push(imgFillRect);
     }
-    var textRect = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* default */].empty({ type: "none", translation: new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](60, -textRectHeight / 2) });
+    var textRect = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].empty({ type: "none", translation: new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](60, -textRectHeight / 2) });
     shapes.push(textRect);
     function createText(text, translation, scale) {
-        return __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* default */].rect(0, 0, textRectWidth, textRectHeight / 2, {
+        return __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].rect(0, 0, textRectWidth, textRectHeight / 2, {
             type: "text",
             font: font,
             text: text,
@@ -522,20 +525,20 @@ function init() {
     var hoverEffect = null;
     canvas.onmousemove = function (e) {
         var x = e.pageX - canvas.offsetLeft - canvas.translationX, y = e.pageY - canvas.offsetTop - canvas.translationY;
-        var containingShapeIndex = -1;
+        var containingShape = null;
         for (var i = 0; i < hoverableShapes.length; i++) {
             var shape = hoverableShapes[i];
             if (shape.worldContains(x, y)) {
-                containingShapeIndex = i;
+                containingShape = shape;
                 break; // Since there's only one cursor and no overlapping shapes, we can skip early.
             }
         }
-        if (containingShapeIndex > -1) {
+        if (containingShape !== null) {
             document.body.style.cursor = "pointer";
             if (!hoverEffect) {
                 hoverEffect = new __WEBPACK_IMPORTED_MODULE_4__processes__["e" /* HoverEffect */]({
-                    shape: hoverableShapes[containingShapeIndex],
-                    url: shapesMeta[containingShapeIndex + 1].url,
+                    shape: containingShape,
+                    url: containingShape.url,
                     diameter: hexDiameter,
                     color: primaryColor,
                     maxLineWidth: 15,
@@ -572,6 +575,7 @@ function init() {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Renderer; });
 var Renderer = (function () {
     function Renderer(canvas, shapes, translationFactorX, translationFactorY) {
         if (translationFactorX === void 0) { translationFactorX = 0.5; }
@@ -657,7 +661,7 @@ var Renderer = (function () {
     };
     return Renderer;
 }());
-/* harmony default export */ __webpack_exports__["a"] = (Renderer);
+
 
 
 /***/ }),
@@ -772,7 +776,7 @@ var GenerateRect = (function (_super) {
     }
     GenerateRect.prototype.init = function () {
         this.x = this.x || 0, this.y = this.y || 0;
-        this.target = __WEBPACK_IMPORTED_MODULE_1__shape__["a" /* default */].rect(this.x, this.y, this.width, this.height);
+        this.target = __WEBPACK_IMPORTED_MODULE_1__shape__["a" /* Shape */].rect(this.x, this.y, this.width, this.height);
         addPoints(this.shape, 4, this.x, this.y);
         this.shape.points[2] = this.target.points[3];
         this.shape.points[3] = this.target.points[3];
@@ -796,7 +800,7 @@ var GenerateRectDiagonally = (function (_super) {
     }
     GenerateRectDiagonally.prototype.init = function () {
         this.x = this.x || 0, this.y = this.y || 0;
-        this.target = __WEBPACK_IMPORTED_MODULE_1__shape__["a" /* default */].rect(this.x, this.y, this.width, this.height);
+        this.target = __WEBPACK_IMPORTED_MODULE_1__shape__["a" /* Shape */].rect(this.x, this.y, this.width, this.height);
         this.duration = this.duration / 2; // 2 phases for full generation.
         addPoints(this.shape, 5, this.x, this.y);
     };
@@ -833,7 +837,7 @@ var GenerateHex = (function (_super) {
     }
     GenerateHex.prototype.init = function () {
         this.x = this.x || 0, this.y = this.y || 0;
-        this.target = __WEBPACK_IMPORTED_MODULE_1__shape__["a" /* default */].hex(this.x, this.y, this.diameter);
+        this.target = __WEBPACK_IMPORTED_MODULE_1__shape__["a" /* Shape */].hex(this.x, this.y, this.diameter);
         this.duration = this.duration / 3; // 3 phases for full generation.
         addPoints(this.shape, 6, this.x, this.y);
     };
@@ -880,10 +884,10 @@ var HoverEffect = (function (_super) {
     HoverEffect.prototype.init = function () {
         this.x = this.x || 0, this.y = this.y || 0;
         this.shapes = this.manager.shapes;
-        this.target = __WEBPACK_IMPORTED_MODULE_1__shape__["a" /* default */].hex(this.x, this.y, this.diameter);
+        this.target = __WEBPACK_IMPORTED_MODULE_1__shape__["a" /* Shape */].hex(this.x, this.y, this.diameter);
         var numShapes = 10;
         for (var i = 0; i < numShapes; i++) {
-            this.hoverShapes.push(new __WEBPACK_IMPORTED_MODULE_1__shape__["a" /* default */]([this.target.points[0]], {
+            this.hoverShapes.push(new __WEBPACK_IMPORTED_MODULE_1__shape__["a" /* Shape */]([this.target.points[0]], {
                 translation: this.shape.translation,
                 strokeStyle: this.color,
                 lineWidth: this.minLineWidth + (this.maxLineWidth - this.minLineWidth) * i / numShapes

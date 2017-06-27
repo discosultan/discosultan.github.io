@@ -1,6 +1,6 @@
-import Renderer from "./renderer";
-import ProcessManager from "./process-manager";
-import Shape from "./shape";
+import { Renderer } from "./renderer";
+import { ProcessManager } from "./process-manager";
+import { Shape, Config as ShapeConfig } from "./shape";
 import { Vec2, Easing } from "./math";
 import * as Process from "./processes";
 
@@ -56,9 +56,9 @@ function init() {
           translationSE = Vec2.rotate(base, 5*Math.PI/3);
 
     const hexMidContour = Shape.empty({ strokeStyle: primaryColor }),
-          hexNEContour  = newHex(),
-          hexWContour   = newHex(),
-          hexSEContour  = newHex();
+          hexNEContour  = newHex({ url: shapesMeta[1] }),
+          hexWContour   = newHex({ url: shapesMeta[2] }),
+          hexSEContour  = newHex({ url: shapesMeta[3] });
     shapes.push(hexMidContour); // Rest will be added during animation.
 
     // Hex fill mask will be added after contours are animated.
@@ -67,13 +67,14 @@ function init() {
         scale: flipVertically
     });
     const hexMidFill = newHex(),
-          hexNEFill  = newHex(translationNE),
-          hexWFill   = newHex(translationW),
-          hexSEFill  = newHex(translationSE);
+          hexNEFill  = newHex({ translation: translationNE }),
+          hexWFill   = newHex({ translation: translationW }),
+          hexSEFill  = newHex({ translation: translationSE });
     hexFillMask.push(hexMidFill, hexNEFill, hexWFill, hexSEFill);
 
-    function newHex(translation: Vec2 = Vec2.zero) { 
-        return Shape.hex(0, 0, hexDiameter, { strokeStyle: primaryColor, translation: translation });
+    function newHex(config: ShapeConfig = {}) { 
+        config.strokeStyle = primaryColor;
+        return Shape.hex(0, 0, hexDiameter, config);
     }
 
     addFillRect(hexMidFill, shapesMeta[0].color, shapesMeta[0].img);
@@ -176,20 +177,20 @@ function init() {
     canvas.onmousemove = e => {
         const x = e.pageX - canvas.offsetLeft - canvas.translationX,
               y = e.pageY - canvas.offsetTop - canvas.translationY;
-        let containingShapeIndex = -1;
+        let containingShape = null;
         for (let i = 0; i < hoverableShapes.length; i++) {
             const shape = hoverableShapes[i];
             if (shape.worldContains(x, y)) {
-                containingShapeIndex = i;
+                containingShape = shape;
                 break; // Since there's only one cursor and no overlapping shapes, we can skip early.
             }
         }
-        if (containingShapeIndex > -1) {
+        if (containingShape !== null) {
             document.body.style.cursor = "pointer";
             if (!hoverEffect) {
                 hoverEffect = new Process.HoverEffect({
-                    shape: hoverableShapes[containingShapeIndex],
-                    url: shapesMeta[containingShapeIndex + 1].url, // Offset because of middle hex.
+                    shape: containingShape,
+                    url: containingShape.url,
                     diameter: hexDiameter,
                     color: primaryColor,
                     maxLineWidth: 15,

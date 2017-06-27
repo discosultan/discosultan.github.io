@@ -1,5 +1,5 @@
 import { Vec2 } from "./math";
-import Shape from "./shape";
+import { Shape } from "./shape";
 import { Process, Config } from "./process-manager";
 
 export class Wait extends Process {

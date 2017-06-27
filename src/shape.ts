@@ -10,7 +10,7 @@ export interface BoundingRect {
     height: number;
 };
 
-export default class Shape {
+export class Shape {
     readonly _worldPoints: Vec2[] = [];
     readonly _children: Shape[] = [];
     parent?: Shape;
