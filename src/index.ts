@@ -24,7 +24,7 @@ function init() {
     const ctx = canvas.getContext("2d") || (() => { throw "2d context not available." })();
     const shapes: Shape[] = [];
     const processManager = new ProcessManager(shapes);
-    const renderer = new Renderer(canvas, shapes);
+    const renderer = new Renderer(canvas, shapes, 0.36);
 
     // Config.
     const primaryColor = "#fff";
@@ -41,6 +41,10 @@ function init() {
     const text1 = "JAANUS VARUS";
     const text2 = "Amsterdam, The Netherlands"
     processManager.timeScale = 0.5;
+
+    // Preload font by rendering arbitrary text.
+    ctx.font = `2px ${font}`;
+    ctx.fillText("x", 0, 0,);
 
     // Generate two sets of hexes:
     // 1. initial contours which will be animated
@@ -162,10 +166,10 @@ function init() {
     }
 
     // Process input.
-    window.onkeydown = (e => {
+    window.onkeydown = e => {
         // Skip animations on ESC key.
         if (e.keyCode === 27) processManager.resolveAll();
-    });
+    };
     // Hover effect for link hexagons.
     const hoverableShapes = [hexNEContour, hexWContour, hexSEContour];
     let hoverEffect: Process.HoverEffect | null = null;

@@ -412,7 +412,7 @@ function init() {
     var ctx = canvas.getContext("2d") || (function () { throw "2d context not available."; })();
     var shapes = [];
     var processManager = new __WEBPACK_IMPORTED_MODULE_1__process_manager__["b" /* default */](shapes);
-    var renderer = new __WEBPACK_IMPORTED_MODULE_0__renderer__["a" /* default */](canvas, shapes);
+    var renderer = new __WEBPACK_IMPORTED_MODULE_0__renderer__["a" /* default */](canvas, shapes, 0.36);
     // Config.
     var primaryColor = "#fff";
     var easingFn = __WEBPACK_IMPORTED_MODULE_3__math__["a" /* Easing */].easeInOutCubic;
@@ -427,6 +427,9 @@ function init() {
     var text1 = "JAANUS VARUS";
     var text2 = "Amsterdam, The Netherlands";
     processManager.timeScale = 0.5;
+    // Preload font by rendering arbitrary text.
+    ctx.font = "2px " + font;
+    ctx.fillText("x", 0, 0);
     // Generate two sets of hexes:
     // 1. initial contours which will be animated
     // 2. fill shapes which will be filled after contours are in place
@@ -509,11 +512,11 @@ function init() {
         window.requestAnimationFrame(step);
     }
     // Process input.
-    window.onkeydown = (function (e) {
+    window.onkeydown = function (e) {
         // Skip animations on ESC key.
         if (e.keyCode === 27)
             processManager.resolveAll();
-    });
+    };
     // Hover effect for link hexagons.
     var hoverableShapes = [hexNEContour, hexWContour, hexSEContour];
     var hoverEffect = null;
@@ -570,22 +573,26 @@ function init() {
 
 "use strict";
 var Renderer = (function () {
-    function Renderer(canvas, shapes) {
+    function Renderer(canvas, shapes, translationFactorX, translationFactorY) {
+        if (translationFactorX === void 0) { translationFactorX = 0.5; }
+        if (translationFactorY === void 0) { translationFactorY = 0.5; }
         this.canvas = canvas;
         this.shapes = shapes;
+        this.translationFactorX = translationFactorX;
+        this.translationFactorY = translationFactorY;
         this.ctx = canvas.getContext("2d");
     }
     Renderer.prototype.step = function (dt) {
         var canvas = this.canvas, ctx = this.ctx;
         this.ensureCanvasValid(canvas, ctx);
-        ctx.clearRect(-canvas.halfWidth, -canvas.halfHeight, canvas.width, canvas.height);
+        ctx.clearRect(-canvas.translationX, -canvas.translationY, canvas.width, canvas.height);
         this.renderShapes(ctx, this.shapes);
     };
     Renderer.prototype.renderShapes = function (ctx, shapes) {
         for (var _i = 0, shapes_1 = shapes; _i < shapes_1.length; _i++) {
             var shape = shapes_1[_i];
             var points = shape.worldPoints;
-            if (!points.length)
+            if (points.length === 0)
                 continue;
             // Setup path.
             ctx.beginPath();
@@ -641,9 +648,9 @@ var Renderer = (function () {
         if (canvas.clientWidth !== canvas.width || canvas.clientHeight !== canvas.height) {
             canvas.width = canvas.clientWidth;
             canvas.height = canvas.clientHeight;
-            canvas.halfWidth = canvas.width / 2;
-            canvas.halfHeight = canvas.height / 2;
-            ctx.translate(canvas.halfWidth, canvas.halfHeight);
+            canvas.translationX = canvas.width * this.translationFactorX;
+            canvas.translationY = canvas.height * this.translationFactorY;
+            ctx.translate(canvas.translationX, canvas.translationY);
             ctx.lineCap = "round";
             ctx.lineJoin = "round";
         }

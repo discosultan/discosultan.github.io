@@ -3,29 +3,28 @@ import Shape from "./shape";
 export default class Renderer {
     readonly ctx: CanvasRenderingContext2D;
 
-    constructor(public canvas: HTMLCanvasElement, public shapes: Shape[]) {
+    constructor(public readonly canvas: HTMLCanvasElement, public readonly shapes: Shape[],
+        public readonly translationFactorX = 0.5, public readonly translationFactorY = 0.5) {
         this.ctx = <CanvasRenderingContext2D>canvas.getContext("2d");
     }
 
     step(dt: number) {
         const canvas = this.canvas, ctx = this.ctx;
         this.ensureCanvasValid(canvas, ctx);
-        ctx.clearRect(-canvas.halfWidth, -canvas.halfHeight, canvas.width, canvas.height);
+        ctx.clearRect(-canvas.translationX, -canvas.translationY, canvas.width, canvas.height);
         this.renderShapes(ctx, this.shapes);
     }
 
     renderShapes(ctx: CanvasRenderingContext2D, shapes: Shape[]) {
         for (let shape of shapes) {
             const points = shape.worldPoints;
-            if (!points.length) continue;
+            if (points.length === 0) continue;
 
             // Setup path.
             ctx.beginPath();
             let p = points[points.length - 1];
             ctx.moveTo(p.x, p.y);
-            for (p of points) {
-                ctx.lineTo(p.x, p.y);
-            }
+            for (p of points) ctx.lineTo(p.x, p.y);
 
             // Render.
             switch (shape.type) {
@@ -75,10 +74,10 @@ export default class Renderer {
         if (canvas.clientWidth !== canvas.width || canvas.clientHeight !== canvas.height) {
             canvas.width = canvas.clientWidth;
             canvas.height = canvas.clientHeight;
-            canvas.halfWidth = canvas.width/2;
-            canvas.halfHeight = canvas.height/2;
+            canvas.translationX = canvas.width*this.translationFactorX;
+            canvas.translationY = canvas.height*this.translationFactorY;
 
-            ctx.translate(canvas.halfWidth, canvas.halfHeight);
+            ctx.translate(canvas.translationX, canvas.translationY);
             ctx.lineCap = "round";
             ctx.lineJoin = "round";
         }
@@ -87,7 +86,7 @@ export default class Renderer {
 
 declare global {
     interface HTMLCanvasElement {
-        halfWidth: number;
-        halfHeight: number;
+        translationX: number;
+        translationY: number;
     }
 }
