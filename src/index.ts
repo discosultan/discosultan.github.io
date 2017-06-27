@@ -174,8 +174,8 @@ function init() {
     const hoverableShapes = [hexNEContour, hexWContour, hexSEContour];
     let hoverEffect: Process.HoverEffect | null = null;
     canvas.onmousemove = e => {
-        const x = e.pageX - canvas.offsetLeft - canvas.width/2,
-              y = e.pageY - canvas.offsetTop - canvas.height/2;
+        const x = e.pageX - canvas.offsetLeft - canvas.translationX,
+              y = e.pageY - canvas.offsetTop - canvas.translationY;
         let containingShapeIndex = -1;
         for (let i = 0; i < hoverableShapes.length; i++) {
             const shape = hoverableShapes[i];

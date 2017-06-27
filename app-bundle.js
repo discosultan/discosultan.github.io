@@ -521,7 +521,7 @@ function init() {
     var hoverableShapes = [hexNEContour, hexWContour, hexSEContour];
     var hoverEffect = null;
     canvas.onmousemove = function (e) {
-        var x = e.pageX - canvas.offsetLeft - canvas.width / 2, y = e.pageY - canvas.offsetTop - canvas.height / 2;
+        var x = e.pageX - canvas.offsetLeft - canvas.translationX, y = e.pageY - canvas.offsetTop - canvas.translationY;
         var containingShapeIndex = -1;
         for (var i = 0; i < hoverableShapes.length; i++) {
             var shape = hoverableShapes[i];
