@@ -5,7 +5,7 @@ declare global {
     }
 }
 
-Math.lerp = (a, b, amount) => a + (b - a) * amount;
+Math.lerp = (a, b, amount) => a + (b - a)*amount;
 Math.TWO_PI = 2*Math.PI;
 
 export class Vec2 {
@@ -22,7 +22,7 @@ export class Vec2 {
     }
 
     static add(p1: Vec2, p2: Vec2) { return new Vec2(p1.x + p2.x, p1.y + p2.y); }
-    static multiply(p1: Vec2, p2: Vec2) { return new Vec2(p1.x * p2.x, p1.y * p2.y); }
+    static multiply(p1: Vec2, p2: Vec2) { return new Vec2(p1.x*p2.x, p1.y*p2.y); }
     static rotate(p: Vec2, radians: number) {
         const s = Math.sin(radians), c = Math.cos(radians);
         return new Vec2(p.x*c - p.y*s, p.x*s + p.y*c);

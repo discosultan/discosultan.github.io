@@ -51,14 +51,14 @@ function init() {
     // 2. fill shapes which will be filled after contours are in place
 
     const base = new Vec2(hexDiameter, 0);
-    const translationNE = Vec2.rotate(base, 1*Math.PI/3),
-          translationW  = Vec2.rotate(base, 1*Math.PI/1),
+    const translationNE = Vec2.rotate(base,   Math.PI/3),
+          translationW  = Vec2.rotate(base,   Math.PI  ),
           translationSE = Vec2.rotate(base, 5*Math.PI/3);
 
     const hexMidContour = Shape.empty({ strokeStyle: primaryColor }),
-          hexNEContour  = newHex({ url: shapesMeta[1] }),
-          hexWContour   = newHex({ url: shapesMeta[2] }),
-          hexSEContour  = newHex({ url: shapesMeta[3] });
+          hexNEContour  = newHex({ url: shapesMeta[1].url }),
+          hexWContour   = newHex({ url: shapesMeta[2].url }),
+          hexSEContour  = newHex({ url: shapesMeta[3].url });
     shapes.push(hexMidContour); // Rest will be added during animation.
 
     // Hex fill mask will be added after contours are animated.
@@ -83,7 +83,7 @@ function init() {
     addFillRect(hexSEFill,  shapesMeta[3].color, shapesMeta[3].img);
 
     function addFillRect(shape: Shape, color: string, img: HTMLImageElement) {
-        const bgFillRect = Shape.rect(-hexDiameter/2, -hexDiameter/2, hexDiameter, hexDiameter, {
+        const bgFillRect = Shape.rect(-hexDiameter*0.5, -hexDiameter*0.5, hexDiameter, hexDiameter, {
             type: "fill",
             fillStyle: color
         })
@@ -97,7 +97,7 @@ function init() {
         shape.push(imgFillRect);
     }
 
-    const textRect = Shape.empty({ type: "none", translation: new Vec2(60, -textRectHeight/2) });
+    const textRect = Shape.empty({ type: "none", translation: new Vec2(60, -textRectHeight*0.5) });
     shapes.push(textRect);
     function createText(text: string, translation: Vec2, scale: Vec2) {
         return Shape.rect(0, 0, textRectWidth, textRectHeight/2, {
@@ -110,7 +110,7 @@ function init() {
         });
     }
     textRect.push(createText(text1, Vec2.zero, new Vec2(1, 1)));
-    textRect.push(createText(text2, new Vec2(0, textRectHeight/2), new Vec2(1, 0.6)));
+    textRect.push(createText(text2, new Vec2(0, textRectHeight*0.5), new Vec2(1, 0.6)));
 
     processManager.push(
         new Process.Wait({ duration: 0 }).push(
@@ -178,8 +178,7 @@ function init() {
         const x = e.pageX - canvas.offsetLeft - canvas.translationX,
               y = e.pageY - canvas.offsetTop - canvas.translationY;
         let containingShape = null;
-        for (let i = 0; i < hoverableShapes.length; i++) {
-            const shape = hoverableShapes[i];
+        for (let shape of hoverableShapes) {
             if (shape.worldContains(x, y)) {
                 containingShape = shape;
                 break; // Since there's only one cursor and no overlapping shapes, we can skip early.
@@ -187,10 +186,9 @@ function init() {
         }
         if (containingShape !== null) {
             document.body.style.cursor = "pointer";
-            if (!hoverEffect) {
+            if (hoverEffect === null) {
                 hoverEffect = new Process.HoverEffect({
                     shape: containingShape,
-                    url: containingShape.url,
                     diameter: hexDiameter,
                     color: primaryColor,
                     maxLineWidth: 15,
@@ -199,14 +197,15 @@ function init() {
                 processManager.push(hoverEffect);
             }
         } else {
-            if (hoverEffect) {
+            if (hoverEffect !== null) {
                 resolveHoverEffect();
             }
         }
     };
     canvas.onclick = e => {
-        if (hoverEffect) {
-            window.open(hoverEffect.url);
+        if (hoverEffect != null) {
+            console.log(hoverEffect.shape);
+            window.open(hoverEffect.shape.url);
             resolveHoverEffect();
         }
     };

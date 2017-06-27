@@ -104,15 +104,15 @@ export class Shape {
     }
 
     static hex(x: number, y: number, diameter: number, config?: Config) {
-        const a = diameter / 4;
+        const a = diameter*0.25;
         const b = a * Math.sqrt(3);
         return new Shape([
             new Vec2(x + 0, y - 2*a),
-            new Vec2(x + b, y - a),
-            new Vec2(x + b, y + a),
+            new Vec2(x + b, y -   a),
+            new Vec2(x + b, y +   a),
             new Vec2(x + 0, y + 2*a),
-            new Vec2(x - b, y + a),
-            new Vec2(x - b, y - a)
+            new Vec2(x - b, y +   a),
+            new Vec2(x - b, y -   a)
         ], config);
     }
 

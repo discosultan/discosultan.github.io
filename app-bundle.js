@@ -354,7 +354,7 @@ var Shape = (function () {
         return new Shape([], config);
     };
     Shape.hex = function (x, y, diameter, config) {
-        var a = diameter / 4;
+        var a = diameter * 0.25;
         var b = a * Math.sqrt(3);
         return new Shape([
             new __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */](x + 0, y - 2 * a),
@@ -436,8 +436,8 @@ function init() {
     // 1. initial contours which will be animated
     // 2. fill shapes which will be filled after contours are in place
     var base = new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](hexDiameter, 0);
-    var translationNE = __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */].rotate(base, 1 * Math.PI / 3), translationW = __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */].rotate(base, 1 * Math.PI / 1), translationSE = __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */].rotate(base, 5 * Math.PI / 3);
-    var hexMidContour = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].empty({ strokeStyle: primaryColor }), hexNEContour = newHex({ url: shapesMeta[1] }), hexWContour = newHex({ url: shapesMeta[2] }), hexSEContour = newHex({ url: shapesMeta[3] });
+    var translationNE = __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */].rotate(base, Math.PI / 3), translationW = __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */].rotate(base, Math.PI), translationSE = __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */].rotate(base, 5 * Math.PI / 3);
+    var hexMidContour = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].empty({ strokeStyle: primaryColor }), hexNEContour = newHex({ url: shapesMeta[1].url }), hexWContour = newHex({ url: shapesMeta[2].url }), hexSEContour = newHex({ url: shapesMeta[3].url });
     shapes.push(hexMidContour); // Rest will be added during animation.
     // Hex fill mask will be added after contours are animated.
     var hexFillMask = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].empty({
@@ -456,7 +456,7 @@ function init() {
         addFillRect(hexWFill, shapesMeta[2].color, shapesMeta[2].img),
         addFillRect(hexSEFill, shapesMeta[3].color, shapesMeta[3].img);
     function addFillRect(shape, color, img) {
-        var bgFillRect = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].rect(-hexDiameter / 2, -hexDiameter / 2, hexDiameter, hexDiameter, {
+        var bgFillRect = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].rect(-hexDiameter * 0.5, -hexDiameter * 0.5, hexDiameter, hexDiameter, {
             type: "fill",
             fillStyle: color
         });
@@ -469,7 +469,7 @@ function init() {
         });
         shape.push(imgFillRect);
     }
-    var textRect = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].empty({ type: "none", translation: new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](60, -textRectHeight / 2) });
+    var textRect = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].empty({ type: "none", translation: new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](60, -textRectHeight * 0.5) });
     shapes.push(textRect);
     function createText(text, translation, scale) {
         return __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].rect(0, 0, textRectWidth, textRectHeight / 2, {
@@ -482,7 +482,7 @@ function init() {
         });
     }
     textRect.push(createText(text1, __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */].zero, new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](1, 1)));
-    textRect.push(createText(text2, new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](0, textRectHeight / 2), new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](1, 0.6)));
+    textRect.push(createText(text2, new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](0, textRectHeight * 0.5), new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](1, 0.6)));
     processManager.push(new __WEBPACK_IMPORTED_MODULE_4__processes__["h" /* Wait */]({ duration: 0 }).push(new __WEBPACK_IMPORTED_MODULE_4__processes__["b" /* GenerateHex */]({ shape: hexMidContour, easingFn: easingFn, diameter: hexDiameter, duration: hexGenDuration }).push(new __WEBPACK_IMPORTED_MODULE_4__processes__["f" /* Rotate */]({ shape: hexMidContour, easingFn: easingFn, target: -Math.TWO_PI, duration: rotationDuration }).push(addTranslateHex(hexWContour, translationW), addTranslateHex(hexSEContour, translationSE), addTranslateHex(hexNEContour, translationNE))), new __WEBPACK_IMPORTED_MODULE_4__processes__["i" /* WaitAllProcesses */]().push(new __WEBPACK_IMPORTED_MODULE_4__processes__["a" /* AddShape */]({ shape: hexFillMask }).push(new __WEBPACK_IMPORTED_MODULE_4__processes__["d" /* GenerateRectDiagonally */]({
         shape: hexFillMask,
         x: -hexDiameter * 1,
@@ -526,8 +526,8 @@ function init() {
     canvas.onmousemove = function (e) {
         var x = e.pageX - canvas.offsetLeft - canvas.translationX, y = e.pageY - canvas.offsetTop - canvas.translationY;
         var containingShape = null;
-        for (var i = 0; i < hoverableShapes.length; i++) {
-            var shape = hoverableShapes[i];
+        for (var _i = 0, hoverableShapes_1 = hoverableShapes; _i < hoverableShapes_1.length; _i++) {
+            var shape = hoverableShapes_1[_i];
             if (shape.worldContains(x, y)) {
                 containingShape = shape;
                 break; // Since there's only one cursor and no overlapping shapes, we can skip early.
@@ -535,10 +535,9 @@ function init() {
         }
         if (containingShape !== null) {
             document.body.style.cursor = "pointer";
-            if (!hoverEffect) {
+            if (hoverEffect === null) {
                 hoverEffect = new __WEBPACK_IMPORTED_MODULE_4__processes__["e" /* HoverEffect */]({
                     shape: containingShape,
-                    url: containingShape.url,
                     diameter: hexDiameter,
                     color: primaryColor,
                     maxLineWidth: 15,
@@ -548,14 +547,15 @@ function init() {
             }
         }
         else {
-            if (hoverEffect) {
+            if (hoverEffect !== null) {
                 resolveHoverEffect();
             }
         }
     };
     canvas.onclick = function (e) {
-        if (hoverEffect) {
-            window.open(hoverEffect.url);
+        if (hoverEffect != null) {
+            console.log(hoverEffect.shape);
+            window.open(hoverEffect.shape.url);
             resolveHoverEffect();
         }
     };
