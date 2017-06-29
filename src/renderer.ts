@@ -1,4 +1,4 @@
-import { Shape } from "./shape";
+import { Shape, Type } from "./shape";
 
 export class Renderer {
     readonly ctx: CanvasRenderingContext2D;
@@ -28,7 +28,7 @@ export class Renderer {
 
             // Render.
             switch (shape.type) {
-                case "pattern":
+                case Type.pattern:
                     ctx.fillStyle = this.styleOrDefault(shape.fillStyle);
                     ctx.save();
                     const bounds = shape.worldBoundingRect;
@@ -36,16 +36,16 @@ export class Renderer {
                     ctx.fill();
                     ctx.restore();
                     break;
-                case "fill":
+                case Type.fill:
                     ctx.fillStyle = this.styleOrDefault(shape.fillStyle);
                     ctx.fill();
                     break;
-                case "stroke":
+                case Type.stroke:
                     ctx.strokeStyle = this.styleOrDefault(shape.strokeStyle);
                     ctx.lineWidth = this.lineWidthOrDefault(shape);
                     ctx.stroke();
                     break;
-                case "text":
+                case Type.text:
                     ctx.font = this.fontOrDefault(shape);
                     ctx.textAlign = this.textAlignOrDefault(shape);
                     ctx.fillStyle = this.styleOrDefault(shape.fillStyle);

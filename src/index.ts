@@ -1,6 +1,6 @@
 import { Renderer } from "./renderer";
 import { ProcessManager } from "./process-manager";
-import { Shape, Config as ShapeConfig } from "./shape";
+import { Shape, Type as ShapeType, Config as ShapeConfig } from "./shape";
 import { Vec2, Easing } from "./math";
 import * as Process from "./processes";
 
@@ -63,7 +63,7 @@ function init() {
 
     // Hex fill mask will be added after contours are animated.
     const hexFillMask = Shape.empty({ 
-        type: "none",
+        type: ShapeType.none,
         scale: flipVertically
     });
     const hexMidFill = newHex(),
@@ -84,12 +84,12 @@ function init() {
 
     function addFillRect(shape: Shape, color: string, img: HTMLImageElement) {
         const bgFillRect = Shape.rect(-hexDiameter*0.5, -hexDiameter*0.5, hexDiameter, hexDiameter, {
-            type: "fill",
+            type: ShapeType.fill,
             fillStyle: color
         })
         shape.push(bgFillRect);
         const imgFillRect = Shape.rect(0, 0, img.width, img.height, {
-            type: "pattern",
+            type: ShapeType.pattern,
             fillStyle: ctx.createPattern(img, "no-repeat"),
             scale: flipVertically, // We flip it back because its ancestor was flipped.
             translation: new Vec2(-img.width/2, -img.height/2),
@@ -97,11 +97,11 @@ function init() {
         shape.push(imgFillRect);
     }
 
-    const textRect = Shape.empty({ type: "none", translation: new Vec2(60, -textRectHeight*0.5) });
+    const textRect = Shape.empty({ type: ShapeType.none, translation: new Vec2(60, -textRectHeight*0.5) });
     shapes.push(textRect);
     function createText(text: string, translation: Vec2, scale: Vec2) {
         return Shape.rect(0, 0, textRectWidth, textRectHeight/2, {
-            type: "text",
+            type: ShapeType.text,
             font: font,
             text: text,
             fillStyle: primaryColor,

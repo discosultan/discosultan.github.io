@@ -2,12 +2,12 @@ import { Easing } from "./math";
 import { Shape } from "./shape";
 
 export type Config = any;
-export type Status = "pending" | "fulfilled" | "rejected";
+export enum Status { "pending", "fulfilled", "rejected" };
 
 export class Process {
     readonly _children: Process[] = [];
     elapsed = 0;
-    status: Status = "pending";
+    status = Status.pending;
     endless = false;
     duration = 1000;
     easingFn = Easing.linear;
@@ -27,8 +27,8 @@ export class Process {
         return this;
     }
 
-    resolve() { this.status = "fulfilled"; }
-    reject() { this.status = "rejected"; }
+    resolve() { this.status = Status.fulfilled; }
+    reject() { this.status = Status.rejected; }
 
     step(dt: number) {
         this.elapsed += dt;
@@ -57,7 +57,7 @@ export class ProcessManager {
         for (let i = this.processes.length - 1; i >= 0; i--) {
             const process = this.processes[i];
             process.step(dt * this.timeScale);
-            if (process.status === "fulfilled") {
+            if (process.status === Status.fulfilled) {
                 this.processes.splice(i, 1);
                 this.push(...process._children);
             }

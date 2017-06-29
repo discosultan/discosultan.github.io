@@ -91,11 +91,11 @@ var Vec2 = (function () {
     };
     Vec2.min = function (p1, p2) { return new Vec2(Math.min(p1.x, p2.x), Math.min(p1.y, p2.y)); };
     Vec2.max = function (p1, p2) { return new Vec2(Math.max(p1.x, p2.x), Math.max(p1.y, p2.y)); };
+    Vec2.zero = new Vec2(0, 0);
+    Vec2.one = new Vec2(1, 1);
     return Vec2;
 }());
 
-Vec2.zero = new Vec2(0, 0);
-Vec2.one = new Vec2(1, 1);
 // Ref: https://gist.github.com/gre/1650294
 var Easing = {
     // No easing, no acceleration.
@@ -132,100 +132,19 @@ var Easing = {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Process; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return ProcessManager; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__math__ = __webpack_require__(0);
-
-var Process = (function () {
-    function Process(config) {
-        if (config === void 0) { config = {}; }
-        var _this = this;
-        this._children = [];
-        this.elapsed = 0;
-        this.status = "pending";
-        this.endless = false;
-        this.duration = 1000;
-        this.easingFn = __WEBPACK_IMPORTED_MODULE_0__math__["a" /* Easing */].linear;
-        Object.keys(config).forEach(function (key) { return _this[key] = config[key]; });
-    }
-    Object.defineProperty(Process.prototype, "progress", {
-        get: function () { return this.easingFn(Math.min(this.elapsed / this.duration, 1)); },
-        enumerable: true,
-        configurable: true
-    });
-    Process.prototype.init = function () { };
-    Process.prototype.push = function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
-        (_a = this._children).push.apply(_a, args);
-        return this;
-        var _a;
-    };
-    Process.prototype.resolve = function () { this.status = "fulfilled"; };
-    Process.prototype.reject = function () { this.status = "rejected"; };
-    Process.prototype.step = function (dt) {
-        this.elapsed += dt;
-        if (this.progress === 1)
-            this.resolve();
-    };
-    return Process;
-}());
-
-var ProcessManager = (function () {
-    function ProcessManager(shapes) {
-        this.shapes = shapes;
-        this.processes = [];
-        this.timeScale = 1;
-    }
-    Object.defineProperty(ProcessManager.prototype, "resolvableProcesses", {
-        get: function () { return this.processes.filter(function (proc) { return !proc.endless; }); },
-        enumerable: true,
-        configurable: true
-    });
-    ProcessManager.prototype.push = function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
-        for (var _a = 0, args_1 = args; _a < args_1.length; _a++) {
-            var arg = args_1[_a];
-            arg.manager = this;
-            arg.init();
-        }
-        (_b = this.processes).push.apply(_b, args);
-        return this;
-        var _b;
-    };
-    ProcessManager.prototype.step = function (dt) {
-        for (var i = this.processes.length - 1; i >= 0; i--) {
-            var process = this.processes[i];
-            process.step(dt * this.timeScale);
-            if (process.status === "fulfilled") {
-                this.processes.splice(i, 1);
-                this.push.apply(this, process._children);
-            }
-        }
-    };
-    ProcessManager.prototype.resolveAll = function () {
-        while (this.resolvableProcesses.length > 0) {
-            this.step(100000); // Some arbitrary large number.
-        }
-    };
-    return ProcessManager;
-}());
-
-
-
-/***/ }),
-/* 2 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return Type; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Shape; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__math__ = __webpack_require__(0);
 
+var Type;
+(function (Type) {
+    Type[Type["pattern"] = 0] = "pattern";
+    Type[Type["fill"] = 1] = "fill";
+    Type[Type["stroke"] = 2] = "stroke";
+    Type[Type["text"] = 3] = "text";
+    Type[Type["none"] = 4] = "none";
+})(Type || (Type = {}));
+;
 ;
 var Shape = (function () {
     function Shape(points, config) {
@@ -236,7 +155,7 @@ var Shape = (function () {
         this._children = [];
         this.pointsDirty = true;
         this.boundingRectDirty = true;
-        this.type = "stroke";
+        this.type = Type.stroke;
         this._translation = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].zero;
         this._rotation = 0;
         this._scale = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].one;
@@ -379,14 +298,113 @@ var Shape = (function () {
 
 
 /***/ }),
+/* 2 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* unused harmony export Status */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Process; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return ProcessManager; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__math__ = __webpack_require__(0);
+
+var Status;
+(function (Status) {
+    Status[Status["pending"] = 0] = "pending";
+    Status[Status["fulfilled"] = 1] = "fulfilled";
+    Status[Status["rejected"] = 2] = "rejected";
+})(Status || (Status = {}));
+;
+var Process = (function () {
+    function Process(config) {
+        if (config === void 0) { config = {}; }
+        var _this = this;
+        this._children = [];
+        this.elapsed = 0;
+        this.status = Status.pending;
+        this.endless = false;
+        this.duration = 1000;
+        this.easingFn = __WEBPACK_IMPORTED_MODULE_0__math__["a" /* Easing */].linear;
+        Object.keys(config).forEach(function (key) { return _this[key] = config[key]; });
+    }
+    Object.defineProperty(Process.prototype, "progress", {
+        get: function () { return this.easingFn(Math.min(this.elapsed / this.duration, 1)); },
+        enumerable: true,
+        configurable: true
+    });
+    Process.prototype.init = function () { };
+    Process.prototype.push = function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        (_a = this._children).push.apply(_a, args);
+        return this;
+        var _a;
+    };
+    Process.prototype.resolve = function () { this.status = Status.fulfilled; };
+    Process.prototype.reject = function () { this.status = Status.rejected; };
+    Process.prototype.step = function (dt) {
+        this.elapsed += dt;
+        if (this.progress === 1)
+            this.resolve();
+    };
+    return Process;
+}());
+
+var ProcessManager = (function () {
+    function ProcessManager(shapes) {
+        this.shapes = shapes;
+        this.processes = [];
+        this.timeScale = 1;
+    }
+    Object.defineProperty(ProcessManager.prototype, "resolvableProcesses", {
+        get: function () { return this.processes.filter(function (proc) { return !proc.endless; }); },
+        enumerable: true,
+        configurable: true
+    });
+    ProcessManager.prototype.push = function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        for (var _a = 0, args_1 = args; _a < args_1.length; _a++) {
+            var arg = args_1[_a];
+            arg.manager = this;
+            arg.init();
+        }
+        (_b = this.processes).push.apply(_b, args);
+        return this;
+        var _b;
+    };
+    ProcessManager.prototype.step = function (dt) {
+        for (var i = this.processes.length - 1; i >= 0; i--) {
+            var process = this.processes[i];
+            process.step(dt * this.timeScale);
+            if (process.status === Status.fulfilled) {
+                this.processes.splice(i, 1);
+                this.push.apply(this, process._children);
+            }
+        }
+    };
+    ProcessManager.prototype.resolveAll = function () {
+        while (this.resolvableProcesses.length > 0) {
+            this.step(100000); // Some arbitrary large number.
+        }
+    };
+    return ProcessManager;
+}());
+
+
+
+/***/ }),
 /* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__renderer__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__process_manager__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__shape__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__process_manager__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__shape__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__math__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__processes__ = __webpack_require__(5);
 
@@ -441,7 +459,7 @@ function init() {
     shapes.push(hexMidContour); // Rest will be added during animation.
     // Hex fill mask will be added after contours are animated.
     var hexFillMask = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].empty({
-        type: "none",
+        type: __WEBPACK_IMPORTED_MODULE_2__shape__["b" /* Type */].none,
         scale: flipVertically
     });
     var hexMidFill = newHex(), hexNEFill = newHex({ translation: translationNE }), hexWFill = newHex({ translation: translationW }), hexSEFill = newHex({ translation: translationSE });
@@ -457,23 +475,23 @@ function init() {
         addFillRect(hexSEFill, shapesMeta[3].color, shapesMeta[3].img);
     function addFillRect(shape, color, img) {
         var bgFillRect = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].rect(-hexDiameter * 0.5, -hexDiameter * 0.5, hexDiameter, hexDiameter, {
-            type: "fill",
+            type: __WEBPACK_IMPORTED_MODULE_2__shape__["b" /* Type */].fill,
             fillStyle: color
         });
         shape.push(bgFillRect);
         var imgFillRect = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].rect(0, 0, img.width, img.height, {
-            type: "pattern",
+            type: __WEBPACK_IMPORTED_MODULE_2__shape__["b" /* Type */].pattern,
             fillStyle: ctx.createPattern(img, "no-repeat"),
             scale: flipVertically,
             translation: new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](-img.width / 2, -img.height / 2),
         });
         shape.push(imgFillRect);
     }
-    var textRect = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].empty({ type: "none", translation: new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](60, -textRectHeight * 0.5) });
+    var textRect = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].empty({ type: __WEBPACK_IMPORTED_MODULE_2__shape__["b" /* Type */].none, translation: new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](60, -textRectHeight * 0.5) });
     shapes.push(textRect);
     function createText(text, translation, scale) {
         return __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].rect(0, 0, textRectWidth, textRectHeight / 2, {
-            type: "text",
+            type: __WEBPACK_IMPORTED_MODULE_2__shape__["b" /* Type */].text,
             font: font,
             text: text,
             fillStyle: primaryColor,
@@ -576,6 +594,8 @@ function init() {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Renderer; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__shape__ = __webpack_require__(1);
+
 var Renderer = (function () {
     function Renderer(canvas, shapes, translationFactorX, translationFactorY) {
         if (translationFactorX === void 0) { translationFactorX = 0.5; }
@@ -608,7 +628,7 @@ var Renderer = (function () {
             }
             // Render.
             switch (shape.type) {
-                case "pattern":
+                case __WEBPACK_IMPORTED_MODULE_0__shape__["b" /* Type */].pattern:
                     ctx.fillStyle = this.styleOrDefault(shape.fillStyle);
                     ctx.save();
                     var bounds = shape.worldBoundingRect;
@@ -616,16 +636,16 @@ var Renderer = (function () {
                     ctx.fill();
                     ctx.restore();
                     break;
-                case "fill":
+                case __WEBPACK_IMPORTED_MODULE_0__shape__["b" /* Type */].fill:
                     ctx.fillStyle = this.styleOrDefault(shape.fillStyle);
                     ctx.fill();
                     break;
-                case "stroke":
+                case __WEBPACK_IMPORTED_MODULE_0__shape__["b" /* Type */].stroke:
                     ctx.strokeStyle = this.styleOrDefault(shape.strokeStyle);
                     ctx.lineWidth = this.lineWidthOrDefault(shape);
                     ctx.stroke();
                     break;
-                case "text":
+                case __WEBPACK_IMPORTED_MODULE_0__shape__["b" /* Type */].text:
                     ctx.font = this.fontOrDefault(shape);
                     ctx.textAlign = this.textAlignOrDefault(shape);
                     ctx.fillStyle = this.styleOrDefault(shape.fillStyle);
@@ -680,8 +700,8 @@ var Renderer = (function () {
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return GenerateHex; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return HoverEffect; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__math__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__shape__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__process_manager__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__shape__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__process_manager__ = __webpack_require__(2);
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||

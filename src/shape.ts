@@ -1,7 +1,7 @@
 import { Vec2 } from "./math";
 
 export type Config = any;
-export type Type = "pattern" | "fill" | "stroke" | "text" | "none";
+export enum Type { "pattern", "fill", "stroke", "text", "none" };
 
 export interface BoundingRect {
     x: number; 
@@ -16,7 +16,7 @@ export class Shape {
     parent?: Shape;
     pointsDirty = true;
     boundingRectDirty = true;
-    type: Type = "stroke";
+    type = Type.stroke;
     _translation = Vec2.zero;
     _rotation = 0;
     _scale = Vec2.one;
