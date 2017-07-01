@@ -2,7 +2,9 @@ import { Renderer } from "./renderer";
 import { ProcessManager } from "./process-manager";
 import { Shape, Type as ShapeType, Config as ShapeConfig } from "./shape";
 import { Vec2, Easing } from "./math";
-import * as Process from "./processes";
+import * as General from "./processes/general";
+import * as Generation from "./processes/generation";
+import * as Input from "./processes/input";
 
 const shapesMeta: { color: string; imgPath: string; url?: string, img: HTMLImageElement }[] = [
     { color: "#fff", imgPath: "me.jpg", img: new Image() },
@@ -23,7 +25,7 @@ function init() {
     const canvas = <HTMLCanvasElement>document.getElementById("canvas") || (() => { throw "Canvas not available." })();
     const ctx = canvas.getContext("2d") || (() => { throw "2d context not available." })();
     const shapes: Shape[] = [];
-    const processManager = new ProcessManager(shapes);
+    const processManager = new ProcessManager(canvas, shapes);
     const renderer = new Renderer(canvas, shapes, 0.36);
 
     // Config.
@@ -113,17 +115,17 @@ function init() {
     textRect.push(createText(text2, new Vec2(0, textRectHeight*0.5), new Vec2(1, 0.6)));
 
     processManager.push(
-        new Process.Wait({ duration: 0 }).push(
-            new Process.GenerateHex({ shape: hexMidContour, easingFn: easingFn, diameter: hexDiameter, duration: hexGenDuration }).push(
-                new Process.Rotate({ shape: hexMidContour, easingFn: easingFn, target: -Math.TWO_PI, duration: rotationDuration }).push(
+        new General.Wait({ duration: 0 }).push(
+            new Generation.GenerateHex({ shape: hexMidContour, easingFn: easingFn, diameter: hexDiameter, duration: hexGenDuration }).push(
+                new General.Rotate({ shape: hexMidContour, easingFn: easingFn, target: -Math.TWO_PI, duration: rotationDuration }).push(
                     addTranslateHex(hexWContour,  translationW),
                     addTranslateHex(hexSEContour, translationSE),
                     addTranslateHex(hexNEContour, translationNE)
                 )
             ),
-            new Process.WaitAllProcesses().push(
-                new Process.AddShape({ shape: hexFillMask }).push(
-                    new Process.GenerateRectDiagonally({
+            new General.WaitAllProcesses().push(
+                new General.AddShape({ shape: hexFillMask }).push(
+                    new Generation.GenerateRectDiagonally({
                         shape: hexFillMask,
                         x: -hexDiameter*1,
                         y: -hexDiameter*1.5,
@@ -132,19 +134,20 @@ function init() {
                         duration: shapeFillDuration
                     })
                 ),
-                new Process.GenerateRect({
+                new Generation.GenerateRect({
                     shape: textRect,
                     width: textRectWidth,
                     height: textRectHeight,
                     duration: shapeFillDuration
-                })
+                }),
+                new Input.Navigation({ shapes: [hexNEContour, hexWContour, hexSEContour] })
             )
         )
     );
 
     function addTranslateHex(shape: Shape, translation: Vec2) {
-        return new Process.AddShape({ shape: shape }).push(
-            new Process.Translate({ 
+        return new General.AddShape({ shape: shape }).push(
+            new General.Translate({ 
                 shape: shape,
                 easingFn: easingFn,
                 duration: hexTranslationDuration,
@@ -152,6 +155,8 @@ function init() {
             })
         );
     }
+
+    processManager.push(new Input.ResolveProcessesOnEsc());
 
     // Render loop.
     let prevTimestamp = 0;
@@ -166,54 +171,7 @@ function init() {
         window.requestAnimationFrame(step);
     }
 
-    // Process input.
-    window.onkeydown = e => {
-        // Skip animations on ESC key.
-        if (e.keyCode === 27) processManager.resolveAll();
-    };
-    // Hover effect for link hexagons.
-    const hoverableShapes = [hexNEContour, hexWContour, hexSEContour];
-    let hoverEffect: Process.HoverEffect | null = null;
-    canvas.onmousemove = e => {
-        const x = e.pageX - canvas.offsetLeft - canvas.translationX,
-              y = e.pageY - canvas.offsetTop - canvas.translationY;
-        let containingShape = null;
-        for (let shape of hoverableShapes) {
-            if (shape.worldContains(x, y)) {
-                containingShape = shape;
-                break; // Since there's only one cursor and no overlapping shapes, we can skip early.
-            }
-        }
-        if (containingShape !== null) {
-            document.body.style.cursor = "pointer";
-            if (hoverEffect === null) {
-                hoverEffect = new Process.HoverEffect({
-                    shape: containingShape,
-                    diameter: hexDiameter,
-                    color: primaryColor,
-                    maxLineWidth: 15,
-                    minLineWidth: 6
-                });
-                processManager.push(hoverEffect);
-            }
-        } else {
-            if (hoverEffect !== null) {
-                resolveHoverEffect();
-            }
-        }
-    };
-    canvas.onclick = e => {
-        if (hoverEffect != null) {
-            console.log(hoverEffect.shape);
-            window.open(hoverEffect.shape.url);
-            resolveHoverEffect();
-        }
-    };
-    function resolveHoverEffect() {
-        document.body.style.cursor = "auto";
-        hoverEffect!.resolve();
-        hoverEffect = null;
-    }
+    processManager.push();
 
     // Globals to simplify debugging.
     window.renderer = renderer;

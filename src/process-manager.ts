@@ -40,7 +40,7 @@ export class ProcessManager {
     readonly processes: Process[] = [];
     timeScale = 1
 
-    constructor(public readonly shapes: Shape[]) { }
+    constructor(public readonly canvas: HTMLCanvasElement, public readonly shapes: Shape[]) { }
 
     get resolvableProcesses() { return this.processes.filter(proc => !proc.endless); }
 

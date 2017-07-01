@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -352,7 +352,8 @@ var Process = (function () {
 }());
 
 var ProcessManager = (function () {
-    function ProcessManager(shapes) {
+    function ProcessManager(canvas, shapes) {
+        this.canvas = canvas;
         this.shapes = shapes;
         this.processes = [];
         this.timeScale = 1;
@@ -397,16 +398,21 @@ var ProcessManager = (function () {
 
 
 /***/ }),
-/* 3 */
+/* 3 */,
+/* 4 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__renderer__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__renderer__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__process_manager__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__shape__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__math__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__processes__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__processes_general__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__processes_generation__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__processes_input__ = __webpack_require__(6);
+
+
 
 
 
@@ -431,7 +437,7 @@ function init() {
     var canvas = document.getElementById("canvas") || (function () { throw "Canvas not available."; })();
     var ctx = canvas.getContext("2d") || (function () { throw "2d context not available."; })();
     var shapes = [];
-    var processManager = new __WEBPACK_IMPORTED_MODULE_1__process_manager__["b" /* ProcessManager */](shapes);
+    var processManager = new __WEBPACK_IMPORTED_MODULE_1__process_manager__["b" /* ProcessManager */](canvas, shapes);
     var renderer = new __WEBPACK_IMPORTED_MODULE_0__renderer__["a" /* Renderer */](canvas, shapes, 0.36);
     // Config.
     var primaryColor = "#fff";
@@ -501,27 +507,28 @@ function init() {
     }
     textRect.push(createText(text1, __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */].zero, new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](1, 1)));
     textRect.push(createText(text2, new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](0, textRectHeight * 0.5), new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](1, 0.6)));
-    processManager.push(new __WEBPACK_IMPORTED_MODULE_4__processes__["h" /* Wait */]({ duration: 0 }).push(new __WEBPACK_IMPORTED_MODULE_4__processes__["b" /* GenerateHex */]({ shape: hexMidContour, easingFn: easingFn, diameter: hexDiameter, duration: hexGenDuration }).push(new __WEBPACK_IMPORTED_MODULE_4__processes__["f" /* Rotate */]({ shape: hexMidContour, easingFn: easingFn, target: -Math.TWO_PI, duration: rotationDuration }).push(addTranslateHex(hexWContour, translationW), addTranslateHex(hexSEContour, translationSE), addTranslateHex(hexNEContour, translationNE))), new __WEBPACK_IMPORTED_MODULE_4__processes__["i" /* WaitAllProcesses */]().push(new __WEBPACK_IMPORTED_MODULE_4__processes__["a" /* AddShape */]({ shape: hexFillMask }).push(new __WEBPACK_IMPORTED_MODULE_4__processes__["d" /* GenerateRectDiagonally */]({
+    processManager.push(new __WEBPACK_IMPORTED_MODULE_4__processes_general__["d" /* Wait */]({ duration: 0 }).push(new __WEBPACK_IMPORTED_MODULE_5__processes_generation__["a" /* GenerateHex */]({ shape: hexMidContour, easingFn: easingFn, diameter: hexDiameter, duration: hexGenDuration }).push(new __WEBPACK_IMPORTED_MODULE_4__processes_general__["b" /* Rotate */]({ shape: hexMidContour, easingFn: easingFn, target: -Math.TWO_PI, duration: rotationDuration }).push(addTranslateHex(hexWContour, translationW), addTranslateHex(hexSEContour, translationSE), addTranslateHex(hexNEContour, translationNE))), new __WEBPACK_IMPORTED_MODULE_4__processes_general__["e" /* WaitAllProcesses */]().push(new __WEBPACK_IMPORTED_MODULE_4__processes_general__["a" /* AddShape */]({ shape: hexFillMask }).push(new __WEBPACK_IMPORTED_MODULE_5__processes_generation__["c" /* GenerateRectDiagonally */]({
         shape: hexFillMask,
         x: -hexDiameter * 1,
         y: -hexDiameter * 1.5,
         width: hexDiameter * 2.5,
         height: hexDiameter * 3,
         duration: shapeFillDuration
-    })), new __WEBPACK_IMPORTED_MODULE_4__processes__["c" /* GenerateRect */]({
+    })), new __WEBPACK_IMPORTED_MODULE_5__processes_generation__["b" /* GenerateRect */]({
         shape: textRect,
         width: textRectWidth,
         height: textRectHeight,
         duration: shapeFillDuration
-    }))));
+    }), new __WEBPACK_IMPORTED_MODULE_6__processes_input__["a" /* Navigation */]({ shapes: [hexNEContour, hexWContour, hexSEContour] }))));
     function addTranslateHex(shape, translation) {
-        return new __WEBPACK_IMPORTED_MODULE_4__processes__["a" /* AddShape */]({ shape: shape }).push(new __WEBPACK_IMPORTED_MODULE_4__processes__["g" /* Translate */]({
+        return new __WEBPACK_IMPORTED_MODULE_4__processes_general__["a" /* AddShape */]({ shape: shape }).push(new __WEBPACK_IMPORTED_MODULE_4__processes_general__["c" /* Translate */]({
             shape: shape,
             easingFn: easingFn,
             duration: hexTranslationDuration,
             target: translation
         }));
     }
+    processManager.push(new __WEBPACK_IMPORTED_MODULE_6__processes_input__["b" /* ResolveProcessesOnEsc */]());
     // Render loop.
     var prevTimestamp = 0;
     window.requestAnimationFrame(step);
@@ -532,56 +539,7 @@ function init() {
         renderer.step(dt);
         window.requestAnimationFrame(step);
     }
-    // Process input.
-    window.onkeydown = function (e) {
-        // Skip animations on ESC key.
-        if (e.keyCode === 27)
-            processManager.resolveAll();
-    };
-    // Hover effect for link hexagons.
-    var hoverableShapes = [hexNEContour, hexWContour, hexSEContour];
-    var hoverEffect = null;
-    canvas.onmousemove = function (e) {
-        var x = e.pageX - canvas.offsetLeft - canvas.translationX, y = e.pageY - canvas.offsetTop - canvas.translationY;
-        var containingShape = null;
-        for (var _i = 0, hoverableShapes_1 = hoverableShapes; _i < hoverableShapes_1.length; _i++) {
-            var shape = hoverableShapes_1[_i];
-            if (shape.worldContains(x, y)) {
-                containingShape = shape;
-                break; // Since there's only one cursor and no overlapping shapes, we can skip early.
-            }
-        }
-        if (containingShape !== null) {
-            document.body.style.cursor = "pointer";
-            if (hoverEffect === null) {
-                hoverEffect = new __WEBPACK_IMPORTED_MODULE_4__processes__["e" /* HoverEffect */]({
-                    shape: containingShape,
-                    diameter: hexDiameter,
-                    color: primaryColor,
-                    maxLineWidth: 15,
-                    minLineWidth: 6
-                });
-                processManager.push(hoverEffect);
-            }
-        }
-        else {
-            if (hoverEffect !== null) {
-                resolveHoverEffect();
-            }
-        }
-    };
-    canvas.onclick = function (e) {
-        if (hoverEffect != null) {
-            console.log(hoverEffect.shape);
-            window.open(hoverEffect.shape.url);
-            resolveHoverEffect();
-        }
-    };
-    function resolveHoverEffect() {
-        document.body.style.cursor = "auto";
-        hoverEffect.resolve();
-        hoverEffect = null;
-    }
+    processManager.push();
     // Globals to simplify debugging.
     window.renderer = renderer;
     window.processManager = processManager;
@@ -589,7 +547,7 @@ function init() {
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -685,23 +643,213 @@ var Renderer = (function () {
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "h", function() { return Wait; });
-/* unused harmony export WaitProgress */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "i", function() { return WaitAllProcesses; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "g", function() { return Translate; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "f", function() { return Rotate; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return ResolveProcessesOnEsc; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Navigation; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__process_manager__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__trails__ = __webpack_require__(9);
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+var ResolveProcessesOnEsc = (function (_super) {
+    __extends(ResolveProcessesOnEsc, _super);
+    function ResolveProcessesOnEsc() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    ResolveProcessesOnEsc.prototype.init = function () {
+        this.boundedOnKeyDown = this.onKeyDown.bind(this);
+        window.addEventListener("keydown", this.boundedOnKeyDown);
+        this.endless = true;
+    };
+    ResolveProcessesOnEsc.prototype.step = function (dt) { };
+    ResolveProcessesOnEsc.prototype.resolve = function () {
+        _super.prototype.resolve.call(this);
+        window.removeEventListener("keydown", this.boundedOnKeyDown);
+    };
+    ResolveProcessesOnEsc.prototype.onKeyDown = function (e) {
+        // Resolve all pending processes on ESC key.
+        if (e.keyCode === 27)
+            this.manager.resolveAll();
+    };
+    return ResolveProcessesOnEsc;
+}(__WEBPACK_IMPORTED_MODULE_0__process_manager__["a" /* Process */]));
+
+var Navigation = (function (_super) {
+    __extends(Navigation, _super);
+    function Navigation() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.hoverEffect = null;
+        return _this;
+    }
+    Navigation.prototype.init = function () {
+        var canvas = this.manager.canvas;
+        this.boundedOnMouseMove = this.onMouseMove.bind(this);
+        this.boundedOnClick = this.onClick.bind(this);
+        canvas.addEventListener("mousemove", this.boundedOnMouseMove);
+        canvas.addEventListener("click", this.boundedOnClick);
+        this.endless = true;
+    };
+    Navigation.prototype.step = function (dt) { };
+    Navigation.prototype.resolve = function () {
+        _super.prototype.resolve.call(this);
+        var canvas = this.manager.canvas;
+        canvas.removeEventListener("click", this.boundedOnClick);
+        canvas.removeEventListener("mousemove", this.boundedOnMouseMove);
+    };
+    Navigation.prototype.onMouseMove = function (e) {
+        var canvas = this.manager.canvas;
+        var x = e.pageX - canvas.offsetLeft - canvas.translationX, y = e.pageY - canvas.offsetTop - canvas.translationY;
+        var containingShape = null;
+        for (var _i = 0, _a = this.shapes; _i < _a.length; _i++) {
+            var shape = _a[_i];
+            if (shape.worldContains(x, y)) {
+                containingShape = shape;
+                break; // Since there's only one cursor and no overlapping shapes, we can skip early.
+            }
+        }
+        if (containingShape !== null) {
+            document.body.style.cursor = "pointer";
+            if (this.hoverEffect === null) {
+                this.hoverEffect = new __WEBPACK_IMPORTED_MODULE_1__trails__["a" /* ContourTrail */]({
+                    shape: containingShape,
+                    color: this.primaryColor,
+                    maxLineWidth: 15,
+                    minLineWidth: 6
+                });
+                this.manager.push(this.hoverEffect);
+            }
+        }
+        else {
+            if (this.hoverEffect !== null) {
+                this.resolveHoverEffect();
+            }
+        }
+    };
+    Navigation.prototype.onClick = function (e) {
+        if (this.hoverEffect !== null) {
+            window.open(this.hoverEffect.shape.url);
+            this.resolveHoverEffect();
+        }
+    };
+    Navigation.prototype.resolveHoverEffect = function () {
+        document.body.style.cursor = "auto";
+        this.hoverEffect.resolve();
+        this.hoverEffect = null;
+    };
+    return Navigation;
+}(__WEBPACK_IMPORTED_MODULE_0__process_manager__["a" /* Process */]));
+
+
+
+/***/ }),
+/* 7 */,
+/* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return Wait; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return WaitAllProcesses; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return Translate; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return Rotate; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AddShape; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return GenerateRect; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return GenerateRectDiagonally; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return GenerateHex; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return HoverEffect; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__math__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__process_manager__ = __webpack_require__(2);
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+var Wait = (function (_super) {
+    __extends(Wait, _super);
+    function Wait() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Wait.prototype.step = function (dt) {
+        _super.prototype.step.call(this, dt);
+    };
+    return Wait;
+}(__WEBPACK_IMPORTED_MODULE_1__process_manager__["a" /* Process */]));
+
+var WaitAllProcesses = (function (_super) {
+    __extends(WaitAllProcesses, _super);
+    function WaitAllProcesses() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    WaitAllProcesses.prototype.step = function (dt) {
+        if (this.manager.resolvableProcesses.length <= 1)
+            this.resolve();
+    };
+    return WaitAllProcesses;
+}(__WEBPACK_IMPORTED_MODULE_1__process_manager__["a" /* Process */]));
+
+var Translate = (function (_super) {
+    __extends(Translate, _super);
+    function Translate() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Translate.prototype.step = function (dt) {
+        _super.prototype.step.call(this, dt);
+        var translation = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].lerp(__WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].zero, this.target, this.progress);
+        this.shape.translation = translation;
+    };
+    return Translate;
+}(__WEBPACK_IMPORTED_MODULE_1__process_manager__["a" /* Process */]));
+
+var Rotate = (function (_super) {
+    __extends(Rotate, _super);
+    function Rotate() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Rotate.prototype.step = function (dt) {
+        _super.prototype.step.call(this, dt);
+        var rotation = this.progress * this.target;
+        this.shape.rotation = rotation;
+    };
+    return Rotate;
+}(__WEBPACK_IMPORTED_MODULE_1__process_manager__["a" /* Process */]));
+
+var AddShape = (function (_super) {
+    __extends(AddShape, _super);
+    function AddShape() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    AddShape.prototype.step = function (dt) {
+        this.manager.shapes.push(this.shape);
+        this.resolve();
+    };
+    return AddShape;
+}(__WEBPACK_IMPORTED_MODULE_1__process_manager__["a" /* Process */]));
+
+
+
+/***/ }),
+/* 9 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ContourTrail; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__process_manager__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__shape__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__process_manager__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__math__ = __webpack_require__(0);
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -715,79 +863,82 @@ var __extends = (this && this.__extends) || (function () {
 
 
 
-var Wait = (function (_super) {
-    __extends(Wait, _super);
-    function Wait() {
-        return _super !== null && _super.apply(this, arguments) || this;
+var ContourTrail = (function (_super) {
+    __extends(ContourTrail, _super);
+    function ContourTrail() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.phase = 0;
+        _this.hoverShapes = [];
+        return _this;
     }
-    Wait.prototype.step = function (dt) {
-        _super.prototype.step.call(this, dt);
+    ContourTrail.prototype.init = function () {
+        var numShapes = 10;
+        for (var i = 0; i < numShapes; i++) {
+            this.hoverShapes.push(new __WEBPACK_IMPORTED_MODULE_1__shape__["a" /* Shape */]([this.shape.points[0]], {
+                translation: this.shape.translation,
+                strokeStyle: this.shape.strokeStyle,
+                lineWidth: this.minLineWidth + (this.maxLineWidth - this.minLineWidth) * i / numShapes
+            }));
+        }
+        (_a = this.manager.shapes).push.apply(_a, this.hoverShapes);
+        this.duration = this.duration / this.shape.points.length;
+        this.endless = true;
+        var _a;
     };
-    return Wait;
-}(__WEBPACK_IMPORTED_MODULE_2__process_manager__["a" /* Process */]));
+    ContourTrail.prototype.step = function (dt) {
+        this.elapsed += dt;
+        var points = this.shape.points, hoverShapes = this.hoverShapes, progress = this.progress;
+        for (var i = 0; i < hoverShapes.length - 1; i++) {
+            hoverShapes[i].points[0] = hoverShapes[i + 1].points[0];
+        }
+        hoverShapes[hoverShapes.length - 1].points[0] = __WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].lerp(points[this.phase], points[(this.phase + 1) % points.length], progress);
+        if (progress === 1)
+            nextPhase(this, points.length);
+        for (var _i = 0, _a = this.hoverShapes; _i < _a.length; _i++) {
+            var hoverShape = _a[_i];
+            hoverShape.setDirty();
+        }
+    };
+    ContourTrail.prototype.resolve = function () {
+        _super.prototype.resolve.call(this);
+        var shapes = this.manager.shapes;
+        for (var _i = 0, _a = this.hoverShapes; _i < _a.length; _i++) {
+            var hoverShape = _a[_i];
+            shapes.splice(shapes.indexOf(hoverShape), 1);
+        }
+    };
+    return ContourTrail;
+}(__WEBPACK_IMPORTED_MODULE_0__process_manager__["a" /* Process */]));
 
-var WaitProgress = (function (_super) {
-    __extends(WaitProgress, _super);
-    function WaitProgress() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    WaitProgress.prototype.step = function (dt) {
-        _super.prototype.step.call(this, dt);
-        if (this.progress >= this.target)
-            this.resolve();
-    };
-    return WaitProgress;
-}(__WEBPACK_IMPORTED_MODULE_2__process_manager__["a" /* Process */]));
+function nextPhase(process, maxPhases) {
+    process.phase = (process.phase + 1) % maxPhases;
+    process.elapsed = 0;
+}
 
-var WaitAllProcesses = (function (_super) {
-    __extends(WaitAllProcesses, _super);
-    function WaitAllProcesses() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    WaitAllProcesses.prototype.step = function (dt) {
-        if (this.manager.resolvableProcesses.length <= 1)
-            this.resolve();
-    };
-    return WaitAllProcesses;
-}(__WEBPACK_IMPORTED_MODULE_2__process_manager__["a" /* Process */]));
 
-var Translate = (function (_super) {
-    __extends(Translate, _super);
-    function Translate() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    Translate.prototype.step = function (dt) {
-        _super.prototype.step.call(this, dt);
-        var translation = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].lerp(__WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].zero, this.target, this.progress);
-        this.shape.translation = translation;
-    };
-    return Translate;
-}(__WEBPACK_IMPORTED_MODULE_2__process_manager__["a" /* Process */]));
+/***/ }),
+/* 10 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-var Rotate = (function (_super) {
-    __extends(Rotate, _super);
-    function Rotate() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    Rotate.prototype.step = function (dt) {
-        _super.prototype.step.call(this, dt);
-        var rotation = this.progress * this.target;
-        this.shape.rotation = rotation;
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return GenerateRect; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return GenerateRectDiagonally; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return GenerateHex; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__process_manager__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__shape__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__math__ = __webpack_require__(0);
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
-    return Rotate;
-}(__WEBPACK_IMPORTED_MODULE_2__process_manager__["a" /* Process */]));
+})();
 
-var AddShape = (function (_super) {
-    __extends(AddShape, _super);
-    function AddShape() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    AddShape.prototype.step = function (dt) {
-        this.manager.shapes.push(this.shape);
-        this.resolve();
-    };
-    return AddShape;
-}(__WEBPACK_IMPORTED_MODULE_2__process_manager__["a" /* Process */]));
+
 
 var GenerateRect = (function (_super) {
     __extends(GenerateRect, _super);
@@ -804,12 +955,12 @@ var GenerateRect = (function (_super) {
     GenerateRect.prototype.step = function (dt) {
         _super.prototype.step.call(this, dt);
         var points = this.shape.points, targetPoints = this.target.points, progress = this.progress;
-        points[1] = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].lerp(targetPoints[0], targetPoints[1], progress);
-        points[2] = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].lerp(targetPoints[3], targetPoints[2], progress);
+        points[1] = __WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].lerp(targetPoints[0], targetPoints[1], progress);
+        points[2] = __WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].lerp(targetPoints[3], targetPoints[2], progress);
         this.shape.setDirty();
     };
     return GenerateRect;
-}(__WEBPACK_IMPORTED_MODULE_2__process_manager__["a" /* Process */]));
+}(__WEBPACK_IMPORTED_MODULE_0__process_manager__["a" /* Process */]));
 
 var GenerateRectDiagonally = (function (_super) {
     __extends(GenerateRectDiagonally, _super);
@@ -828,16 +979,16 @@ var GenerateRectDiagonally = (function (_super) {
         this.elapsed += dt;
         var points = this.shape.points, targetPoints = this.target.points, progress = this.progress;
         if (this.phase === 0) {
-            points[0] = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].lerp(targetPoints[0], targetPoints[1], progress);
-            points[1] = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].lerp(targetPoints[0], targetPoints[1], progress);
-            points[3] = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].lerp(targetPoints[0], targetPoints[3], progress);
-            points[4] = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].lerp(targetPoints[0], targetPoints[3], progress);
+            points[0] = __WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].lerp(targetPoints[0], targetPoints[1], progress);
+            points[1] = __WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].lerp(targetPoints[0], targetPoints[1], progress);
+            points[3] = __WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].lerp(targetPoints[0], targetPoints[3], progress);
+            points[4] = __WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].lerp(targetPoints[0], targetPoints[3], progress);
             if (progress === 1)
                 nextPhase(this);
         }
         else if (this.phase === 1) {
-            points[0] = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].lerp(targetPoints[1], targetPoints[2], progress);
-            points[4] = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].lerp(targetPoints[3], targetPoints[2], progress);
+            points[0] = __WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].lerp(targetPoints[1], targetPoints[2], progress);
+            points[4] = __WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].lerp(targetPoints[3], targetPoints[2], progress);
             if (progress === 1) {
                 points.length = 4;
                 this.resolve();
@@ -846,7 +997,7 @@ var GenerateRectDiagonally = (function (_super) {
         this.shape.setDirty();
     };
     return GenerateRectDiagonally;
-}(__WEBPACK_IMPORTED_MODULE_2__process_manager__["a" /* Process */]));
+}(__WEBPACK_IMPORTED_MODULE_0__process_manager__["a" /* Process */]));
 
 var GenerateHex = (function (_super) {
     __extends(GenerateHex, _super);
@@ -865,96 +1016,44 @@ var GenerateHex = (function (_super) {
         this.elapsed += dt;
         var points = this.shape.points, targetPoints = this.target.points, progress = this.progress;
         if (this.phase === 0) {
-            points[0] = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].lerp(__WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].zero, targetPoints[2], progress);
-            points[1] = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].lerp(__WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].zero, targetPoints[2], progress);
-            points[2] = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].lerp(__WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].zero, targetPoints[2], progress);
-            points[3] = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].lerp(__WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].zero, targetPoints[5], progress);
-            points[4] = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].lerp(__WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].zero, targetPoints[5], progress);
-            points[5] = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].lerp(__WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].zero, targetPoints[5], progress);
+            points[0] = __WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].lerp(__WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].zero, targetPoints[2], progress);
+            points[1] = __WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].lerp(__WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].zero, targetPoints[2], progress);
+            points[2] = __WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].lerp(__WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].zero, targetPoints[2], progress);
+            points[3] = __WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].lerp(__WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].zero, targetPoints[5], progress);
+            points[4] = __WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].lerp(__WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].zero, targetPoints[5], progress);
+            points[5] = __WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].lerp(__WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].zero, targetPoints[5], progress);
             if (progress === 1)
                 nextPhase(this);
         }
         else if (this.phase === 1) {
-            points[1] = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].lerp(targetPoints[2], targetPoints[3], progress);
-            points[2] = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].lerp(targetPoints[2], targetPoints[3], progress);
-            points[4] = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].lerp(targetPoints[5], targetPoints[0], progress);
-            points[5] = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].lerp(targetPoints[5], targetPoints[0], progress);
+            points[1] = __WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].lerp(targetPoints[2], targetPoints[3], progress);
+            points[2] = __WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].lerp(targetPoints[2], targetPoints[3], progress);
+            points[4] = __WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].lerp(targetPoints[5], targetPoints[0], progress);
+            points[5] = __WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].lerp(targetPoints[5], targetPoints[0], progress);
             if (progress === 1)
                 nextPhase(this);
         }
         else if (this.phase === 2) {
-            points[2] = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].lerp(targetPoints[3], targetPoints[4], progress);
-            points[5] = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].lerp(targetPoints[0], targetPoints[1], progress);
+            points[2] = __WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].lerp(targetPoints[3], targetPoints[4], progress);
+            points[5] = __WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */].lerp(targetPoints[0], targetPoints[1], progress);
             if (progress === 1)
                 this.resolve();
         }
         this.shape.setDirty();
     };
     return GenerateHex;
-}(__WEBPACK_IMPORTED_MODULE_2__process_manager__["a" /* Process */]));
-
-var HoverEffect = (function (_super) {
-    __extends(HoverEffect, _super);
-    function HoverEffect() {
-        var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.phase = 0;
-        _this.hoverShapes = [];
-        return _this;
-    }
-    HoverEffect.prototype.init = function () {
-        this.x = this.x || 0, this.y = this.y || 0;
-        this.shapes = this.manager.shapes;
-        this.target = __WEBPACK_IMPORTED_MODULE_1__shape__["a" /* Shape */].hex(this.x, this.y, this.diameter);
-        var numShapes = 10;
-        for (var i = 0; i < numShapes; i++) {
-            this.hoverShapes.push(new __WEBPACK_IMPORTED_MODULE_1__shape__["a" /* Shape */]([this.target.points[0]], {
-                translation: this.shape.translation,
-                strokeStyle: this.color,
-                lineWidth: this.minLineWidth + (this.maxLineWidth - this.minLineWidth) * i / numShapes
-            }));
-        }
-        (_a = this.shapes).push.apply(_a, this.hoverShapes);
-        this.duration = this.duration / 6; // 6 phases.
-        this.endless = true;
-        var _a;
-    };
-    HoverEffect.prototype.step = function (dt) {
-        this.elapsed += dt;
-        var targetPoints = this.target.points, hoverShapes = this.hoverShapes, progress = this.progress;
-        for (var i = 0; i < hoverShapes.length - 1; i++) {
-            hoverShapes[i].points[0] = hoverShapes[i + 1].points[0];
-        }
-        hoverShapes[hoverShapes.length - 1].points[0] = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].lerp(targetPoints[this.phase], targetPoints[(this.phase + 1) % 6], progress);
-        if (progress === 1)
-            nextPhase(this, 6);
-        for (var _i = 0, _a = this.hoverShapes; _i < _a.length; _i++) {
-            var hoverShape = _a[_i];
-            hoverShape.setDirty();
-        }
-    };
-    HoverEffect.prototype.resolve = function () {
-        _super.prototype.resolve.call(this);
-        for (var _i = 0, _a = this.hoverShapes; _i < _a.length; _i++) {
-            var hoverShape = _a[_i];
-            this.shapes.splice(this.shapes.indexOf(hoverShape), 1);
-        }
-    };
-    return HoverEffect;
-}(__WEBPACK_IMPORTED_MODULE_2__process_manager__["a" /* Process */]));
+}(__WEBPACK_IMPORTED_MODULE_0__process_manager__["a" /* Process */]));
 
 function addPoints(shape, count, x, y) {
     if (x === void 0) { x = 0; }
     if (y === void 0) { y = 0; }
-    var points = Array.apply(null, { length: count }).map(function (_) { return new __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */](x, y); });
+    var points = Array.apply(null, { length: count }).map(function (_) { return new __WEBPACK_IMPORTED_MODULE_2__math__["b" /* Vec2 */](x, y); });
     (_a = shape.points).push.apply(_a, points);
     shape.setDirty();
     var _a;
 }
-function nextPhase(process, maxPhases) {
-    if (maxPhases)
-        process.phase = (process.phase + 1) % maxPhases;
-    else
-        process.phase++;
+function nextPhase(process) {
+    process.phase++;
     process.elapsed = 0;
 }
 

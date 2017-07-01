@@ -1,48 +1,6 @@
-import { Vec2 } from "./math";
-import { Shape } from "./shape";
-import { Process, Config } from "./process-manager";
-
-export class Wait extends Process {
-    step(dt: number) {
-        super.step(dt);
-    }
-}
-
-export class WaitProgress extends Process {
-    step(dt: number) {
-        super.step(dt);
-        if (this.progress >= this.target) this.resolve();
-    }
-}
-
-export class WaitAllProcesses extends Process {
-    step(dt: number) {
-        if (this.manager.resolvableProcesses.length <= 1) this.resolve();
-    }
-}
-
-export class Translate extends Process {
-    step(dt: number) {
-        super.step(dt);
-        const translation = Vec2.lerp(Vec2.zero, this.target, this.progress);
-        this.shape.translation = translation;
-    }
-}
-
-export class Rotate extends Process {
-    step(dt: number) {
-        super.step(dt);
-        const rotation = this.progress*this.target;
-        this.shape.rotation = rotation;
-    }
-}
-
-export class AddShape extends Process {
-    step(dt: number) {
-        this.manager.shapes.push(this.shape);
-        this.resolve();
-    }
-}
+import { Process } from "../process-manager";
+import { Shape } from "../shape";
+import { Vec2 } from "../math";
 
 export class GenerateRect extends Process {
     init() {
@@ -135,58 +93,13 @@ export class GenerateHex extends Process {
     }
 }
 
-export class HoverEffect extends Process {
-    phase = 0;
-    hoverShapes: Shape[] = [];
-
-    init() {
-        this.x = this.x || 0, this.y = this.y || 0;
-        this.shapes = this.manager.shapes;
-        this.target = Shape.hex(this.x, this.y, this.diameter);
-
-        const numShapes = 10;
-        for (let i = 0; i < numShapes; i++) {
-            this.hoverShapes.push(new Shape([this.target.points[0]], {
-                translation: this.shape.translation,
-                strokeStyle: this.color,
-                lineWidth: this.minLineWidth + (this.maxLineWidth - this.minLineWidth)*i/numShapes
-            }));
-        }
-        this.shapes.push(...this.hoverShapes);
-        this.duration = this.duration/6; // 6 phases.
-        this.endless = true;
-    }
-
-    step(dt: number) {
-        this.elapsed += dt;
-        const targetPoints = this.target.points,
-              hoverShapes = this.hoverShapes,
-              progress = this.progress;
-
-        for (let i = 0; i < hoverShapes.length - 1; i++) {
-            hoverShapes[i].points[0] = hoverShapes[i + 1].points[0];
-        }
-        hoverShapes[hoverShapes.length - 1].points[0] = Vec2.lerp(targetPoints[this.phase], targetPoints[(this.phase + 1)%6], progress);
-        if (progress === 1) nextPhase(this, 6);
-
-        for (let hoverShape of this.hoverShapes) hoverShape.setDirty();
-    }
-
-    resolve() {
-        super.resolve();
-        for (let hoverShape of this.hoverShapes) {
-            this.shapes.splice(this.shapes.indexOf(hoverShape), 1);
-        }
-    }
-}
-
 function addPoints(shape: Shape, count: number, x = 0, y = 0) {
     const points = (<undefined[]>Array.apply(null, { length: count })).map(_ => new Vec2(x, y));
     shape.points.push(...points);
     shape.setDirty();
 }
 
-function nextPhase(process: Process, maxPhases?: number) {
-    if (maxPhases) process.phase = (process.phase + 1)%maxPhases; else process.phase++;
+function nextPhase(process: Process) {
+    process.phase++;
     process.elapsed = 0;
 }
