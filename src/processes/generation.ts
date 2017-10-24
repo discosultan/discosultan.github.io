@@ -13,9 +13,9 @@ export class GenerateRect extends Process {
 
     step(dt: number) {
         super.step(dt);
-        const points = this.shape.points,
-              targetPoints = this.target.points,
-              progress = this.progress;
+        const { progress } = this;
+        const { points } = this.shape;
+        const targetPoints = this.target.points;
         points[1] = Vec2.lerp(targetPoints[0], targetPoints[1], progress);
         points[2] = Vec2.lerp(targetPoints[3], targetPoints[2], progress);
         this.shape.setDirty();
@@ -34,9 +34,9 @@ export class GenerateRectDiagonally extends Process {
 
     step(dt: number) {
         this.elapsed += dt;
-        const points = this.shape.points,
-              targetPoints = this.target.points,
-              progress = this.progress;
+        const { progress } = this;
+        const { points } = this.shape;
+        const targetPoints = this.target.points;
         if (this.phase === 0) {
             points[0] = Vec2.lerp(targetPoints[0], targetPoints[1], progress);
             points[1] = Vec2.lerp(targetPoints[0], targetPoints[1], progress);
@@ -67,9 +67,9 @@ export class GenerateHex extends Process {
 
     step(dt: number) {
         this.elapsed += dt;
-        const points = this.shape.points,
-              targetPoints = this.target.points,
-              progress = this.progress;
+        const { progress } = this;
+        const { points } = this.shape;
+        const targetPoints = this.target.points;
         if (this.phase === 0) {
             points[0] = Vec2.lerp(Vec2.zero, targetPoints[2], progress);
             points[1] = Vec2.lerp(Vec2.zero, targetPoints[2], progress);

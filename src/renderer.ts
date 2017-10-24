@@ -16,7 +16,7 @@ export class Renderer {
     }
 
     step(dt: number) {
-        const canvas = this.canvas, ctx = this.ctx;
+        const { canvas, ctx } = this;
         this.ensureCanvasValid(canvas, ctx);
         ctx.clearRect(-canvas.translationX, -canvas.translationY, canvas.width, canvas.height);
         this.renderShapes(ctx, this.shapes);

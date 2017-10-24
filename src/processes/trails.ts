@@ -22,9 +22,8 @@ export class ContourTrail extends Process {
 
     step(dt: number) {
         this.elapsed += dt;
-        const points = this.shape.points,
-              hoverShapes = this.hoverShapes,
-              progress = this.progress;
+        const { hoverShapes, progress } = this;
+        const { points } = this.shape;
 
         for (let i = 0; i < hoverShapes.length - 1; i++) {
             hoverShapes[i].points[0] = hoverShapes[i + 1].points[0];
@@ -40,7 +39,7 @@ export class ContourTrail extends Process {
 
     resolve() {
         super.resolve();
-        const shapes = this.manager.shapes;
+        const { shapes } = this.manager;
         for (let hoverShape of this.hoverShapes) {
             shapes.splice(shapes.indexOf(hoverShape), 1);
         }
