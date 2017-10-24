@@ -1,5 +1,12 @@
 import { Shape, Type } from "./shape";
 
+declare global {
+    interface HTMLCanvasElement {
+        translationX: number;
+        translationY: number;
+    }
+}
+
 export class Renderer {
     readonly ctx: CanvasRenderingContext2D;
 
@@ -81,12 +88,5 @@ export class Renderer {
             ctx.lineCap = "round";
             ctx.lineJoin = "round";
         }
-    }
-}
-
-declare global {
-    interface HTMLCanvasElement {
-        translationX: number;
-        translationY: number;
     }
 }

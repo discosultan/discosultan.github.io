@@ -6,6 +6,13 @@ import * as General from "./processes/general";
 import * as Generation from "./processes/generation";
 import * as Input from "./processes/input";
 
+declare global {
+    interface Window {
+        renderer: Renderer;
+        processManager: ProcessManager;
+    }
+}
+
 const shapesMeta: { color: string; imgPath: string; url?: string, img: HTMLImageElement }[] = [
     { color: "#fff", imgPath: "me.jpg", img: new Image() },
     { color: "#1da1f2", imgPath: "twitter.png", url: "https://twitter.com/Discosultan", img: new Image() },
@@ -46,7 +53,7 @@ function init() {
 
     // Preload font by rendering arbitrary text.
     ctx.font = `2px ${font}`;
-    ctx.fillText("x", 0, 0,);
+    ctx.fillText("x", 0, 0);
 
     // Generate two sets of hexes:
     // 1. initial contours which will be animated
@@ -176,11 +183,4 @@ function init() {
     // Globals to simplify debugging.
     window.renderer = renderer;
     window.processManager = processManager;
-}
-
-declare global {
-    interface Window {
-        renderer: Renderer;
-        processManager: ProcessManager;
-    }
 }
