@@ -1,7 +1,7 @@
 import { Vec2 } from "./math";
 
 export type Config = any;
-export enum Type { "pattern", "fill", "stroke", "text", "none" };
+export enum Type { "pattern", "image", "fill", "stroke", "text", "none" };
 
 export interface BoundingRect {
     x: number; 
@@ -11,12 +11,12 @@ export interface BoundingRect {
 };
 
 export class Shape {
+    readonly children: Shape[] = [];
     readonly _worldPoints: Vec2[] = [];
-    readonly _children: Shape[] = [];
     parent?: Shape;
-    pointsDirty = true;
-    boundingRectDirty = true;
     type = Type.stroke;
+    _pointsDirty = true;
+    _boundingRectDirty = true;
     _translation = Vec2.zero;
     _rotation = 0;
     _scale = Vec2.one;
@@ -40,24 +40,34 @@ export class Shape {
     set translation(value) { this._translation = value; this.setDirty(); }
 
     get worldPoints() {
-        if (this.pointsDirty) {
+        if (this._pointsDirty) {
             this._worldPoints.length = 0;
             for (let point of this.points) {
-                const worldPoint = Vec2.transform(point, this.absScale, this.absRotation, this.absTranslation);
+                // const worldPoint = Vec2.transform(point, this.absScale, this.absRotation, this.absTranslation);
+                const worldPoint = this.absTransform(point);
                 this._worldPoints.push(worldPoint);
             }
-            this.pointsDirty = false;
+            this._pointsDirty = false;
         }
         return this._worldPoints;
+
+        
+    }
+
+    absTransform(point: Vec2) {
+        if (this.parent) {
+            point = this.parent.absTransform(point);
+        }
+        return Vec2.transform(point, this.scale, this.rotation, this.translation);
     }
 
     absolute<T>(selector: (shape: Shape) => T, op: (a: T, b: T) => T): T {
-        let value = selector(this);
+        const value = selector(this);
         return this.parent ? op(value, this.parent.absolute(selector, op)) : value;
     }
 
     get worldBoundingRect() {
-        if (this.boundingRectDirty) {
+        if (this._boundingRectDirty) {
             let min = new Vec2(Number.MAX_VALUE, Number.MAX_VALUE);
             let max = new Vec2(Number.MIN_VALUE, Number.MIN_VALUE);
             for (let p of this.worldPoints) {
@@ -70,7 +80,7 @@ export class Shape {
                 width: max.x - min.x,
                 height: max.y - min.y
             };
-            this.boundingRectDirty = false;
+            this._boundingRectDirty = false;
         }
         return this._worldBoundingRect; 
     }
@@ -90,13 +100,13 @@ export class Shape {
 
     push(...args: Shape[]) {
         for (let arg of args) arg.parent = this;
-        this._children.push(...args);
+        this.children.push(...args);
         return this;
     }
 
     setDirty() {
-        this.pointsDirty = this.boundingRectDirty = true;
-        for (let child of this._children) child.setDirty();
+        this._pointsDirty = this._boundingRectDirty = true;
+        for (let child of this.children) child.setDirty();
     }
 
     static empty(config?: Config) {
@@ -105,7 +115,7 @@ export class Shape {
 
     static hex(x: number, y: number, diameter: number, config?: Config) {
         const a = diameter*0.25;
-        const b = a * Math.sqrt(3);
+        const b = a*Math.sqrt(3);
         return new Shape([
             new Vec2(x + 0, y - 2*a),
             new Vec2(x + b, y -   a),
@@ -118,8 +128,8 @@ export class Shape {
 
     static rect(x: number, y: number, width: number, height: number, config?: Config) {
         return new Shape([
-            new Vec2(x,         y),
-            new Vec2(x + width, y),
+            new Vec2(x,         y         ),
+            new Vec2(x + width, y         ),
             new Vec2(x + width, y + height),
             new Vec2(x,         y + height)
         ], config);

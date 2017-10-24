@@ -68,7 +68,7 @@ function init() {
           hexNEContour  = newHex({ url: shapesMeta[1].url }),
           hexWContour   = newHex({ url: shapesMeta[2].url }),
           hexSEContour  = newHex({ url: shapesMeta[3].url });
-    shapes.push(hexMidContour); // Rest will be added during animation.
+    // shapes.push(hexMidContour); // Rest will be added during animation.
 
     // Hex fill mask will be added after contours are animated.
     const hexFillMask = Shape.empty({ 
@@ -79,17 +79,22 @@ function init() {
           hexNEFill  = newHex({ translation: translationNE }),
           hexWFill   = newHex({ translation: translationW }),
           hexSEFill  = newHex({ translation: translationSE });
-    hexFillMask.push(hexMidFill, hexNEFill, hexWFill, hexSEFill);
+    hexFillMask.push(
+        // hexMidFill,
+        // hexNEFill,
+        hexWFill,
+        // hexSEFill
+    );
 
     function newHex(config: ShapeConfig = {}) { 
         config.strokeStyle = primaryColor;
         return Shape.hex(0, 0, hexDiameter, config);
     }
 
-    addFillRect(hexMidFill, shapesMeta[0].color, shapesMeta[0].img);
-    addFillRect(hexNEFill,  shapesMeta[1].color, shapesMeta[1].img),
-    addFillRect(hexWFill,   shapesMeta[2].color, shapesMeta[2].img),
-    addFillRect(hexSEFill,  shapesMeta[3].color, shapesMeta[3].img);
+    // addFillRect(hexMidFill, shapesMeta[0].color, shapesMeta[0].img);
+    // addFillRect(hexNEFill,  shapesMeta[1].color, shapesMeta[1].img);
+    addFillRect(hexWFill,   shapesMeta[2].color, shapesMeta[2].img);
+    // addFillRect(hexSEFill,  shapesMeta[3].color, shapesMeta[3].img);
 
     function addFillRect(shape: Shape, color: string, img: HTMLImageElement) {
         const bgFillRect = Shape.rect(-hexDiameter*0.5, -hexDiameter*0.5, hexDiameter, hexDiameter, {
@@ -97,17 +102,23 @@ function init() {
             fillStyle: color
         })
         shape.push(bgFillRect);
+        // const imgFillRect = Shape.rect(0, 0, img.width, img.height, {
+        //     type: ShapeType.pattern,
+        //     fillStyle: ctx.createPattern(img, "no-repeat"),
+        //     scale: flipVertically, // We flip it back because its ancestor was flipped.
+        //     translation: new Vec2(-img.width/2, -img.height/2),
+        // });
         const imgFillRect = Shape.rect(0, 0, img.width, img.height, {
-            type: ShapeType.pattern,
-            fillStyle: ctx.createPattern(img, "no-repeat"),
+            type: ShapeType.image,
+            image: img,
             scale: flipVertically, // We flip it back because its ancestor was flipped.
-            translation: new Vec2(-img.width/2, -img.height/2),
+            // translation: new Vec2(-img.width/2, -img.height/2),
         });
         shape.push(imgFillRect);
     }
 
     const textRect = Shape.empty({ type: ShapeType.none, translation: new Vec2(60, -textRectHeight*0.5) });
-    shapes.push(textRect);
+    // shapes.push(textRect);
     function createText(text: string, translation: Vec2, scale: Vec2) {
         return Shape.rect(0, 0, textRectWidth, textRectHeight/2, {
             type: ShapeType.text,
@@ -123,15 +134,15 @@ function init() {
 
     processManager.push(
         new General.Wait({ duration: 0 }).push(
-            new Generation.GenerateHex({ shape: hexMidContour, easingFn: easingFn, diameter: hexDiameter, duration: hexGenDuration }).push(
-                new General.Rotate({ shape: hexMidContour, easingFn: easingFn, target: -Math.TWO_PI, duration: rotationDuration }).push(
-                    addTranslateHex(hexWContour,  translationW),
-                    addTranslateHex(hexSEContour, translationSE),
-                    addTranslateHex(hexNEContour, translationNE)
-                )
-            ),
+            // new Generation.GenerateHex({ shape: hexMidContour, easingFn: easingFn, diameter: hexDiameter, duration: hexGenDuration }).push(
+            //     new General.Rotate({ shape: hexMidContour, easingFn: easingFn, target: -Math.TWO_PI, duration: rotationDuration }).push(
+            //         // addTranslateHex(hexWContour,  translationW),
+            //         // addTranslateHex(hexSEContour, translationSE),
+            //         // addTranslateHex(hexNEContour, translationNE)
+            //     )
+            // ),
             new General.WaitAllProcesses().push(
-                new General.AddShape({ shape: hexFillMask }).push(
+                new General.Execute({ command: () => shapes.push(hexFillMask) }).push(
                     new Generation.GenerateRectDiagonally({
                         shape: hexFillMask,
                         x: -hexDiameter*1,
@@ -141,19 +152,19 @@ function init() {
                         duration: shapeFillDuration
                     })
                 ),
-                new Generation.GenerateRect({
-                    shape: textRect,
-                    width: textRectWidth,
-                    height: textRectHeight,
-                    duration: shapeFillDuration
-                }),
+                // new Generation.GenerateRect({
+                //     shape: textRect,
+                //     width: textRectWidth,
+                //     height: textRectHeight,
+                //     duration: shapeFillDuration
+                // }),
                 new Input.Navigation({ shapes: [hexNEContour, hexWContour, hexSEContour] })
             )
         )
     );
 
     function addTranslateHex(shape: Shape, translation: Vec2) {
-        return new General.AddShape({ shape: shape }).push(
+        return new General.Execute({ command: () => shapes.push(shape) }).push(
             new General.Translate({ 
                 shape: shape,
                 easingFn: easingFn,

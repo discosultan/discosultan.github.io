@@ -38,10 +38,14 @@ export class Renderer {
                 case Type.pattern:
                     ctx.fillStyle = this.styleOrDefault(shape.fillStyle);
                     ctx.save();
-                    const bounds = shape.worldBoundingRect;
-                    ctx.translate(bounds.x, bounds.y);
+                    const patternBounds = shape.worldBoundingRect;
+                    ctx.translate(patternBounds.x, patternBounds.y);
                     ctx.fill();
                     ctx.restore();
+                    break;
+                case Type.image:
+                    const imgBounds = shape.worldBoundingRect;
+                    ctx.drawImage(shape.image, imgBounds.x, imgBounds.y, imgBounds.width, imgBounds.height);
                     break;
                 case Type.fill:
                     ctx.fillStyle = this.styleOrDefault(shape.fillStyle);
@@ -63,10 +67,10 @@ export class Renderer {
 
             // Render children.
             // Child shapes are always clipped to their parents.
-            if (shape._children.length > 0) {
+            if (shape.children.length > 0) {
                 ctx.save();
                 ctx.clip();
-                this.renderShapes(ctx, shape._children);
+                this.renderShapes(ctx, shape.children);
                 ctx.restore();
             }
         }

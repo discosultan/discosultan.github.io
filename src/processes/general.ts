@@ -30,9 +30,9 @@ export class Rotate extends Process {
     }
 }
 
-export class AddShape extends Process {
+export class Execute extends Process {
     step(dt: number) {
-        this.manager.shapes.push(this.shape);
+        this.command();
         this.resolve();
     }
 }
