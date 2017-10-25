@@ -264,34 +264,22 @@ var Shape = /** @class */ (function () {
     }
     Object.defineProperty(Shape.prototype, "rotation", {
         get: function () { return this._rotation; },
+        // get absRotation() { return this.absolute(s => s.rotation, (a, b) => a + b); }
         set: function (value) { this._rotation = value; this.setDirty(); },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Shape.prototype, "absRotation", {
-        get: function () { return this.absolute(function (s) { return s.rotation; }, function (a, b) { return a + b; }); },
         enumerable: true,
         configurable: true
     });
     Object.defineProperty(Shape.prototype, "scale", {
         get: function () { return this._scale; },
+        // get absScale() { return this.absolute(s => s.scale, Vec2.multiply); }
         set: function (value) { this._scale = value; this.setDirty(); },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Shape.prototype, "absScale", {
-        get: function () { return this.absolute(function (s) { return s.scale; }, __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].multiply); },
         enumerable: true,
         configurable: true
     });
     Object.defineProperty(Shape.prototype, "translation", {
         get: function () { return this._translation; },
+        // get absTranslation() { return this.absolute(s => s.translation, Vec2.add); }
         set: function (value) { this._translation = value; this.setDirty(); },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Shape.prototype, "absTranslation", {
-        get: function () { return this.absolute(function (s) { return s.translation; }, __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].add); },
         enumerable: true,
         configurable: true
     });
@@ -300,10 +288,15 @@ var Shape = /** @class */ (function () {
             if (this._pointsDirty) {
                 this._worldPoints.length = 0;
                 for (var _i = 0, _a = this.points; _i < _a.length; _i++) {
-                    var point = _a[_i];
+                    var pl = _a[_i];
+                    // console.log(this.absScale);
+                    // console.log(this.absRotation);
+                    // console.log(this.absTranslation);
                     // const worldPoint = Vec2.transform(point, this.absScale, this.absRotation, this.absTranslation);
-                    var worldPoint = this.absTransform(point);
-                    this._worldPoints.push(worldPoint);
+                    // const worldPoint = this.absTransform(point);
+                    var m = this.absTransform;
+                    var pw = new __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */](pl.x * m[0] + pl.x * m[2] + pl.x * m[4], pl.y * m[1] + pl.y * m[3] + pl.y * m[5]);
+                    this._worldPoints.push(pw);
                 }
                 this._pointsDirty = false;
             }
@@ -312,17 +305,37 @@ var Shape = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
-    Shape.prototype.absTransform = function (point) {
-        if (this.parent) {
-            point = this.parent.absTransform(point);
-        }
-        return __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].transform(point, this.scale, this.rotation, this.translation);
-    };
-    Shape.prototype.absolute = function (selector, op) {
-        var value = selector(this);
-        return this.parent ? op(value, this.parent.absolute(selector, op)) : value;
-    };
+    Object.defineProperty(Shape.prototype, "absTransform", {
+        get: function () {
+            var r = this.rotation, sx = this.scale.x, sy = this.scale.y, tx = this.translation.x, ty = this.translation.y;
+            var cosr = Math.cos(r), sinr = Math.sin(r);
+            var ml = [
+                cosr * sx, -sinr * sy,
+                sinr * sx, cosr * sy,
+                //   tx*sx,    ty*sy
+                // tx*cosr*sx + ty*sinr*sx, tx*(-sinr)*sy + ty*cosr*sy
+                tx, ty
+            ];
+            if (this.parent) {
+                var mp = this.parent.absTransform;
+                return [
+                    ml[0] * mp[0] + ml[1] * mp[2], ml[0] * mp[1] + ml[1] * mp[3],
+                    ml[2] * mp[0] + ml[3] * mp[2], ml[2] * mp[1] + ml[3] * mp[3],
+                    ml[4] * mp[0] + ml[5] * mp[2], ml[4] * mp[1] + ml[5] * mp[3]
+                ];
+            }
+            else {
+                return ml;
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Shape.prototype, "worldBoundingRect", {
+        // absolute<T>(selector: (shape: Shape) => T, op: (a: T, b: T) => T): T {
+        //     const value = selector(this);
+        //     return this.parent ? op(value, this.parent.absolute(selector, op)) : value;
+        // }
         get: function () {
             if (this._boundingRectDirty) {
                 var min = new __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */](Number.MAX_VALUE, Number.MAX_VALUE);
@@ -469,26 +482,23 @@ function init() {
     var base = new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](hexDiameter, 0);
     var translationNE = __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */].rotate(base, Math.PI / 3), translationW = __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */].rotate(base, Math.PI), translationSE = __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */].rotate(base, 5 * Math.PI / 3);
     var hexMidContour = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].empty({ strokeStyle: primaryColor }), hexNEContour = newHex({ url: shapesMeta[1].url }), hexWContour = newHex({ url: shapesMeta[2].url }), hexSEContour = newHex({ url: shapesMeta[3].url });
-    // shapes.push(hexMidContour); // Rest will be added during animation.
+    shapes.push(hexMidContour); // Rest will be added during animation.
     // Hex fill mask will be added after contours are animated.
     var hexFillMask = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].empty({
         type: __WEBPACK_IMPORTED_MODULE_2__shape__["b" /* Type */].none,
         scale: flipVertically
     });
     var hexMidFill = newHex(), hexNEFill = newHex({ translation: translationNE }), hexWFill = newHex({ translation: translationW }), hexSEFill = newHex({ translation: translationSE });
-    hexFillMask.push(
-    // hexMidFill,
-    // hexNEFill,
-    hexWFill);
+    hexFillMask.push(hexMidFill, hexNEFill, hexWFill, hexSEFill);
     function newHex(config) {
         if (config === void 0) { config = {}; }
         config.strokeStyle = primaryColor;
         return __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].hex(0, 0, hexDiameter, config);
     }
-    // addFillRect(hexMidFill, shapesMeta[0].color, shapesMeta[0].img);
-    // addFillRect(hexNEFill,  shapesMeta[1].color, shapesMeta[1].img);
+    addFillRect(hexMidFill, shapesMeta[0].color, shapesMeta[0].img);
+    addFillRect(hexNEFill, shapesMeta[1].color, shapesMeta[1].img);
     addFillRect(hexWFill, shapesMeta[2].color, shapesMeta[2].img);
-    // addFillRect(hexSEFill,  shapesMeta[3].color, shapesMeta[3].img);
+    addFillRect(hexSEFill, shapesMeta[3].color, shapesMeta[3].img);
     function addFillRect(shape, color, img) {
         var bgFillRect = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].rect(-hexDiameter * 0.5, -hexDiameter * 0.5, hexDiameter, hexDiameter, {
             type: __WEBPACK_IMPORTED_MODULE_2__shape__["b" /* Type */].fill,
@@ -501,7 +511,7 @@ function init() {
         //     scale: flipVertically, // We flip it back because its ancestor was flipped.
         //     translation: new Vec2(-img.width/2, -img.height/2),
         // });
-        var imgFillRect = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].rect(0, 0, img.width, img.height, {
+        var imgFillRect = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].rect(-img.width / 2, -img.height / 2, img.width, img.height, {
             type: __WEBPACK_IMPORTED_MODULE_2__shape__["b" /* Type */].image,
             image: img,
             scale: flipVertically,
@@ -522,31 +532,21 @@ function init() {
     }
     textRect.push(createText(text1, __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */].zero, new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](1, 1)));
     textRect.push(createText(text2, new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](0, textRectHeight * 0.5), new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](1, 0.6)));
-    processManager.push(new __WEBPACK_IMPORTED_MODULE_4__processes_general__["c" /* Wait */]({ duration: 0 }).push(
-    // new Generation.GenerateHex({ shape: hexMidContour, easingFn: easingFn, diameter: hexDiameter, duration: hexGenDuration }).push(
-    //     new General.Rotate({ shape: hexMidContour, easingFn: easingFn, target: -Math.TWO_PI, duration: rotationDuration }).push(
-    //         // addTranslateHex(hexWContour,  translationW),
-    //         // addTranslateHex(hexSEContour, translationSE),
-    //         // addTranslateHex(hexNEContour, translationNE)
-    //     )
-    // ),
-    new __WEBPACK_IMPORTED_MODULE_4__processes_general__["d" /* WaitAllProcesses */]().push(new __WEBPACK_IMPORTED_MODULE_4__processes_general__["a" /* Execute */]({ command: function () { return shapes.push(hexFillMask); } }).push(new __WEBPACK_IMPORTED_MODULE_5__processes_generation__["a" /* GenerateRectDiagonally */]({
+    processManager.push(new __WEBPACK_IMPORTED_MODULE_4__processes_general__["d" /* Wait */]({ duration: 0 }).push(new __WEBPACK_IMPORTED_MODULE_5__processes_generation__["a" /* GenerateHex */]({ shape: hexMidContour, easingFn: easingFn, diameter: hexDiameter, duration: hexGenDuration }).push(new __WEBPACK_IMPORTED_MODULE_4__processes_general__["b" /* Rotate */]({ shape: hexMidContour, easingFn: easingFn, target: -Math.TWO_PI, duration: rotationDuration }).push(addTranslateHex(hexWContour, translationW), addTranslateHex(hexSEContour, translationSE), addTranslateHex(hexNEContour, translationNE))), new __WEBPACK_IMPORTED_MODULE_4__processes_general__["e" /* WaitAllProcesses */]().push(new __WEBPACK_IMPORTED_MODULE_4__processes_general__["a" /* Execute */]({ command: function () { return shapes.push(hexFillMask); } }).push(new __WEBPACK_IMPORTED_MODULE_5__processes_generation__["c" /* GenerateRectDiagonally */]({
         shape: hexFillMask,
         x: -hexDiameter * 1,
         y: -hexDiameter * 1.5,
         width: hexDiameter * 2.5,
         height: hexDiameter * 3,
         duration: shapeFillDuration
-    })), 
-    // new Generation.GenerateRect({
-    //     shape: textRect,
-    //     width: textRectWidth,
-    //     height: textRectHeight,
-    //     duration: shapeFillDuration
-    // }),
-    new __WEBPACK_IMPORTED_MODULE_6__processes_input__["a" /* Navigation */]({ shapes: [hexNEContour, hexWContour, hexSEContour] }))));
+    })), new __WEBPACK_IMPORTED_MODULE_5__processes_generation__["b" /* GenerateRect */]({
+        shape: textRect,
+        width: textRectWidth,
+        height: textRectHeight,
+        duration: shapeFillDuration
+    }), new __WEBPACK_IMPORTED_MODULE_6__processes_input__["a" /* Navigation */]({ shapes: [hexNEContour, hexWContour, hexSEContour] }))));
     function addTranslateHex(shape, translation) {
-        return new __WEBPACK_IMPORTED_MODULE_4__processes_general__["a" /* Execute */]({ command: function () { return shapes.push(shape); } }).push(new __WEBPACK_IMPORTED_MODULE_4__processes_general__["b" /* Translate */]({
+        return new __WEBPACK_IMPORTED_MODULE_4__processes_general__["a" /* Execute */]({ command: function () { return shapes.push(shape); } }).push(new __WEBPACK_IMPORTED_MODULE_4__processes_general__["c" /* Translate */]({
             shape: shape,
             easingFn: easingFn,
             duration: hexTranslationDuration,
@@ -676,10 +676,10 @@ var Renderer = /** @class */ (function () {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return Wait; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return WaitAllProcesses; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return Translate; });
-/* unused harmony export Rotate */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return Wait; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return WaitAllProcesses; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return Translate; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return Rotate; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Execute; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__math__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__process_manager__ = __webpack_require__(1);
@@ -763,9 +763,9 @@ var Execute = /** @class */ (function (_super) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* unused harmony export GenerateRect */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return GenerateRectDiagonally; });
-/* unused harmony export GenerateHex */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return GenerateRect; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return GenerateRectDiagonally; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return GenerateHex; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__process_manager__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__shape__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__math__ = __webpack_require__(0);

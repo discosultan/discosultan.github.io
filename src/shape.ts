@@ -28,24 +28,34 @@ export class Shape {
     }
 
     get rotation() { return this._rotation; }
-    get absRotation() { return this.absolute(s => s.rotation, (a, b) => a + b); }
+    // get absRotation() { return this.absolute(s => s.rotation, (a, b) => a + b); }
     set rotation(value) { this._rotation = value; this.setDirty(); }
 
     get scale() { return this._scale; }
-    get absScale() { return this.absolute(s => s.scale, Vec2.multiply); }
+    // get absScale() { return this.absolute(s => s.scale, Vec2.multiply); }
     set scale(value) { this._scale = value; this.setDirty(); }
 
     get translation() { return this._translation; }
-    get absTranslation() { return this.absolute(s => s.translation, Vec2.add); }
+    // get absTranslation() { return this.absolute(s => s.translation, Vec2.add); }
     set translation(value) { this._translation = value; this.setDirty(); }
 
     get worldPoints() {
         if (this._pointsDirty) {
             this._worldPoints.length = 0;
-            for (let point of this.points) {
+            for (let pl of this.points) {
+                // console.log(this.absScale);
+                // console.log(this.absRotation);
+                // console.log(this.absTranslation);
                 // const worldPoint = Vec2.transform(point, this.absScale, this.absRotation, this.absTranslation);
-                const worldPoint = this.absTransform(point);
-                this._worldPoints.push(worldPoint);
+                // const worldPoint = this.absTransform(point);
+                const m = this.absTransform;
+
+                let pw = new Vec2(
+                    pl.x*m[0] + pl.x*m[2] + pl.x*m[4],
+                    pl.y*m[1] + pl.y*m[3] + pl.y*m[5]
+                )
+
+                this._worldPoints.push(pw);
             }
             this._pointsDirty = false;
         }
@@ -54,17 +64,36 @@ export class Shape {
         
     }
 
-    absTransform(point: Vec2) {
+    get absTransform(): number[] {
+        const r = this.rotation,
+              sx = this.scale.x, sy = this.scale.y,
+              tx = this.translation.x, ty = this.translation.y;
+        const cosr = Math.cos(r), sinr = Math.sin(r);
+
+        const ml = [
+            cosr*sx, -sinr*sy,
+            sinr*sx,  cosr*sy,
+            //   tx*sx,    ty*sy
+            // tx*cosr*sx + ty*sinr*sx, tx*(-sinr)*sy + ty*cosr*sy
+            tx, ty
+        ];
+
         if (this.parent) {
-            point = this.parent.absTransform(point);
+            const mp = this.parent.absTransform;
+            return [
+                ml[0]*mp[0] + ml[1]*mp[2], ml[0]*mp[1] + ml[1]*mp[3],
+                ml[2]*mp[0] + ml[3]*mp[2], ml[2]*mp[1] + ml[3]*mp[3],
+                ml[4]*mp[0] + ml[5]*mp[2], ml[4]*mp[1] + ml[5]*mp[3]
+            ]
+        } else {
+            return ml;
         }
-        return Vec2.transform(point, this.scale, this.rotation, this.translation);
     }
 
-    absolute<T>(selector: (shape: Shape) => T, op: (a: T, b: T) => T): T {
-        const value = selector(this);
-        return this.parent ? op(value, this.parent.absolute(selector, op)) : value;
-    }
+    // absolute<T>(selector: (shape: Shape) => T, op: (a: T, b: T) => T): T {
+    //     const value = selector(this);
+    //     return this.parent ? op(value, this.parent.absolute(selector, op)) : value;
+    // }
 
     get worldBoundingRect() {
         if (this._boundingRectDirty) {
