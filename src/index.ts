@@ -33,7 +33,7 @@ function init() {
     const ctx = canvas.getContext("2d") || (() => { throw "2d context not available." })();
     const shapes: Shape[] = [];
     const processManager = new ProcessManager(canvas, shapes);
-    const renderer = new Renderer(canvas, shapes, 0.36);
+    const renderer = new Renderer(canvas, shapes/*, 0.36*/);
 
     // Config.
     const primaryColor = "#fff";
@@ -77,13 +77,13 @@ function init() {
     });
     const hexMidFill = newHex(),
           hexNEFill  = newHex({ translation: translationNE }),
-          hexWFill   = newHex({ translation: translationW }),
+          hexWFill   = newHex({ translation: translationW/*, scale: flipVertically*/ }),
           hexSEFill  = newHex({ translation: translationSE });
     hexFillMask.push(
-        hexMidFill,
-        hexNEFill,
+        // hexMidFill,
+        // hexNEFill,
         hexWFill,
-        hexSEFill
+        // hexSEFill
     );
 
     function newHex(config: ShapeConfig = {}) { 
@@ -91,10 +91,10 @@ function init() {
         return Shape.hex(0, 0, hexDiameter, config);
     }
 
-    addFillRect(hexMidFill, shapesMeta[0].color, shapesMeta[0].img);
-    addFillRect(hexNEFill,  shapesMeta[1].color, shapesMeta[1].img);
+    // addFillRect(hexMidFill, shapesMeta[0].color, shapesMeta[0].img);
+    // addFillRect(hexNEFill,  shapesMeta[1].color, shapesMeta[1].img);
     addFillRect(hexWFill,   shapesMeta[2].color, shapesMeta[2].img);
-    addFillRect(hexSEFill,  shapesMeta[3].color, shapesMeta[3].img);
+    // addFillRect(hexSEFill,  shapesMeta[3].color, shapesMeta[3].img);
 
     function addFillRect(shape: Shape, color: string, img: HTMLImageElement) {
         const bgFillRect = Shape.rect(-hexDiameter*0.5, -hexDiameter*0.5, hexDiameter, hexDiameter, {
@@ -111,10 +111,10 @@ function init() {
         const imgFillRect = Shape.rect(-img.width/2, -img.height/2, img.width, img.height, {
             type: ShapeType.image,
             image: img,
-            scale: flipVertically, // We flip it back because its ancestor was flipped.
+            // scale: flipVertically, // We flip it back because its ancestor was flipped.
             // translation: new Vec2(-img.width/2, -img.height/2),
         });
-        shape.push(imgFillRect);
+        // shape.push(imgFillRect);
     }
 
     const textRect = Shape.empty({ type: ShapeType.none, translation: new Vec2(60, -textRectHeight*0.5) });
@@ -133,12 +133,13 @@ function init() {
     textRect.push(createText(text2, new Vec2(0, textRectHeight*0.5), new Vec2(1, 0.6)));
 
     processManager.push(
+        // The wait process is for testing purposes.
         new General.Wait({ duration: 0 }).push(
             new Generation.GenerateHex({ shape: hexMidContour, easingFn: easingFn, diameter: hexDiameter, duration: hexGenDuration }).push(
                 new General.Rotate({ shape: hexMidContour, easingFn: easingFn, target: -Math.TWO_PI, duration: rotationDuration }).push(
                     addTranslateHex(hexWContour,  translationW),
-                    addTranslateHex(hexSEContour, translationSE),
-                    addTranslateHex(hexNEContour, translationNE)
+                    // addTranslateHex(hexSEContour, translationSE),
+                    // addTranslateHex(hexNEContour, translationNE)
                 )
             ),
             new General.WaitAllProcesses().push(
@@ -158,7 +159,7 @@ function init() {
                     height: textRectHeight,
                     duration: shapeFillDuration
                 }),
-                new Input.Navigation({ shapes: [hexNEContour, hexWContour, hexSEContour] })
+                // new Input.Navigation({ shapes: [hexNEContour, hexWContour, hexSEContour] })
             )
         )
     );

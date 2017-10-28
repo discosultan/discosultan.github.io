@@ -65,6 +65,10 @@ export class Renderer {
                     break;
             }
 
+            // DEBUG
+            // ctx.strokeStyle = "#FF0000";
+            // ctx.stroke();
+
             // Render children.
             // Child shapes are always clipped to their parents.
             if (shape.children.length > 0) {
