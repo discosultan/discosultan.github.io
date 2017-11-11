@@ -44,8 +44,8 @@ export class Navigation extends Process {
 
     onMouseMove(e: MouseEvent) {
         const { canvas } = this.manager;
-        const x = e.pageX - canvas.offsetLeft - canvas.translationX,
-              y = e.pageY - canvas.offsetTop  - canvas.translationY;
+        const x = e.pageX - canvas.offsetLeft - canvas.translationX;
+        const y = e.pageY - canvas.offsetTop  - canvas.translationY;
         let containingShape = null;
         for (let shape of this.shapes) {
             if (shape.worldContains(x, y)) {
@@ -59,8 +59,10 @@ export class Navigation extends Process {
                 this.hoverEffect = new ContourTrail({
                     shape: containingShape,
                     color: this.primaryColor,
-                    maxLineWidth: 15,
-                    minLineWidth: 6
+                    maxLineWidth: 14,
+                    minLineWidth: 6,
+                    duration: 1250,
+                    numShapes: 14
                 });
                 this.manager.push(this.hoverEffect);
             }

@@ -23,9 +23,9 @@ interface ShapeMeta {
 }
 
 const shapesMeta: ShapeMeta[] = [
-    { color: "#fff", path: "me.png", width: 96, height: 96 },
-    { color: "#1da1f2", path: "twitter.png", width: 48, height: 48, url: "https://twitter.com/discosultan" },
-    { color: "#171516", path: "github.png", width: 48, height: 48, url: "https://github.com/discosultan" },
+    { color: "#fff",    path: "me.png",       width: 96, height: 96 },
+    { color: "#1da1f2", path: "twitter.png",  width: 48, height: 48, url: "https://twitter.com/discosultan" },
+    { color: "#171516", path: "github.png",   width: 48, height: 48, url: "https://github.com/discosultan" },
     { color: "#0274b3", path: "linkedin.png", width: 48, height: 48, url: "https://www.linkedin.com/in/jvarus/" },
 ];
 
@@ -55,8 +55,8 @@ function init() {
     const shapeFillDuration = 400;
     const hexTranslationDuration = 300;
     const flipVertically = new Vec2(-1, 1);
-    const textRectWidth = 300,
-          textRectHeight = 50;
+    const textRectWidth = 300;
+    const textRectHeight = 50;
     const font = "Montserrat";
     const text1 = "JAANUS VARUS";
     const text2 = "Amsterdam, The Netherlands"
@@ -71,14 +71,14 @@ function init() {
     // 2. fill shapes which will be filled after contours are in place
 
     const base = new Vec2(hexDiameter, 0);
-    const translationNE = Vec2.rotate(base,   Math.PI/3),
-          translationW  = Vec2.rotate(base,   Math.PI  ),
-          translationSE = Vec2.rotate(base, 5*Math.PI/3);
+    const translationNE = Vec2.rotate(Vec2.newZero(), base,   Math.PI/3);
+    const translationW  = Vec2.rotate(Vec2.newZero(), base,   Math.PI  );
+    const translationSE = Vec2.rotate(Vec2.newZero(), base, 5*Math.PI/3);
 
-    const hexMidContour = Shape.empty({ strokeStyle: primaryColor }),
-          hexNEContour  = newHex({ url: shapesMeta[1].url }),
-          hexWContour   = newHex({ url: shapesMeta[2].url }),
-          hexSEContour  = newHex({ url: shapesMeta[3].url });
+    const hexMidContour = Shape.empty({ strokeStyle: primaryColor });
+    const hexNEContour  = newHex({ url: shapesMeta[1].url });
+    const hexWContour   = newHex({ url: shapesMeta[2].url });
+    const hexSEContour  = newHex({ url: shapesMeta[3].url });
     shapes.push(hexMidContour); // Rest will be added during animation.
 
     // Hex fill mask will be added after contours are animated.
@@ -86,10 +86,10 @@ function init() {
         type: ShapeType.none,
         scale: flipVertically
     });
-    const hexMidFill = newHex({ scale: flipVertically }),
-          hexNEFill  = newHex({ scale: flipVertically, translation: translationNE }),
-          hexWFill   = newHex({ scale: flipVertically, translation: translationW }),
-          hexSEFill  = newHex({ scale: flipVertically, translation: translationSE });
+    const hexMidFill = newHex({ scale: flipVertically });
+    const hexNEFill  = newHex({ scale: flipVertically, translation: translationNE });
+    const hexWFill   = newHex({ scale: flipVertically, translation: translationW });
+    const hexSEFill  = newHex({ scale: flipVertically, translation: translationSE });
     hexFillMask.push(
         hexMidFill,
         hexNEFill,
@@ -138,8 +138,8 @@ function init() {
     processManager.push(
         // The wait process is for testing purposes.
         new General.Wait({ duration: 0 }).push(
-            new Generation.GenerateHex({ shape: hexMidContour, easingFn: easingFn, diameter: hexDiameter, duration: hexGenDuration }).push(
-                new General.Rotate({ shape: hexMidContour, easingFn: easingFn, target: -Math.TWO_PI, duration: rotationDuration }).push(
+            new Generation.GenerateHex({ shape: hexMidContour, easingFn, diameter: hexDiameter, duration: hexGenDuration }).push(
+                new General.Rotate({ shape: hexMidContour, easingFn, target: -Math.TWO_PI, duration: rotationDuration }).push(
                     addTranslateHex(hexWContour,  translationW),
                     addTranslateHex(hexSEContour, translationSE),
                     addTranslateHex(hexNEContour, translationNE)

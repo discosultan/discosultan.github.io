@@ -35,19 +35,9 @@ export class Renderer {
 
             // Render.
             switch (shape.type) {
-                // case Type.pattern: {
-                //     ctx.fillStyle = this.styleOrDefault(shape.fillStyle);
-                //     ctx.save();
-                //     const { x, y } = shape.worldBoundingRect;
-                //     ctx.translate(x, y);
-                //     ctx.fill();
-                //     ctx.restore();
-                //     break;
-                // }
                 case Type.image: {
                     const img = shape.image;
                     const { x, y, width, height } = shape.worldBoundingRect;
-                    console.log(shape.worldBoundingRect);
                     ctx.drawImage(img, 0, 0, img.width, img.height, x, y, width, height);
                     break;
                 }

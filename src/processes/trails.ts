@@ -7,9 +7,9 @@ export class ContourTrail extends Process {
     hoverShapes: Shape[] = [];
 
     init() {
-        const numShapes = 10;
+        const numShapes = this.numShapes || 10;
         for (let i = 0; i < numShapes; i++) {
-            this.hoverShapes.push(new Shape([this.shape.points[0]], {
+            this.hoverShapes.push(new Shape([this.shape.points[0].clone()], {
                 translation: this.shape.translation,
                 strokeStyle: this.shape.strokeStyle,
                 lineWidth: this.minLineWidth + (this.maxLineWidth - this.minLineWidth)*i/numShapes
@@ -26,9 +26,11 @@ export class ContourTrail extends Process {
         const { points } = this.shape;
 
         for (let i = 0; i < hoverShapes.length - 1; i++) {
-            hoverShapes[i].points[0] = hoverShapes[i + 1].points[0];
+            hoverShapes[i].points[0].x = hoverShapes[i + 1].points[0].x;
+            hoverShapes[i].points[0].y = hoverShapes[i + 1].points[0].y;
         }
-        hoverShapes[hoverShapes.length - 1].points[0] = Vec2.lerp(
+        Vec2.lerp(
+            hoverShapes[hoverShapes.length - 1].points[0],
             points[this.phase],
             points[(this.phase + 1)%points.length],
             progress);
