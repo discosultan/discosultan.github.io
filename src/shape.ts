@@ -12,7 +12,7 @@ export interface BoundingRect {
 
 export class Shape {
     readonly children: Shape[] = [];
-    readonly _worldPoints: Vec2[] = [];
+    readonly _worldPoints: Vec2[];
     parent?: Shape;
     type = Type.stroke;
     _pointsDirty = true;
@@ -24,6 +24,7 @@ export class Shape {
     [key: string]: any;
 
     constructor(public readonly points: Vec2[], config: Config = {}) {
+        this._worldPoints = new Array(points.length);
         Object.keys(config).forEach(key => this[key] = config[key]);
     }
 
@@ -41,13 +42,9 @@ export class Shape {
 
     get worldPoints() {
         if (this._pointsDirty) {
-            this._worldPoints.length = 0;
-            let first = true;
-            for (let pl of this.points) {
-                
-                // console.log(this.absScale);
-                // console.log(this.absRotation);
-                // console.log(this.absTranslation);
+            // let first = true;
+            for (let i = 0; i < this.points.length; i++) {
+                const pl = this.points[i];
                 // const worldPoint = Vec2.transform(point, this.absScale, this.absRotation, this.absTranslation);
                 // const worldPoint = this.absTransform(point);
                 const m = this.absTransform;
@@ -57,13 +54,7 @@ export class Shape {
                     pl.x*m[1] + pl.y*m[3] + m[5], // + pl.y*m[5]
                 )
 
-                if (first)
-                {
-                    first = false;
-                    console.log(pw);
-                }
-
-                this._worldPoints.push(pw);
+                this._worldPoints[i] = pw;
             }
             this._pointsDirty = false;
         }
@@ -107,7 +98,7 @@ export class Shape {
         if (this.parent) {
             const mp = this.parent.absTransform;
             const out: number[] = [];
-            return multiply(out, ml, mp);
+            return multiply(out, mp, ml);
         } else {
             return ml;
         }
@@ -120,8 +111,8 @@ export class Shape {
 
     get worldBoundingRect() {
         if (this._boundingRectDirty) {
-            let min = new Vec2(Number.MAX_VALUE, Number.MAX_VALUE);
-            let max = new Vec2(Number.MIN_VALUE, Number.MIN_VALUE);
+            let min = new Vec2(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+            let max = new Vec2(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
             for (let p of this.worldPoints) {
                 min = Vec2.min(min, p);
                 max = Vec2.max(max, p);

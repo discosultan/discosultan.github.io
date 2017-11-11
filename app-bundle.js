@@ -253,13 +253,13 @@ var Shape = /** @class */ (function () {
         var _this = this;
         this.points = points;
         this.children = [];
-        this._worldPoints = [];
         this.type = Type.stroke;
         this._pointsDirty = true;
         this._boundingRectDirty = true;
         this._translation = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].zero;
         this._rotation = 0;
         this._scale = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].one;
+        this._worldPoints = new Array(points.length);
         Object.keys(config).forEach(function (key) { return _this[key] = config[key]; });
     }
     Object.defineProperty(Shape.prototype, "rotation", {
@@ -286,23 +286,15 @@ var Shape = /** @class */ (function () {
     Object.defineProperty(Shape.prototype, "worldPoints", {
         get: function () {
             if (this._pointsDirty) {
-                this._worldPoints.length = 0;
-                var first = true;
-                for (var _i = 0, _a = this.points; _i < _a.length; _i++) {
-                    var pl = _a[_i];
-                    // console.log(this.absScale);
-                    // console.log(this.absRotation);
-                    // console.log(this.absTranslation);
+                // let first = true;
+                for (var i = 0; i < this.points.length; i++) {
+                    var pl = this.points[i];
                     // const worldPoint = Vec2.transform(point, this.absScale, this.absRotation, this.absTranslation);
                     // const worldPoint = this.absTransform(point);
                     var m = this.absTransform;
                     var pw = new __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */](pl.x * m[0] + pl.y * m[2] + m[4], // + pl.x*m[4],
                     pl.x * m[1] + pl.y * m[3] + m[5]);
-                    if (first) {
-                        first = false;
-                        console.log(pw);
-                    }
-                    this._worldPoints.push(pw);
+                    this._worldPoints[i] = pw;
                 }
                 this._pointsDirty = false;
             }
@@ -340,7 +332,7 @@ var Shape = /** @class */ (function () {
             if (this.parent) {
                 var mp = this.parent.absTransform;
                 var out = [];
-                return multiply(out, ml, mp);
+                return multiply(out, mp, ml);
             }
             else {
                 return ml;
@@ -356,8 +348,8 @@ var Shape = /** @class */ (function () {
         // }
         get: function () {
             if (this._boundingRectDirty) {
-                var min = new __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */](Number.MAX_VALUE, Number.MAX_VALUE);
-                var max = new __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */](Number.MIN_VALUE, Number.MIN_VALUE);
+                var min = new __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */](Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+                var max = new __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */](Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
                 for (var _i = 0, _a = this.worldPoints; _i < _a.length; _i++) {
                     var p = _a[_i];
                     min = __WEBPACK_IMPORTED_MODULE_0__math__["b" /* Vec2 */].min(min, p);
@@ -496,15 +488,17 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 var shapesMeta = [
-    { color: "#fff", imgPath: "me.jpg", img: new Image() },
-    { color: "#1da1f2", imgPath: "twitter.png", url: "https://twitter.com/discosultan", img: new Image() },
-    { color: "#171516", imgPath: "github.png", url: "https://github.com/discosultan", img: new Image() },
-    { color: "#0274b3", imgPath: "linkedin.png", url: "https://www.linkedin.com/in/jvarus/", img: new Image() },
+    { color: "#fff", path: "me.png", width: 96, height: 96 },
+    { color: "#1da1f2", path: "twitter.png", width: 48, height: 48, url: "https://twitter.com/discosultan" },
+    { color: "#171516", path: "github.png", width: 48, height: 48, url: "https://github.com/discosultan" },
+    { color: "#0274b3", path: "linkedin.png", width: 48, height: 48, url: "https://www.linkedin.com/in/jvarus/" },
 ];
+// Preload images.
 var loaded = 0;
 for (var _i = 0, shapesMeta_1 = shapesMeta; _i < shapesMeta_1.length; _i++) {
     var meta = shapesMeta_1[_i];
-    meta.img.src = "./assets/" + meta.imgPath;
+    meta.img = new Image();
+    meta.img.src = "./assets/" + meta.path;
     meta.img.onload = function () {
         if (++loaded >= shapesMeta.length)
             init();
@@ -515,7 +509,7 @@ function init() {
     var ctx = canvas.getContext("2d") || (function () { throw "2d context not available."; })();
     var shapes = [];
     var processManager = new __WEBPACK_IMPORTED_MODULE_1__process_manager__["b" /* ProcessManager */](canvas, shapes);
-    var renderer = new __WEBPACK_IMPORTED_MODULE_0__renderer__["a" /* Renderer */](canvas, shapes /*, 0.36*/);
+    var renderer = new __WEBPACK_IMPORTED_MODULE_0__renderer__["a" /* Renderer */](canvas, shapes, 0.36);
     // Config.
     var primaryColor = "#fff";
     var easingFn = __WEBPACK_IMPORTED_MODULE_3__math__["a" /* Easing */].easeInOutCubic;
@@ -545,55 +539,46 @@ function init() {
         type: __WEBPACK_IMPORTED_MODULE_2__shape__["b" /* Type */].none,
         scale: flipVertically
     });
-    var hexMidFill = newHex(), hexNEFill = newHex({ translation: translationNE }), hexWFill = newHex({ translation: translationW /*, scale: flipVertically*/ }), hexSEFill = newHex({ translation: translationSE });
-    hexFillMask.push(
-    // hexMidFill,
-    // hexNEFill,
-    hexWFill);
+    var hexMidFill = newHex({ scale: flipVertically }), hexNEFill = newHex({ scale: flipVertically, translation: translationNE }), hexWFill = newHex({ scale: flipVertically, translation: translationW }), hexSEFill = newHex({ scale: flipVertically, translation: translationSE });
+    hexFillMask.push(hexMidFill, hexNEFill, hexWFill, hexSEFill);
     function newHex(config) {
         if (config === void 0) { config = {}; }
         config.strokeStyle = primaryColor;
         return __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].hex(0, 0, hexDiameter, config);
     }
-    // addFillRect(hexMidFill, shapesMeta[0].color, shapesMeta[0].img);
-    // addFillRect(hexNEFill,  shapesMeta[1].color, shapesMeta[1].img);
-    addFillRect(hexWFill, shapesMeta[2].color, shapesMeta[2].img);
-    // addFillRect(hexSEFill,  shapesMeta[3].color, shapesMeta[3].img);
-    function addFillRect(shape, color, img) {
+    addFillRect(hexMidFill, shapesMeta[0]);
+    addFillRect(hexNEFill, shapesMeta[1]);
+    addFillRect(hexWFill, shapesMeta[2]);
+    addFillRect(hexSEFill, shapesMeta[3]);
+    function addFillRect(shape, meta) {
         var bgFillRect = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].rect(-hexDiameter * 0.5, -hexDiameter * 0.5, hexDiameter, hexDiameter, {
             type: __WEBPACK_IMPORTED_MODULE_2__shape__["b" /* Type */].fill,
-            fillStyle: color
+            fillStyle: meta.color
         });
         shape.push(bgFillRect);
-        // const imgFillRect = Shape.rect(0, 0, img.width, img.height, {
-        //     type: ShapeType.pattern,
-        //     fillStyle: ctx.createPattern(img, "no-repeat"),
-        //     scale: flipVertically, // We flip it back because its ancestor was flipped.
-        //     translation: new Vec2(-img.width/2, -img.height/2),
-        // });
-        var imgFillRect = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].rect(-img.width / 2, -img.height / 2, img.width, img.height, {
+        var imgFillRect = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].rect(-meta.width * 0.5, -meta.height * 0.5, meta.width, meta.height, {
             type: __WEBPACK_IMPORTED_MODULE_2__shape__["b" /* Type */].image,
-            image: img,
+            image: meta.img
         });
-        // shape.push(imgFillRect);
+        shape.push(imgFillRect);
     }
     var textRect = __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].empty({ type: __WEBPACK_IMPORTED_MODULE_2__shape__["b" /* Type */].none, translation: new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](60, -textRectHeight * 0.5) });
-    // shapes.push(textRect);
+    shapes.push(textRect);
     function createText(text, translation, scale) {
-        return __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].rect(0, 0, textRectWidth, textRectHeight / 2, {
+        return __WEBPACK_IMPORTED_MODULE_2__shape__["a" /* Shape */].rect(0, 0, textRectWidth, textRectHeight * 0.5, {
             type: __WEBPACK_IMPORTED_MODULE_2__shape__["b" /* Type */].text,
             font: font,
             text: text,
             fillStyle: primaryColor,
-            translation: __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */].add(new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](0, 10), translation),
+            translation: translation,
             scale: scale
         });
     }
-    textRect.push(createText(text1, __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */].zero, new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](1, 1)));
-    textRect.push(createText(text2, new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](0, textRectHeight * 0.5), new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](1, 0.6)));
+    textRect.push(createText(text1, new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](0, 10), new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](1, 1)));
+    textRect.push(createText(text2, new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](0, textRectHeight + 10), new __WEBPACK_IMPORTED_MODULE_3__math__["b" /* Vec2 */](1, 0.6)));
     processManager.push(
     // The wait process is for testing purposes.
-    new __WEBPACK_IMPORTED_MODULE_4__processes_general__["d" /* Wait */]({ duration: 0 }).push(new __WEBPACK_IMPORTED_MODULE_5__processes_generation__["a" /* GenerateHex */]({ shape: hexMidContour, easingFn: easingFn, diameter: hexDiameter, duration: hexGenDuration }).push(new __WEBPACK_IMPORTED_MODULE_4__processes_general__["b" /* Rotate */]({ shape: hexMidContour, easingFn: easingFn, target: -Math.TWO_PI, duration: rotationDuration }).push(addTranslateHex(hexWContour, translationW))), new __WEBPACK_IMPORTED_MODULE_4__processes_general__["e" /* WaitAllProcesses */]().push(new __WEBPACK_IMPORTED_MODULE_4__processes_general__["a" /* Execute */]({ command: function () { return shapes.push(hexFillMask); } }).push(new __WEBPACK_IMPORTED_MODULE_5__processes_generation__["c" /* GenerateRectDiagonally */]({
+    new __WEBPACK_IMPORTED_MODULE_4__processes_general__["d" /* Wait */]({ duration: 0 }).push(new __WEBPACK_IMPORTED_MODULE_5__processes_generation__["a" /* GenerateHex */]({ shape: hexMidContour, easingFn: easingFn, diameter: hexDiameter, duration: hexGenDuration }).push(new __WEBPACK_IMPORTED_MODULE_4__processes_general__["b" /* Rotate */]({ shape: hexMidContour, easingFn: easingFn, target: -Math.TWO_PI, duration: rotationDuration }).push(addTranslateHex(hexWContour, translationW), addTranslateHex(hexSEContour, translationSE), addTranslateHex(hexNEContour, translationNE))), new __WEBPACK_IMPORTED_MODULE_4__processes_general__["e" /* WaitAllProcesses */]().push(new __WEBPACK_IMPORTED_MODULE_4__processes_general__["a" /* Execute */]({ command: function () { return shapes.push(hexFillMask); } }).push(new __WEBPACK_IMPORTED_MODULE_5__processes_generation__["c" /* GenerateRectDiagonally */]({
         shape: hexFillMask,
         x: -hexDiameter * 1,
         y: -hexDiameter * 1.5,
@@ -605,7 +590,7 @@ function init() {
         width: textRectWidth,
         height: textRectHeight,
         duration: shapeFillDuration
-    }))));
+    }), new __WEBPACK_IMPORTED_MODULE_6__processes_input__["a" /* Navigation */]({ shapes: [hexNEContour, hexWContour, hexSEContour] }))));
     function addTranslateHex(shape, translation) {
         return new __WEBPACK_IMPORTED_MODULE_4__processes_general__["a" /* Execute */]({ command: function () { return shapes.push(shape); } }).push(new __WEBPACK_IMPORTED_MODULE_4__processes_general__["c" /* Translate */]({
             shape: shape,
@@ -614,7 +599,7 @@ function init() {
             target: translation
         }));
     }
-    processManager.push(new __WEBPACK_IMPORTED_MODULE_6__processes_input__["a" /* ResolveProcessesOnEsc */]());
+    processManager.push(new __WEBPACK_IMPORTED_MODULE_6__processes_input__["b" /* ResolveProcessesOnEsc */]());
     // Render loop.
     var prevTimestamp = 0;
     window.requestAnimationFrame(step);
@@ -625,7 +610,6 @@ function init() {
         renderer.step(dt);
         window.requestAnimationFrame(step);
     }
-    processManager.push();
     // Globals to simplify debugging.
     window.renderer = renderer;
     window.processManager = processManager;
@@ -672,38 +656,42 @@ var Renderer = /** @class */ (function () {
             }
             // Render.
             switch (shape.type) {
-                case __WEBPACK_IMPORTED_MODULE_0__shape__["b" /* Type */].pattern:
+                // case Type.pattern: {
+                //     ctx.fillStyle = this.styleOrDefault(shape.fillStyle);
+                //     ctx.save();
+                //     const { x, y } = shape.worldBoundingRect;
+                //     ctx.translate(x, y);
+                //     ctx.fill();
+                //     ctx.restore();
+                //     break;
+                // }
+                case __WEBPACK_IMPORTED_MODULE_0__shape__["b" /* Type */].image: {
+                    var img = shape.image;
+                    var _b = shape.worldBoundingRect, x = _b.x, y = _b.y, width = _b.width, height = _b.height;
+                    console.log(shape.worldBoundingRect);
+                    ctx.drawImage(img, 0, 0, img.width, img.height, x, y, width, height);
+                    break;
+                }
+                case __WEBPACK_IMPORTED_MODULE_0__shape__["b" /* Type */].fill: {
                     ctx.fillStyle = this.styleOrDefault(shape.fillStyle);
-                    ctx.save();
-                    var patternBounds = shape.worldBoundingRect;
-                    ctx.translate(patternBounds.x, patternBounds.y);
-                    ctx.fill();
-                    ctx.restore();
-                    break;
-                case __WEBPACK_IMPORTED_MODULE_0__shape__["b" /* Type */].image:
-                    var imgBounds = shape.worldBoundingRect;
-                    ctx.drawImage(shape.image, imgBounds.x, imgBounds.y, imgBounds.width, imgBounds.height);
-                    break;
-                case __WEBPACK_IMPORTED_MODULE_0__shape__["b" /* Type */].fill:
-                    ctx.fillStyle = this.styleOrDefault(shape.fillStyle);
                     ctx.fill();
                     break;
-                case __WEBPACK_IMPORTED_MODULE_0__shape__["b" /* Type */].stroke:
+                }
+                case __WEBPACK_IMPORTED_MODULE_0__shape__["b" /* Type */].stroke: {
                     ctx.strokeStyle = this.styleOrDefault(shape.strokeStyle);
                     ctx.lineWidth = this.lineWidthOrDefault(shape);
                     ctx.stroke();
                     break;
-                case __WEBPACK_IMPORTED_MODULE_0__shape__["b" /* Type */].text:
+                }
+                case __WEBPACK_IMPORTED_MODULE_0__shape__["b" /* Type */].text: {
                     ctx.font = this.fontOrDefault(shape);
                     ctx.textAlign = this.textAlignOrDefault(shape);
                     ctx.fillStyle = this.styleOrDefault(shape.fillStyle);
-                    var translation = shape.absTranslation;
-                    ctx.fillText(shape.text, translation.x, translation.y + shape.worldBoundingRect.height / 2);
+                    var _c = shape.worldBoundingRect, x = _c.x, y = _c.y, height = _c.height;
+                    ctx.fillText(shape.text, x, y + height * 0.5);
                     break;
+                }
             }
-            // DEBUG
-            // ctx.strokeStyle = "#FF0000";
-            // ctx.stroke();
             // Render children.
             // Child shapes are always clipped to their parents.
             if (shape.children.length > 0) {
@@ -975,8 +963,8 @@ function nextPhase(process) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ResolveProcessesOnEsc; });
-/* unused harmony export Navigation */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return ResolveProcessesOnEsc; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Navigation; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__process_manager__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__trails__ = __webpack_require__(8);
 var __extends = (this && this.__extends) || (function () {
