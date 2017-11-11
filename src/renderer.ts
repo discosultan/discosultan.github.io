@@ -35,38 +35,39 @@ export class Renderer {
 
             // Render.
             switch (shape.type) {
-                case Type.pattern:
-                    ctx.fillStyle = this.styleOrDefault(shape.fillStyle);
-                    ctx.save();
-                    const bounds = shape.worldBoundingRect;
-                    ctx.translate(bounds.x, bounds.y);
-                    ctx.fill();
-                    ctx.restore();
+                case Type.image: {
+                    const img = shape.image;
+                    const { x, y, width, height } = shape.worldBoundingRect;
+                    ctx.drawImage(img, 0, 0, img.width, img.height, x, y, width, height);
                     break;
-                case Type.fill:
+                }
+                case Type.fill: {
                     ctx.fillStyle = this.styleOrDefault(shape.fillStyle);
                     ctx.fill();
                     break;
-                case Type.stroke:
+                }
+                case Type.stroke: {
                     ctx.strokeStyle = this.styleOrDefault(shape.strokeStyle);
                     ctx.lineWidth = this.lineWidthOrDefault(shape);
                     ctx.stroke();
                     break;
-                case Type.text:
+                }
+                case Type.text: {
                     ctx.font = this.fontOrDefault(shape);
                     ctx.textAlign = this.textAlignOrDefault(shape);
                     ctx.fillStyle = this.styleOrDefault(shape.fillStyle);
-                    const translation = shape.absTranslation;
-                    ctx.fillText(shape.text, translation.x, translation.y + shape.worldBoundingRect.height/2);
+                    const { x, y, height } = shape.worldBoundingRect;
+                    ctx.fillText(shape.text, x, y + height*0.5);
                     break;
+                }
             }
 
             // Render children.
             // Child shapes are always clipped to their parents.
-            if (shape._children.length > 0) {
+            if (shape.children.length > 0) {
                 ctx.save();
                 ctx.clip();
-                this.renderShapes(ctx, shape._children);
+                this.renderShapes(ctx, shape.children);
                 ctx.restore();
             }
         }

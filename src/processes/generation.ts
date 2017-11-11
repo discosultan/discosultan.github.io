@@ -7,8 +7,8 @@ export class GenerateRect extends Process {
         this.x = this.x || 0, this.y = this.y || 0;
         this.target = Shape.rect(this.x, this.y, this.width, this.height);
         addPoints(this.shape, 4, this.x, this.y);
-        this.shape.points[2] = this.target.points[3];
-        this.shape.points[3] = this.target.points[3];
+        this.shape.points[2] = this.target.points[3].clone();
+        this.shape.points[3] = this.target.points[3].clone();
     }
 
     step(dt: number) {
@@ -16,8 +16,8 @@ export class GenerateRect extends Process {
         const { progress } = this;
         const { points } = this.shape;
         const targetPoints = this.target.points;
-        points[1] = Vec2.lerp(targetPoints[0], targetPoints[1], progress);
-        points[2] = Vec2.lerp(targetPoints[3], targetPoints[2], progress);
+        Vec2.lerp(points[1], targetPoints[0], targetPoints[1], progress);
+        Vec2.lerp(points[2], targetPoints[3], targetPoints[2], progress);
         this.shape.setDirty();
     }
 }
@@ -38,14 +38,14 @@ export class GenerateRectDiagonally extends Process {
         const { points } = this.shape;
         const targetPoints = this.target.points;
         if (this.phase === 0) {
-            points[0] = Vec2.lerp(targetPoints[0], targetPoints[1], progress);
-            points[1] = Vec2.lerp(targetPoints[0], targetPoints[1], progress);
-            points[3] = Vec2.lerp(targetPoints[0], targetPoints[3], progress);
-            points[4] = Vec2.lerp(targetPoints[0], targetPoints[3], progress);
+            Vec2.lerp(points[0], targetPoints[0], targetPoints[1], progress);
+            Vec2.lerp(points[1], targetPoints[0], targetPoints[1], progress);
+            Vec2.lerp(points[3], targetPoints[0], targetPoints[3], progress);
+            Vec2.lerp(points[4], targetPoints[0], targetPoints[3], progress);
             if (progress === 1) nextPhase(this);
         } else if (this.phase === 1) {
-            points[0] = Vec2.lerp(targetPoints[1], targetPoints[2], progress);
-            points[4] = Vec2.lerp(targetPoints[3], targetPoints[2], progress);
+            Vec2.lerp(points[0], targetPoints[1], targetPoints[2], progress);
+            Vec2.lerp(points[4], targetPoints[3], targetPoints[2], progress);
             if (progress === 1) {
                 points.length = 4;
                 this.resolve();
@@ -71,30 +71,32 @@ export class GenerateHex extends Process {
         const { points } = this.shape;
         const targetPoints = this.target.points;
         if (this.phase === 0) {
-            points[0] = Vec2.lerp(Vec2.zero, targetPoints[2], progress);
-            points[1] = Vec2.lerp(Vec2.zero, targetPoints[2], progress);
-            points[2] = Vec2.lerp(Vec2.zero, targetPoints[2], progress);
-            points[3] = Vec2.lerp(Vec2.zero, targetPoints[5], progress);
-            points[4] = Vec2.lerp(Vec2.zero, targetPoints[5], progress);
-            points[5] = Vec2.lerp(Vec2.zero, targetPoints[5], progress);
+            Vec2.lerp(points[0], Vec2.zero, targetPoints[2], progress);
+            Vec2.lerp(points[1], Vec2.zero, targetPoints[2], progress);
+            Vec2.lerp(points[2], Vec2.zero, targetPoints[2], progress);
+            Vec2.lerp(points[3], Vec2.zero, targetPoints[5], progress);
+            Vec2.lerp(points[4], Vec2.zero, targetPoints[5], progress);
+            Vec2.lerp(points[5], Vec2.zero, targetPoints[5], progress);
             if (progress === 1) nextPhase(this);
         } else if (this.phase === 1) {
-            points[1] = Vec2.lerp(targetPoints[2], targetPoints[3], progress);
-            points[2] = Vec2.lerp(targetPoints[2], targetPoints[3], progress);
-            points[4] = Vec2.lerp(targetPoints[5], targetPoints[0], progress);
-            points[5] = Vec2.lerp(targetPoints[5], targetPoints[0], progress);
+            Vec2.lerp(points[1], targetPoints[2], targetPoints[3], progress);
+            Vec2.lerp(points[2], targetPoints[2], targetPoints[3], progress);
+            Vec2.lerp(points[4], targetPoints[5], targetPoints[0], progress);
+            Vec2.lerp(points[5], targetPoints[5], targetPoints[0], progress);
             if (progress === 1) nextPhase(this);
         } else if (this.phase === 2) {
-            points[2] = Vec2.lerp(targetPoints[3], targetPoints[4], progress);
-            points[5] = Vec2.lerp(targetPoints[0], targetPoints[1], progress);
+            Vec2.lerp(points[2], targetPoints[3], targetPoints[4], progress);
+            Vec2.lerp(points[5], targetPoints[0], targetPoints[1], progress);
             if (progress === 1) this.resolve();
         }
         this.shape.setDirty();
     }
 }
 
-function addPoints(shape: Shape, count: number, x = 0, y = 0) {
-    const points = (<undefined[]>Array.apply(null, { length: count })).map(_ => new Vec2(x, y));
+function addPoints(shape: Shape, count: number, x: number, y: number) {
+    const points = (<undefined[]>Array
+        .apply(null, { length: count }))
+        .map(_ => new Vec2(x, y));
     shape.points.push(...points);
     shape.setDirty();
 }

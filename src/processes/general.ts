@@ -17,22 +17,22 @@ export class WaitAllProcesses extends Process {
 export class Translate extends Process {
     step(dt: number) {
         super.step(dt);
-        const translation = Vec2.lerp(Vec2.zero, this.target, this.progress);
-        this.shape.translation = translation;
+        Vec2.lerp(this.shape.translation, Vec2.zero, this.target, this.progress);
+        this.shape.setDirty();
     }
 }
 
 export class Rotate extends Process {
     step(dt: number) {
         super.step(dt);
-        const rotation = this.progress*this.target;
-        this.shape.rotation = rotation;
+        this.shape.rotation = this.progress*this.target;
+        this.shape.setDirty();
     }
 }
 
-export class AddShape extends Process {
+export class Execute extends Process {
     step(dt: number) {
-        this.manager.shapes.push(this.shape);
+        this.command();
         this.resolve();
     }
 }
