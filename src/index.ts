@@ -15,7 +15,7 @@ declare global {
 
 const shapesMeta: { color: string; imgPath: string; url?: string, img: HTMLImageElement }[] = [
     { color: "#fff", imgPath: "me.jpg", img: new Image() },
-    { color: "#1da1f2", imgPath: "twitter.png", url: "https://twitter.com/Discosultan", img: new Image() },
+    { color: "#1da1f2", imgPath: "twitter.png", url: "https://twitter.com/discosultan", img: new Image() },
     { color: "#171516", imgPath: "github.png", url: "https://github.com/discosultan", img: new Image() },
     { color: "#0274b3", imgPath: "linkedin.png", url: "https://www.linkedin.com/in/jvarus/", img: new Image() },
 ];
