@@ -3,8 +3,7 @@ import { ContourTrail } from "./trails";
 
 export class ResolveProcessesOnEsc extends Process {
     init() {
-        this.boundedOnKeyDown = this.onKeyDown.bind(this);
-        window.addEventListener("keydown", this.boundedOnKeyDown);
+        window.addEventListener("keydown", this.onKeyDown);
         this.endless = true;
     }
 
@@ -12,10 +11,10 @@ export class ResolveProcessesOnEsc extends Process {
 
     resolve() {
         super.resolve();
-        window.removeEventListener("keydown", this.boundedOnKeyDown);
+        window.removeEventListener("keydown", this.onKeyDown);
     }
 
-    onKeyDown(e: KeyboardEvent) {
+    onKeyDown = (e: KeyboardEvent) => {
         // Resolve all pending processes on ESC key.
         if (e.keyCode === 27) this.manager.resolveAll();
     }
@@ -26,10 +25,8 @@ export class Navigation extends Process {
 
     init() {
         const { canvas } = this.manager;
-        this.boundedOnMouseMove = this.onMouseMove.bind(this);
-        this.boundedOnClick = this.onClick.bind(this);
-        canvas.addEventListener("mousemove", this.boundedOnMouseMove);
-        canvas.addEventListener("click", this.boundedOnClick);
+        canvas.addEventListener("mousemove", this.onMouseMove);
+        canvas.addEventListener("click", this.onClick);
         this.endless = true;
     }
 
@@ -38,11 +35,11 @@ export class Navigation extends Process {
     resolve() {
         super.resolve();
         const { canvas } = this.manager;
-        canvas.removeEventListener("click", this.boundedOnClick);
-        canvas.removeEventListener("mousemove", this.boundedOnMouseMove);
+        canvas.removeEventListener("click", this.onClick);
+        canvas.removeEventListener("mousemove", this.onMouseMove);
     }
 
-    onMouseMove(e: MouseEvent) {
+    onMouseMove = (e: MouseEvent) => {
         const { canvas } = this.manager;
         const x = e.pageX - canvas.offsetLeft - canvas.translationX;
         const y = e.pageY - canvas.offsetTop  - canvas.translationY;
@@ -73,7 +70,7 @@ export class Navigation extends Process {
         }
     }
 
-    onClick(e: MouseEvent) {
+    onClick = (e: MouseEvent) => {
         if (this.hoverEffect !== null) {
             window.open(this.hoverEffect.shape.url);
             this.resolveHoverEffect();
