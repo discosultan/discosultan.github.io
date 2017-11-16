@@ -24,9 +24,8 @@ export class Navigation extends Process {
     hoverEffect: ContourTrail | null = null;
 
     init() {
-        const { canvas } = this.manager;
-        canvas.addEventListener("mousemove", this.onMouseMove);
-        canvas.addEventListener("click", this.onClick);
+        window.addEventListener("mousemove", this.onMouseMove);
+        window.addEventListener("click", this.onClick);
         this.endless = true;
     }
 
@@ -34,9 +33,8 @@ export class Navigation extends Process {
 
     resolve() {
         super.resolve();
-        const { canvas } = this.manager;
-        canvas.removeEventListener("click", this.onClick);
-        canvas.removeEventListener("mousemove", this.onMouseMove);
+        window.removeEventListener("click", this.onClick);
+        window.removeEventListener("mousemove", this.onMouseMove);
     }
 
     onMouseMove = (e: MouseEvent) => {
