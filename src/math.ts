@@ -5,11 +5,11 @@ declare global {
     }
 }
 
-Math.lerp = (a, b, v) => a + (b - a)*v;
-Math.TWO_PI = 2*Math.PI;
+Math.lerp = (a, b, v) => a + (b - a) * v;
+Math.TWO_PI = 2 * Math.PI;
 
 export class Vec2 {
-    constructor (public x: number, public y: number) { }
+    constructor(public x: number, public y: number) { }
 
     clone() { return new Vec2(this.x, this.y); }
 
@@ -33,14 +33,14 @@ export class Vec2 {
 
     static rotate(out: Vec2, p: Vec2, r: number) {
         const sin = Math.sin(r), cos = Math.cos(r);
-        out.x = p.x*cos - p.y*sin;
-        out.y = p.x*sin + p.y*cos;
+        out.x = p.x * cos - p.y * sin;
+        out.y = p.x * sin + p.y * cos;
         return out;
     }
 
     static transform(out: Vec2, p: Vec2, m: Mat2x3) {
-        out.x = p.x*m.m00 + p.y*m.m10 + m.m20;
-        out.y = p.x*m.m01 + p.y*m.m11 + m.m21;
+        out.x = p.x * m.m00 + p.y * m.m10 + m.m20;
+        out.y = p.x * m.m01 + p.y * m.m11 + m.m21;
         return out;
     }
 
@@ -48,7 +48,7 @@ export class Vec2 {
         out.x = Math.min(p1.x, p2.x);
         out.y = Math.min(p1.y, p2.y);
         return out;
-    
+
     }
     static max(out: Vec2, p1: Vec2, p2: Vec2) {
         out.x = Math.max(p1.x, p2.x);
@@ -75,15 +75,15 @@ export class Mat2x3 {
         out.m21 = a.m01 * b.m20 + a.m11 * b.m21 + a.m21;
         return out;
     }
-    
+
     static fromSRT(out: Mat2x3, s: Vec2, r: number, t: Vec2) {
         const sin = Math.sin(r), cos = Math.cos(r);
-        out.m00 = cos*s.x;
-        out.m01 = sin*s.x;
-        out.m10 = -sin*s.y;
-        out.m11 = cos*s.y;
-        out.m20 = t.x*cos*s.x + t.y*sin*s.x;
-        out.m21 = t.y*(-sin)*s.y + t.y*cos*s.y;
+        out.m00 = cos * s.x;
+        out.m01 = sin * s.x;
+        out.m10 = -sin * s.y;
+        out.m11 = cos * s.y;
+        out.m20 = t.x * cos * s.x + t.y * sin * s.x;
+        out.m21 = t.y * (-sin) * s.y + t.y * cos * s.y;
         return out;
     }
 }
@@ -93,27 +93,27 @@ export const Easing = {
     // No easing, no acceleration.
     linear: (t: number) => t,
     // Accelerating from zero velocity.
-    easeInQuad: (t: number) => t*t,
+    easeInQuad: (t: number) => t * t,
     // Decelerating to zero velocity.
-    easeOutQuad: (t: number) => t*(2 - t),
+    easeOutQuad: (t: number) => t * (2 - t),
     // Acceleration until halfway, then deceleration.
-    easeInOutQuad: (t: number) => t < 0.5 ? 2*t*t : -1 + (4 - 2*t)*t,
+    easeInOutQuad: (t: number) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t,
     // Accelerating from zero velocity.
-    easeInCubic: (t: number) => t*t*t,
+    easeInCubic: (t: number) => t * t * t,
     // Decelerating to zero velocity.
-    easeOutCubic: (t: number) => (--t)*t*t + 1,
+    easeOutCubic: (t: number) => (--t) * t * t + 1,
     // Acceleration until halfway, then deceleration.
-    easeInOutCubic: (t: number) => t < 0.5 ? 4*t*t*t : (t - 1)*(2*t - 2)*(2*t - 2) + 1,
+    easeInOutCubic: (t: number) => t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1,
     // Accelerating from zero velocity.
-    easeInQuart: (t: number) => t*t*t*t,
+    easeInQuart: (t: number) => t * t * t * t,
     // Decelerating to zero velocity.
-    easeOutQuart: (t: number) => 1 - (--t)*t*t*t,
+    easeOutQuart: (t: number) => 1 - (--t) * t * t * t,
     // Acceleration until halfway, then deceleration.
-    easeInOutQuart: (t: number) => t < 0.5 ? 8*t*t*t*t : 1 - 8*(--t)*t*t*t,
+    easeInOutQuart: (t: number) => t < 0.5 ? 8 * t * t * t * t : 1 - 8 * (--t) * t * t * t,
     // Accelerating from zero velocity.
-    easeInQuint: (t: number) => t*t*t*t*t,
+    easeInQuint: (t: number) => t * t * t * t * t,
     // Decelerating to zero velocity.
-    easeOutQuint: (t: number) => 1 + (--t)*t*t*t*t,
+    easeOutQuint: (t: number) => 1 + (--t) * t * t * t * t,
     // Acceleration until halfway, then deceleration.
-    easeInOutQuint: (t: number) => t < 0.5 ? 16*t*t*t*t*t : 1 + 16*(--t)*t*t*t*t
+    easeInOutQuint: (t: number) => t < 0.5 ? 16 * t * t * t * t * t : 1 + 16 * (--t) * t * t * t * t,
 }

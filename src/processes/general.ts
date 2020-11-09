@@ -1,5 +1,4 @@
 import { Vec2 } from "../math";
-import { Shape } from "../shape";
 import { Process } from "../process-manager";
 
 export class Wait extends Process {
@@ -25,7 +24,7 @@ export class Translate extends Process {
 export class Rotate extends Process {
     step(dt: number) {
         super.step(dt);
-        this.shape.rotation = this.progress*this.target;
+        this.shape.rotation = this.progress * this.target;
         this.shape.setDirty();
     }
 }

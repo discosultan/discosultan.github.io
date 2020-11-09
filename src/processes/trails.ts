@@ -18,11 +18,11 @@ export class ContourTrail extends Process {
             this.hoverShapes.push(new Shape([p1, Vec2.add(p2, p2, Vec2.one)], {
                 translation: this.shape.translation,
                 strokeStyle: this.shape.strokeStyle,
-                lineWidth: this.minLineWidth + (this.maxLineWidth - this.minLineWidth)*i/numShapes
+                lineWidth: this.minLineWidth + (this.maxLineWidth - this.minLineWidth) * i / numShapes
             }));
         }
         this.manager.shapes.push(...this.hoverShapes);
-        this.duration = this.duration/this.shape.points.length;
+        this.duration = this.duration / this.shape.points.length;
         this.endless = true;
     }
 
@@ -39,7 +39,7 @@ export class ContourTrail extends Process {
             dst.points[1].y = src.points[1].y;
         }
         const last = hoverShapes[hoverShapes.length - 1];
-        const from = points[this.phase], to = points[(this.phase + 1)%points.length];
+        const from = points[this.phase], to = points[(this.phase + 1) % points.length];
         Vec2.lerp(last.points[0], from, to, progress);
         Vec2.lerp(
             last.points[1],
@@ -48,19 +48,19 @@ export class ContourTrail extends Process {
             progress);
         if (progress === 1) nextPhase(this, points.length);
 
-        for (let hoverShape of this.hoverShapes) hoverShape.setDirty();
+        for (const hoverShape of this.hoverShapes) hoverShape.setDirty();
     }
 
     resolve() {
         super.resolve();
         const { shapes } = this.manager;
-        for (let hoverShape of this.hoverShapes) {
+        for (const hoverShape of this.hoverShapes) {
             shapes.splice(shapes.indexOf(hoverShape), 1);
         }
     }
 }
 
 function nextPhase(process: Process, maxPhases: number) {
-    process.phase = (process.phase + 1)%maxPhases;
+    process.phase = (process.phase + 1) % maxPhases;
     process.elapsed = 0;
 }

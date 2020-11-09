@@ -45,11 +45,11 @@ export class ProcessManager {
     get resolvableProcesses() { return this.processes.filter(proc => !proc.endless); }
 
     push(...args: Process[]) {
-        for (let arg of args) {
+        for (const arg of args) {
             arg.manager = this;
             arg.init();
+            this.processes.push(arg);
         }
-        this.processes.push(...args);
         return this;
     }
 

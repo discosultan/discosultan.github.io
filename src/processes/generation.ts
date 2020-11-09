@@ -28,7 +28,7 @@ export class GenerateRectDiagonally extends Process {
     init() {
         this.x = this.x || 0, this.y = this.y || 0;
         this.target = Shape.rect(this.x, this.y, this.width, this.height);
-        this.duration = this.duration/2; // 2 phases for full generation.
+        this.duration = this.duration / 2; // 2 phases for full generation.
         addPoints(this.shape, 5, this.x, this.y);
     }
 
@@ -61,7 +61,7 @@ export class GenerateHex extends Process {
     init() {
         this.x = this.x || 0, this.y = this.y || 0;
         this.target = Shape.hex(this.x, this.y, this.diameter);
-        this.duration = this.duration/3; // 3 phases for full generation.
+        this.duration = this.duration / 3; // 3 phases for full generation.
         addPoints(this.shape, 6, this.x, this.y);
     }
 
@@ -95,7 +95,7 @@ export class GenerateHex extends Process {
 
 function addPoints(shape: Shape, count: number, x: number, y: number) {
     const points = (<undefined[]>Array
-        .apply(null, { length: count }))
+        .apply(null, Array(count)))
         .map(_ => new Vec2(x, y));
     shape.points.push(...points);
     shape.setDirty();

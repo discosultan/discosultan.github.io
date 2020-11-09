@@ -40,9 +40,9 @@ export class Navigation extends Process {
     onMouseMove = (e: MouseEvent) => {
         const { canvas } = this.manager;
         const x = e.pageX - canvas.offsetLeft - canvas.translationX;
-        const y = e.pageY - canvas.offsetTop  - canvas.translationY;
+        const y = e.pageY - canvas.offsetTop - canvas.translationY;
         let containingShape = null;
-        for (let shape of this.shapes) {
+        for (const shape of this.shapes) {
             if (shape.worldContains(x, y)) {
                 containingShape = shape;
                 break; // Since there's only one cursor and no overlapping shapes, we can skip early.
