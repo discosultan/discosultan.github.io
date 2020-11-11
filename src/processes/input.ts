@@ -1,9 +1,11 @@
-import { Process } from "../process-manager";
-import { ContourTrail } from "./trails";
+import { Process } from '../process-manager';
+import { Shape } from '../shape';
+import { ContourTrail } from './trails';
 
 export class ResolveProcessesOnEsc extends Process {
-    init() {
-        window.addEventListener("keydown", this.onKeyDown);
+    constructor(config: any = {}) {
+        super(config);
+        window.addEventListener('keydown', this.onKeyDown);
         this.endless = true;
     }
 
@@ -11,21 +13,25 @@ export class ResolveProcessesOnEsc extends Process {
 
     resolve() {
         super.resolve();
-        window.removeEventListener("keydown", this.onKeyDown);
+        window.removeEventListener('keydown', this.onKeyDown);
     }
 
     onKeyDown = (e: KeyboardEvent) => {
         // Resolve all pending processes on ESC key.
-        if (e.keyCode === 27) this.manager.resolveAll();
+        if (e.keyCode === 27 && this.manager !== null) this.manager.resolveAll();
     }
 }
 
 export class Navigation extends Process {
+    shapes: Shape[];
+
     hoverEffect: ContourTrail | null = null;
 
-    init() {
-        window.addEventListener("mousemove", this.onMouseMove);
-        window.addEventListener("click", this.onClick);
+    constructor(config: any) {
+        super(config);
+        this.shapes = config.shapes;
+        window.addEventListener('mousemove', this.onMouseMove);
+        window.addEventListener('click', this.onClick);
         this.endless = true;
     }
 
@@ -33,11 +39,13 @@ export class Navigation extends Process {
 
     resolve() {
         super.resolve();
-        window.removeEventListener("click", this.onClick);
-        window.removeEventListener("mousemove", this.onMouseMove);
+        window.removeEventListener('click', this.onClick);
+        window.removeEventListener('mousemove', this.onMouseMove);
     }
 
     onMouseMove = (e: MouseEvent) => {
+        if (this.manager === null) return;
+
         const { canvas } = this.manager;
         const x = e.pageX - canvas.offsetLeft - canvas.translationX;
         const y = e.pageY - canvas.offsetTop - canvas.translationY;
@@ -49,7 +57,7 @@ export class Navigation extends Process {
             }
         }
         if (containingShape !== null) {
-            document.body.style.cursor = "pointer";
+            document.body.style.cursor = 'pointer';
             if (this.hoverEffect === null) {
                 this.hoverEffect = new ContourTrail({
                     shape: containingShape,
@@ -76,7 +84,7 @@ export class Navigation extends Process {
     }
 
     resolveHoverEffect() {
-        document.body.style.cursor = "auto";
+        document.body.style.cursor = 'auto';
         this.hoverEffect!.resolve();
         this.hoverEffect = null;
     }

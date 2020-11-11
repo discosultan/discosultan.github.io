@@ -1,10 +1,10 @@
-import { Renderer } from "./renderer";
-import { ProcessManager } from "./process-manager";
-import { Shape, Type as ShapeType, Config as ShapeConfig } from "./shape";
-import { Vec2, Easing } from "./math";
-import * as General from "./processes/general";
-import * as Generation from "./processes/generation";
-import * as Input from "./processes/input";
+import { Renderer } from './renderer';
+import { ProcessManager } from './process-manager';
+import { Shape, Type as ShapeType, Config as ShapeConfig } from './shape';
+import { Vec2, Easing } from './math';
+import * as General from './processes/general';
+import * as Generation from './processes/generation';
+import * as Input from './processes/input';
 
 declare global {
     interface Window {
@@ -23,10 +23,10 @@ interface ShapeMeta {
 }
 
 const shapesMeta: ShapeMeta[] = [
-    { color: "#fff", path: "me.png", width: 96, height: 96 },
-    { color: "#1da1f2", path: "twitter.png", width: 48, height: 48, url: "https://twitter.com/discosultan" },
-    { color: "#171516", path: "github.png", width: 48, height: 48, url: "https://github.com/discosultan" },
-    { color: "#0274b3", path: "linkedin.png", width: 48, height: 48, url: "https://www.linkedin.com/in/jvarus/" },
+    { color: '#fff', path: 'me.png', width: 96, height: 96 },
+    { color: '#1da1f2', path: 'twitter.png', width: 48, height: 48, url: 'https://twitter.com/discosultan' },
+    { color: '#171516', path: 'github.png', width: 48, height: 48, url: 'https://github.com/discosultan' },
+    { color: '#0274b3', path: 'linkedin.png', width: 48, height: 48, url: 'https://www.linkedin.com/in/jvarus/' },
 ];
 
 // Preload images.
@@ -40,14 +40,15 @@ for (const meta of shapesMeta) {
 }
 
 function init() {
-    const canvas = <HTMLCanvasElement>document.getElementById("canvas") || (() => { throw "Canvas not available." })();
-    const ctx = canvas.getContext("2d") || (() => { throw "2d context not available." })();
+    const canvas = <HTMLCanvasElement>document.getElementById(
+        'canvas') ?? (() => { throw Error('Canvas not available.') })();
+    const ctx = canvas.getContext('2d') ?? (() => { throw Error('2d context not available.') })();
     const shapes: Shape[] = [];
     const processManager = new ProcessManager(canvas, shapes);
     const renderer = new Renderer(canvas, shapes, 0.36);
 
     // Config.
-    const primaryColor = "#fff";
+    const primaryColor = '#fff';
     const easingFn = Easing.easeInOutCubic;
     const hexDiameter = 100;
     const hexGenDuration = 600;
@@ -57,14 +58,14 @@ function init() {
     const flipVertically = new Vec2(-1, 1);
     const textRectWidth = 300;
     const textRectHeight = 50;
-    const font = "Montserrat";
-    const text1 = "JAANUS VARUS";
-    const text2 = "Amsterdam, The Netherlands"
+    const font = 'Montserrat';
+    const text1 = 'JAANUS VARUS';
+    const text2 = 'Amsterdam, The Netherlands'
     processManager.timeScale = 0.5;
 
     // Preload font by rendering arbitrary text.
     ctx.font = `2px ${font}`;
-    ctx.fillText("x", 0, 0);
+    ctx.fillText('x', 0, 0);
 
     // Generate two sets of hexes:
     // 1. initial contours which will be animated
@@ -138,8 +139,18 @@ function init() {
     processManager.push(
         // The wait process is for testing purposes.
         new General.Wait({ duration: 0 }).push(
-            new Generation.GenerateHex({ shape: hexMidContour, easingFn, diameter: hexDiameter, duration: hexGenDuration }).push(
-                new General.Rotate({ shape: hexMidContour, easingFn, target: -Math.TWO_PI, duration: rotationDuration }).push(
+            new Generation.GenerateHex({
+                shape: hexMidContour,
+                easingFn,
+                diameter: hexDiameter,
+                duration: hexGenDuration,
+            }).push(
+                new General.Rotate({
+                    shape: hexMidContour,
+                    easingFn,
+                    target: -Math.TWO_PI,
+                    duration: rotationDuration,
+                }).push(
                     addTranslateHex(hexWContour, translationW),
                     addTranslateHex(hexSEContour, translationSE),
                     addTranslateHex(hexNEContour, translationNE)

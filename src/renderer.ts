@@ -1,4 +1,4 @@
-import { Shape, Type } from "./shape";
+import { Shape, Type } from './shape';
 
 declare global {
     interface HTMLCanvasElement {
@@ -12,7 +12,7 @@ export class Renderer {
 
     constructor(public readonly canvas: HTMLCanvasElement, public readonly shapes: Shape[],
         public readonly translationFactorX = 0.5, public readonly translationFactorY = 0.5) {
-        this.ctx = canvas.getContext("2d")!;
+        this.ctx = canvas.getContext('2d')!;
     }
 
     step(dt: number) {
@@ -73,10 +73,10 @@ export class Renderer {
         }
     }
 
-    styleOrDefault(style: string | CanvasPattern) { return style || "#EA2E49"; }
-    fontOrDefault(shape: Shape) { return `${shape.worldBoundingRect.height}px ${shape.font || "Arial"}`; }
-    textAlignOrDefault(shape: Shape) { return shape.textAlign || "start"; }
-    lineWidthOrDefault(shape: Shape) { return shape.lineWidth || 8 };
+    styleOrDefault(style: string | CanvasPattern) { return style ?? '#EA2E49'; }
+    fontOrDefault(shape: Shape) { return `${shape.worldBoundingRect.height}px ${shape.font ?? 'Arial'}`; }
+    textAlignOrDefault(shape: Shape) { return shape.textAlign ?? 'start'; }
+    lineWidthOrDefault(shape: Shape) { return shape.lineWidth ?? 8 };
 
     ensureCanvasValid(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
         if (canvas.clientWidth !== canvas.width || canvas.clientHeight !== canvas.height) {
@@ -86,8 +86,8 @@ export class Renderer {
             canvas.translationY = canvas.height * this.translationFactorY;
 
             ctx.translate(canvas.translationX, canvas.translationY);
-            ctx.lineCap = "round";
-            ctx.lineJoin = "round";
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
         }
     }
 }

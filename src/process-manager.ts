@@ -1,21 +1,23 @@
-import { Easing } from "./math";
-import { Shape } from "./shape";
+import { Easing } from './math';
+import { Shape } from './shape';
 
-export type Config = any;
-export enum Status { "pending", "fulfilled", "rejected" };
+export enum Status { 'pending', 'fulfilled', 'rejected' };
 
 export class Process {
+    endless: boolean;
+    duration: number;
+    easingFn: (t: number) => number;
+
     readonly _children: Process[] = [];
     elapsed = 0;
     status = Status.pending;
-    endless = false;
-    duration = 1000;
-    easingFn = Easing.linear;
-    manager: ProcessManager;
+    manager: ProcessManager | null = null;
     [key: string]: any;
 
-    constructor(config: Config = {}) {
-        Object.keys(config).forEach(key => this[key] = config[key]);
+    constructor(config: any = {}) {
+        this.duration = config.duration ?? 1000;
+        this.endless = config.endless ?? false;
+        this.easingFn = config.easingFn ?? Easing.linear;
     }
 
     get progress() { return this.easingFn(Math.min(this.elapsed / this.duration, 1)); }

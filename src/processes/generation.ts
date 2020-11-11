@@ -1,10 +1,23 @@
-import { Process } from "../process-manager";
-import { Shape } from "../shape";
-import { Vec2 } from "../math";
+import { Process } from '../process-manager';
+import { Shape } from '../shape';
+import { Vec2 } from '../math';
 
 export class GenerateRect extends Process {
-    init() {
-        this.x = this.x || 0, this.y = this.y || 0;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    shape: Shape;
+
+    target: Shape;
+
+    constructor(config: any) {
+        super(config);
+        this.x = config.x ?? 0;
+        this.y = config.y ?? 0;
+        this.width = config.width;
+        this.height = config.height;
+        this.shape = config.shape;
         this.target = Shape.rect(this.x, this.y, this.width, this.height);
         addPoints(this.shape, 4, this.x, this.y);
         this.shape.points[2] = this.target.points[3].clone();
@@ -23,10 +36,22 @@ export class GenerateRect extends Process {
 }
 
 export class GenerateRectDiagonally extends Process {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    shape: Shape;
+
+    target: Shape;
     phase = 0;
 
-    init() {
-        this.x = this.x || 0, this.y = this.y || 0;
+    constructor(config: any) {
+        super(config);
+        this.x = config.x ?? 0;
+        this.y = config.y ?? 0;
+        this.width = config.width;
+        this.height = config.height;
+        this.shape = config.shape;
         this.target = Shape.rect(this.x, this.y, this.width, this.height);
         this.duration = this.duration / 2; // 2 phases for full generation.
         addPoints(this.shape, 5, this.x, this.y);
@@ -56,10 +81,20 @@ export class GenerateRectDiagonally extends Process {
 }
 
 export class GenerateHex extends Process {
+    x: number;
+    y: number;
+    diameter: number;
+    shape: Shape;
+
+    target: Shape;
     phase = 0;
 
-    init() {
-        this.x = this.x || 0, this.y = this.y || 0;
+    constructor(config: any) {
+        super(config);
+        this.x = config.x ?? 0;
+        this.y = config.y ?? 0;
+        this.diameter = config.diameter;
+        this.shape = config.shape;
         this.target = Shape.hex(this.x, this.y, this.diameter);
         this.duration = this.duration / 3; // 3 phases for full generation.
         addPoints(this.shape, 6, this.x, this.y);
@@ -94,8 +129,8 @@ export class GenerateHex extends Process {
 }
 
 function addPoints(shape: Shape, count: number, x: number, y: number) {
-    const points = (<undefined[]>Array
-        .apply(null, Array(count)))
+    const points = Array
+        .apply(null, Array(count))
         .map(_ => new Vec2(x, y));
     shape.points.push(...points);
     shape.setDirty();

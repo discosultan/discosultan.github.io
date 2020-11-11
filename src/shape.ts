@@ -1,7 +1,7 @@
-import { Vec2, Mat2x3 } from "./math";
+import { Vec2, Mat2x3 } from './math';
 
 export type Config = any;
-export enum Type { "image", "fill", "stroke", "text", "none" };
+export enum Type { 'image', 'fill', 'stroke', 'text', 'none' };
 
 export interface BoundingRect {
     x: number;
