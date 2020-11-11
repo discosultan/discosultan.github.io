@@ -1,4 +1,4 @@
-import { Shape, Type } from "./shape";
+import { Shape, Type } from './shape';
 
 declare global {
     interface HTMLCanvasElement {
@@ -12,7 +12,7 @@ export class Renderer {
 
     constructor(public readonly canvas: HTMLCanvasElement, public readonly shapes: Shape[],
         public readonly translationFactorX = 0.5, public readonly translationFactorY = 0.5) {
-        this.ctx = canvas.getContext("2d")!;
+        this.ctx = canvas.getContext('2d')!;
     }
 
     step(dt: number) {
@@ -23,7 +23,7 @@ export class Renderer {
     }
 
     renderShapes(ctx: CanvasRenderingContext2D, shapes: Shape[]) {
-        for (let shape of shapes) {
+        for (const shape of shapes) {
             const points = shape.worldPoints;
             if (points.length === 0) continue;
 
@@ -57,7 +57,7 @@ export class Renderer {
                     ctx.textAlign = this.textAlignOrDefault(shape);
                     ctx.fillStyle = this.styleOrDefault(shape.fillStyle);
                     const { x, y, height } = shape.worldBoundingRect;
-                    ctx.fillText(shape.text, x, y + height*0.5);
+                    ctx.fillText(shape.text, x, y + height * 0.5);
                     break;
                 }
             }
@@ -73,21 +73,21 @@ export class Renderer {
         }
     }
 
-    styleOrDefault(style: string | CanvasPattern) { return style || "#EA2E49"; }
-    fontOrDefault(shape: Shape) { return `${shape.worldBoundingRect.height}px ${shape.font || "Arial"}`; }
-    textAlignOrDefault(shape: Shape) { return shape.textAlign || "start"; }
-    lineWidthOrDefault(shape: Shape) { return shape.lineWidth || 8 };
+    styleOrDefault(style: string | CanvasPattern) { return style ?? '#EA2E49'; }
+    fontOrDefault(shape: Shape) { return `${shape.worldBoundingRect.height}px ${shape.font ?? 'Arial'}`; }
+    textAlignOrDefault(shape: Shape) { return shape.textAlign ?? 'start'; }
+    lineWidthOrDefault(shape: Shape) { return shape.lineWidth ?? 8 };
 
     ensureCanvasValid(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
         if (canvas.clientWidth !== canvas.width || canvas.clientHeight !== canvas.height) {
             canvas.width = canvas.clientWidth;
             canvas.height = canvas.clientHeight;
-            canvas.translationX = canvas.width*this.translationFactorX;
-            canvas.translationY = canvas.height*this.translationFactorY;
+            canvas.translationX = canvas.width * this.translationFactorX;
+            canvas.translationY = canvas.height * this.translationFactorY;
 
             ctx.translate(canvas.translationX, canvas.translationY);
-            ctx.lineCap = "round";
-            ctx.lineJoin = "round";
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
         }
     }
 }
